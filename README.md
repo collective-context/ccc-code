@@ -70,7 +70,9 @@
 ## Getting Started
 
 ```bash
+cd ~/ && wget -qO ccc https://raw.githubusercontent.com/collective-context/ccc-code/refs/heads/main/install && sudo -E bash ccc
 wget -qO wo ccc.recode.at && sudo bash ccc      # Install CCC CODE
+
 sudo ccc site create example.com --bs           # Install required packages & setup BuckStack on example.com
 ```
 
