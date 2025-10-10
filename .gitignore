@@ -1,0 +1,84 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+.pytest_cache/
+.noseids
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff
+*.log
+!install.log
+!ccc.log
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Vim .swp file
+*.swp
+
+# Nose testing
+bin/
+coverage_report/
+include/
+local/
+man/
+
+# IDEs
+.idea/
+.vscode/
+
+# Aider
+.aider*
+
+# Versteckte Dateien/Ordner (deine Regel, angepasst)
+.*
+!.gitignore
+!.aider.conf.yml
+!.github/
+
+# Projekt-spezifische Ignores
+.env
+*.env
+*.sql
+docker-compose.yml
