@@ -303,7 +303,7 @@ ccc_update_repo() {
     if [ -f /etc/apt/sources.list.d/ccc-repo.list ]; then
         # Same logic for CCC repositories
         if grep -q sury /etc/apt/sources.list.d/ccc-repo.list; then
-            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $ccc_linux_codename main" >/etc/apt/sources.list.d/php.list
+            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $c_linux_codename main" >/etc/apt/sources.list.d/php.list
         fi
     fi
 }
@@ -523,7 +523,7 @@ ccc_install() {
         cd /usr/local/lib/python3."$python_ver"/dist-packages || exit 1
     fi
     if [ "$ccc_distro_codename" != "bookworm" ]; then
-        pip uninstall -yq wo wordops ee ccc ccccode
+        pip uninstall -yq wo wordops ee ccc ccccode 2>/dev/null || true
     fi
 
     cd || exit 1
@@ -565,24 +565,52 @@ ccc_install() {
         fi
     fi
 
-    if [ "$ccc_branch" = "main" ] || [ "$ccc_branch" = "master" ]; then
-        /opt/ccc/bin/pip install -U ccccode --upgrade-strategy=eager
+    # Install CCC CODE from local repository if setup.py exists, otherwise from GitHub
+    if [ -f ./setup.py ]; then
+        # Local installation (for development)
+        /opt/ccc/bin/pip install -e . --upgrade-strategy=eager
     else
-        /opt/ccc/bin/pip install -I "git+https://github.com/collective-context/ccc-code.git@$ccc_branch#egg=ccccode" --upgrade-strategy=eager
+        # Installation from GitHub
+        if [ "$ccc_branch" = "main" ] || [ "$ccc_branch" = "master" ]; then
+            # Try PyPI first, fallback to GitHub
+            if ! /opt/ccc/bin/pip install -U ccccode --upgrade-strategy=eager 2>/dev/null; then
+                /opt/ccc/bin/pip install -I "git+https://github.com/collective-context/ccc-code.git@main#egg=ccccode" --upgrade-strategy=eager
+            fi
+        else
+            /opt/ccc/bin/pip install -I "git+https://github.com/collective-context/ccc-code.git@$ccc_branch#egg=ccccode" --upgrade-strategy=eager
+        fi
     fi
+    
+    # Install additional dependencies that might be missing
+    /opt/ccc/bin/pip install cement==2.10.14 pystache pynginxconfig PyMySQL psutil sh SQLAlchemy==1.4.54 requests distro argcomplete colorlog
+    
     local python_venv
     python_venv=$(python3 -c "import sys; print(sys.version_info[1])")
-    cp -rf /opt/ccc/lib/python3."$python_venv"/site-packages/usr/* /usr/
-    cp -rn /opt/ccc/lib/python3."$python_venv"/site-packages/etc/* /etc/
-    cp -f /opt/ccc/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
+    
+    # Copy files from site-packages if they exist
+    if [ -d /opt/ccc/lib/python3."$python_venv"/site-packages/usr ]; then
+        cp -rf /opt/ccc/lib/python3."$python_venv"/site-packages/usr/*  /usr/ 2>/dev/null || true
+    fi
+    if [ -d /opt/ccc/lib/python3."$python_venv"/site-packages/etc ]; then
+        cp -rn /opt/ccc/lib/python3."$python_venv"/site-packages/etc/* /etc/ 2>/dev/null || true
+    fi
+    if [ -f /opt/ccc/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/ccc_auto.rc ]; then
+        cp -f /opt/ccc/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
+    fi
+    
+    # Clean up old installations
     rm -rf /usr/local/bin/ccc /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
-    # Hauptlink nach /usr/local/bin/ccc (Kompatibilität mit ee/wo)
-    ln -s /opt/ccc/bin/ccc /usr/local/bin/ccc
-    # Zusätzlicher Symlink nach /usr/bin/ccc für Bequemlichkeit
+    
+    # Create symlinks for ccc command
+    ln -sf /opt/ccc/bin/ccc /usr/local/bin/ccc
+    # Additional symlink for convenience
     [ ! -h /usr/bin/ccc ] && {
         ln -s /usr/local/bin/ccc /usr/bin/ccc
     }
+    
     deactivate
+    
+    # Ensure system-site-packages is enabled
     if [ ! -d /opt/ccc/lib/python3."$python_ver"/site-packages/apt ]; then
         python3 -m venv --system-site-packages /opt/ccc
     fi
@@ -636,17 +664,25 @@ ccc_travis_install() {
                 fi
             fi
         fi
+        # Install from local setup.py
         /opt/ccc/bin/pip install -U . --upgrade-strategy=eager
+        # Install additional dependencies
+        /opt/ccc/bin/pip install cement==2.10.14 pystache pynginxconfig PyMySQL psutil sh SQLAlchemy==1.4.54 requests distro argcomplete colorlog
     else
         /opt/ccc/bin/pip install -U "git+https://github.com/collective-context/ccc-code.git@$ccc_branch#egg=ccccode" --upgrade-strategy=eager
     fi
-    cp -rf /opt/ccc/lib/python3."$python_ver"/site-packages/usr/* /usr/
-    cp -rn /opt/ccc/lib/python3."$python_ver"/site-packages/etc/* /etc/
-    cp -f /opt/ccc/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
+    
+    # Copy files
+    cp -rf /opt/ccc/lib/python3."$python_ver"/site-packages/usr/* /usr/ 2>/dev/null || true
+    cp -rn /opt/ccc/lib/python3."$python_ver"/site-packages/etc/* /etc/ 2>/dev/null || true
+    if [ -f /opt/ccc/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/ccc_auto.rc ]; then
+        cp -f /opt/ccc/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
+    fi
+    
     rm -f /usr/local/bin/ccc
-    # Hauptlink nach /usr/local/bin/ccc (Kompatibilität mit ee/wo)
-    ln -s /opt/ccc/bin/ccc /usr/local/bin/ccc
-    # Zusätzlicher Symlink nach /usr/bin/ccc für Bequemlichkeit
+    # Create symlinks
+    ln -sf /opt/ccc/bin/ccc /usr/local/bin/ccc
+    # Additional symlink for convenience
     [ ! -h /usr/bin/ccc ] && {
         ln -s /usr/local/bin/ccc /usr/bin/ccc
     }
@@ -660,7 +696,7 @@ ccc_upgrade_nginx() {
     ccc_distro_version=$(lsb_release -sc)
 
     if [ -d /var/lib/ccc-backup/nginx ]; then
-        /bin/tar -I zstd "$NGINX_BACKUP_FILE" /var/lib/ccc-backup/nginx
+        /bin/tar -I zstd -cf "$NGINX_BACKUP_FILE" /var/lib/ccc-backup/nginx
         rm -rf /var/lib/ccc-backup/nginx
     fi
     # backup nginx conf
@@ -1035,7 +1071,10 @@ else
     _run ccc_update_latest
     _run secure_ccc_db
 
-    ccc sync
+    # Try to run ccc sync if the command exists
+    if [ -x /usr/local/bin/ccc ] || [ -x /usr/bin/ccc ]; then
+        ccc sync 2>/dev/null || true
+    fi
     _run ccc_git_secure_path
 
     if [ "$ee_migration" = "1" ]; then
