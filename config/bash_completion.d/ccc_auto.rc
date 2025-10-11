@@ -1,0 +1,42 @@
+# bash completion for ccc
+
+_ccc_complete()
+{
+    local cur prev opts base
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    # Basic commands
+    opts="site stack clean debug info log maintenance secure sync update"
+
+    # Sub-commands based on main command
+    case "${prev}" in
+        ccc)
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+            ;;
+        site)
+            local site_opts="create delete disable enable info list log update"
+            COMPREPLY=( $(compgen -W "${site_opts}" -- ${cur}) )
+            return 0
+            ;;
+        stack)
+            local stack_opts="install upgrade remove restart reload status"
+            COMPREPLY=( $(compgen -W "${stack_opts}" -- ${cur}) )
+            return 0
+            ;;
+        clean)
+            local clean_opts="--all --fastcgi --opcache --redis"
+            COMPREPLY=( $(compgen -W "${clean_opts}" -- ${cur}) )
+            return 0
+            ;;
+        *)
+            ;;
+    esac
+
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+}
+
+complete -F _ccc_complete ccc
