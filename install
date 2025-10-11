@@ -150,7 +150,7 @@ ccc_init_variables() {
         ee_migration=1
     elif [ -x /usr/local/bin/wo ]; then
         wo_migration=1
-    elif [ -x /usr/local/bin/ccc ]; then
+    elif [ -x /usr/bin/ccc ]; then
         ccc_upgrade=1
     fi
 }
@@ -292,7 +292,7 @@ ccc_update_repo() {
             echo "deb [signed-by=/usr/share/keyrings/wordops-archive-keyring.gpg] $wo_repo /" >/etc/apt/sources.list.d/wordops.list
         fi
         # cleanup wo-repo.list
-        if grep -Eqv "Wor dOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list; then
+        if grep -Eqv "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list; then
             rm -f /etc/apt/sources.list.d/wo-repo.list
         else
             clean_wo_repo=$(grep -Ev "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list)
@@ -575,8 +575,9 @@ ccc_install() {
     cp -rf /opt/ccc/lib/python3."$python_venv"/site-packages/usr/* /usr/
     cp -rn /opt/ccc/lib/python3."$python_venv"/site-packages/etc/* /etc/
     cp -f /opt/ccc/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
-    rm -rf /usr/local/bin/ccc /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
-    ln -s /opt/ccc/bin/ccc /usr/local/bin/
+    rm -rf /usr/bin/ccc /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
+    # Symlink direkt nach /usr/bin/ccc statt /usr/local/bin/ccc
+    ln -s /opt/ccc/bin/ccc /usr/bin/ccc
     deactivate
     if [ ! -d /opt/ccc/lib/python3."$python_ver"/site-packages/apt ]; then
         python3 -m venv --system-site-packages /opt/ccc
@@ -638,8 +639,9 @@ ccc_travis_install() {
     cp -rf /opt/ccc/lib/python3."$python_ver"/site-packages/usr/* /usr/
     cp -rn /opt/ccc/lib/python3."$python_ver"/site-packages/etc/* /etc/
     cp -f /opt/ccc/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
-    rm -f /usr/local/bin/ccc
-    ln -s /opt/ccc/bin/ccc /usr/local/bin/
+    rm -f /usr/bin/ccc
+    # Symlink direkt nach /usr/bin/ccc statt /usr/local/bin/ccc
+    ln -s /opt/ccc/bin/ccc /usr/bin/ccc
     deactivate
 }
 
@@ -667,7 +669,7 @@ ccc_upgrade_nginx() {
     # install new nginx package
     if {
         if [ -n "$CHECK_NGINX_EE" ]; then
-            if [ -x /usr/local/bin/ccc ] || [ -x /usr/local/bin/wo ]; then
+            if [ -x /usr/bin/ccc ] || [ -x /usr/local/bin/wo ]; then
                 [ -f /etc/apt/preferences.d/nginx-block ] && { mv /etc/apt/preferences.d/nginx-block /var/lib/ccc/tmp/nginx-block; }
                 # stop nginx
                 service nginx stop
@@ -682,15 +684,15 @@ ccc_upgrade_nginx() {
                 if [ -d /etc/nginx ]; then
                     rm -rf /etc/nginx
                 fi
-                if [ -x /usr/local/bin/ccc ]; then
-                    /usr/local/bin/ccc stack install --nginx --php
+                if [ -x /usr/bin/ccc ]; then
+                    /usr/bin/ccc stack install --nginx --php
                 elif [ -x /usr/local/bin/wo ]; then
                     /usr/local/bin/wo stack install --nginx --php
                 fi
                 rm -f /etc/nginx/common/acl.conf /etc/nginx/htpasswd-wo /etc/nginx/htpasswd-ccc
                 /usr/bin/rsync -au --noatime /var/lib/ccc-backup/nginx/ /etc/nginx/
-                if [ -x /usr/local/bin/ccc ]; then
-                    /usr/local/bin/ccc stack upgrade --nginx --force
+                if [ -x /usr/bin/ccc ]; then
+                    /usr/bin/ccc stack upgrade --nginx --force
                 elif [ -x /usr/local/bin/wo ]; then
                     /usr/local/bin/wo stack upgrade --nginx --force
                 fi
@@ -827,7 +829,7 @@ ccc_uninstall() {
     if { /opt/ccc/bin/pip list | grep -q "wordops" >/dev/null 2>&1; }; then
         /opt/ccc/bin/pip uninstall wordops -y
     fi
-    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{pystache-*,cement-2.*,wo-*,wordops-*,ccc-*,ccccode-*} /usr/local/bin/ccc /etc/bash_completion.d/ccc_auto.rc /var/lib/ccc /etc/ccc /usr/lib/ccc/templates /opt/ccc
+    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{pystache-*,cement-2.*,wo-*,wordops-*,ccc-*,ccccode-*} /usr/bin/ccc /etc/bash_completion.d/ccc_auto.rc /var/lib/ccc /etc/ccc /usr/lib/ccc/templates /opt/ccc
 }
 
 ccc_clean_repo() {
@@ -971,7 +973,7 @@ if [ "$ccc_purge" = "y" ]; then
     exit 0
 else
     # 1 - CCC already installed
-    if [ -x /usr/local/bin/ccc ]; then
+    if [ -x /usr/bin/ccc ]; then
         _run ccc_clean
         _run ccc_cccconf
         _run ccc_fix_kernel
