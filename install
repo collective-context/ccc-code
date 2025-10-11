@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # -------------------------------------------------------------------------
-# WordOps install and update script
+# CCC CODE install and update script
 # -------------------------------------------------------------------------
-# Website:       https://wordops.net
-# GitHub:        https://github.com/WordOps/WordOps
-# Copyright (c) 2019-2025 - WordOps
+# Website:       https://collective-context.org
+# GitHub:        https://github.com/collective-context/ccc-code
+# Copyright (c) 2024-2025 - CCC CODE
 # This script is licensed under M.I.T
 # -------------------------------------------------------------------------
-# wget -qO wo wops.cc && sudo -E bash wo
+# wget -qO ccc ccc.recode.at && sudo -E bash ccc
 # -------------------------------------------------------------------------
-# Version 3.22.0 - 2024-12-06
+# Version 1.0.0 - 2024-12-06
 # -------------------------------------------------------------------------
 
 # CONTENTS
@@ -17,7 +17,7 @@
 # 1. VARIABLES AND DECLARATIONS
 # 2. PREPARE FOR INSTALLATION
 # 3. INSTALLATION
-# 4.
+# 4. MAIN SETUP
 
 ###
 # 1 - Set the CLI output colors
@@ -29,17 +29,17 @@ TPUT_FAIL="${CSI}1;31m"
 TPUT_ECHO="${CSI}1;36m"
 TPUT_OK="${CSI}1;32m"
 
-wo_lib_echo() {
+ccc_lib_echo() {
 
     echo -e "${TPUT_ECHO}${*}${TPUT_RESET}"
 }
 
-wo_lib_echo_info() {
+ccc_lib_echo_info() {
 
     echo -e "$*"
 }
 
-wo_lib_echo_fail() {
+ccc_lib_echo_fail() {
 
     echo -e "${TPUT_FAIL}${*}${TPUT_RESET}"
 }
@@ -48,7 +48,7 @@ wo_lib_echo_fail() {
 # 1 - Capture errors
 ###
 
-wo_lib_error() {
+ccc_lib_error() {
     echo -e "[ $(date) ] ${TPUT_FAIL}${*}${TPUT_RESET}"
     exit "$2"
 }
@@ -60,24 +60,24 @@ wo_lib_error() {
 while [ "$#" -gt 0 ]; do
     case "$1" in
     -b | --branch)
-        wo_branch="$2"
+        ccc_branch="$2"
         shift
         ;;
     --force)
-        wo_force_install="y"
+        ccc_force_install="y"
         ;;
     --travis)
-        wo_travis="y"
-        wo_force_install="y"
+        ccc_travis="y"
+        ccc_force_install="y"
         ;;
     --mainline | --beta)
-        wo_branch="mainline"
+        ccc_branch="mainline"
         ;;
     -s | --silent)
-        wo_force_install="y"
+        ccc_force_install="y"
         ;;
     --purge | --uninstall)
-        wo_purge="y"
+        ccc_purge="y"
         ;;
     *) # positional args
         ;;
@@ -89,8 +89,8 @@ done
 # 1 - Check whether the installation is called with elevated rights
 ###
 if [[ $EUID -ne 0 ]]; then
-    wo_lib_echo_fail "Sudo privilege required..."
-    wo_lib_echo_fail "Use: wget -qO wo wops.cc && sudo bash wo  "
+    ccc_lib_echo_fail "Sudo privilege required..."
+    ccc_lib_echo_fail "Use: wget -qO ccc ccc.recode.at && sudo bash ccc"
     exit 100
 fi
 
@@ -113,7 +113,7 @@ _run() {
     if [ -n "$2" ]; then
         echo -ne "${TPUT_ECHO}${2}${TPUT_RESET}\t"
     fi
-    if ! { "$1" >>"$wo_install_log" 2>&1; }; then
+    if ! { "$1" >>"$ccc_install_log" 2>&1; }; then
         if [ -n "$2" ]; then
             echo -e "${TPUT_FAIL}[KO]${TPUT_RESET}"
         fi
@@ -129,26 +129,29 @@ _curl() {
     curl -m 10 --retry 3 -sL "$@"
 }
 
-wo_init_variables() {
-    if [ -z "$wo_branch" ]; then
-        if [ "$wo_travis" = "y" ]; then
-            wo_branch=updating-configuration
+ccc_init_variables() {
+    if [ -z "$ccc_branch" ]; then
+        if [ "$ccc_travis" = "y" ]; then
+            ccc_branch=updating-configuration
         else
-            wo_branch=master
+            ccc_branch=main
         fi
     fi
-    readonly wo_install_log=/var/log/wo/install.log
+    readonly ccc_install_log=/var/log/ccc/install.log
     readonly TIME_FORMAT='%d-%b-%Y-%H%M%S'
     TIME=$(date +"$TIME_FORMAT")
     readonly TIME
-    readonly NGINX_BACKUP_FILE="/var/lib/wo-backup/nginx-backup.$TIME.tar.zst"
-    readonly EE_BACKUP_FILE="/var/lib/wo-backup/ee-backup.$TIME.tar.zst"
-    readonly WO_BACKUP_FILE="/var/lib/wo-backup/wo-backup.$TIME.tar.zst"
+    readonly NGINX_BACKUP_FILE="/var/lib/ccc-backup/nginx-backup.$TIME.tar.zst"
+    readonly EE_BACKUP_FILE="/var/lib/ccc-backup/ee-backup.$TIME.tar.zst"
+    readonly WO_BACKUP_FILE="/var/lib/ccc-backup/wo-backup.$TIME.tar.zst"
+    readonly CCC_BACKUP_FILE="/var/lib/ccc-backup/ccc-backup.$TIME.tar.zst"
 
     if [ -x /usr/local/bin/ee ]; then
         ee_migration=1
     elif [ -x /usr/local/bin/wo ]; then
-        wo_upgrade=1
+        wo_migration=1
+    elif [ -x /usr/local/bin/ccc ]; then
+        ccc_upgrade=1
     fi
 }
 
@@ -156,21 +159,21 @@ wo_init_variables() {
 # 1 - Checking linux distro
 ###
 
-wo_check_distro() {
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
-    local wo_distro_version
-    wo_distro_version=$(lsb_release -sc)
-    if [ -z "$wo_force_install" ]; then
-        if [ "$wo_linux_distro" != "Ubuntu" ] && [ "$wo_linux_distro" != "Debian" ] && [ "$wo_linux_distro" != "Raspbian" ]; then
-            wo_lib_echo_fail "WordOps (wo) only supports Ubuntu, Debian & Raspbian at the moment."
-            wo_lib_echo_fail "You can bypass this warning by adding the flag --force to the install command"
-            wo_lib_echo_fail "Feel free to open a pull-request if you want to add support for another Linux distributions"
+ccc_check_distro() {
+    local ccc_linux_distro
+    ccc_linux_distro=$(lsb_release -is)
+    local ccc_distro_version
+    ccc_distro_version=$(lsb_release -sc)
+    if [ -z "$ccc_force_install" ]; then
+        if [ "$ccc_linux_distro" != "Ubuntu" ] && [ "$ccc_linux_distro" != "Debian" ] && [ "$ccc_linux_distro" != "Raspbian" ]; then
+            ccc_lib_echo_fail "CCC CODE only supports Ubuntu, Debian & Raspbian at the moment."
+            ccc_lib_echo_fail "You can bypass this warning by adding the flag --force to the install command"
+            ccc_lib_echo_fail "Feel free to open a pull-request if you want to add support for another Linux distributions"
             exit 100
         else
-            check_wo_linux_distro=$(lsb_release -sc | grep -E "buster|focal|jammy|bullseye|bookworm|noble")
-            if [ -z "$check_wo_linux_distro" ]; then
-                wo_lib_echo_fail "WordOps (wo) only supports Ubuntu 20.04/22.04/24.04 LTS, Debian 10.x/11.x/12.x and Raspbian 10x./11.x/12.x \n
+            check_ccc_linux_distro=$(lsb_release -sc | grep -E "buster|focal|jammy|bullseye|bookworm|noble")
+            if [ -z "$check_ccc_linux_distro" ]; then
+                ccc_lib_echo_fail "CCC CODE only supports Ubuntu 20.04/22.04/24.04 LTS, Debian 10.x/11.x/12.x and Raspbian 10x./11.x/12.x \n
                 You can bypass this warning by adding the flag --force to the install command"
                 exit 100
             fi
@@ -182,19 +185,19 @@ wo_check_distro() {
 ###
 # 1 - To prevent errors or unexpected behaviour, create the log and ACL it
 ###
-wo_dir_init() {
-    local wo_log_dir=/var/log/wo
-    local wo_backup_dir=/var/lib/wo-backup
-    local wo_tmp_dir=/var/lib/wo/tmp
-    if [ ! -d "$wo_log_dir" ] || [ ! -d "$wo_backup_dir" ] || [ ! -d "$wo_tmp_dir" ]; then
+ccc_dir_init() {
+    local ccc_log_dir=/var/log/ccc
+    local ccc_backup_dir=/var/lib/ccc-backup
+    local ccc_tmp_dir=/var/lib/ccc/tmp
+    if [ ! -d "$ccc_log_dir" ] || [ ! -d "$ccc_backup_dir" ] || [ ! -d "$ccc_tmp_dir" ]; then
 
-        mkdir -p "$wo_backup_dir" "$wo_log_dir" "$wo_tmp_dir"
+        mkdir -p "$ccc_backup_dir" "$ccc_log_dir" "$ccc_tmp_dir"
 
-        # create wordops log files
-        touch /var/log/wo/{wordops.log,install.log}
+        # create ccc log files
+        touch /var/log/ccc/{ccc.log,install.log}
 
-        chmod -R 750 "$wo_log_dir" "$wo_backup_dir" "$wo_tmp_dir"
-        chown -R root:adm "$wo_log_dir"
+        chmod -R 750 "$ccc_log_dir" "$ccc_backup_dir" "$ccc_tmp_dir"
+        chown -R root:adm "$ccc_log_dir"
     fi
 
 }
@@ -203,18 +206,18 @@ wo_dir_init() {
 # 2 - Setup the dependencies for installation
 ####
 
-wo_install_dep() {
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
-    wo_python_venv=$(apt-cache policy python3.12-venv 2>&1 | grep -q Installed)
-    if [ "$wo_linux_distro" == "Ubuntu" ]; then
+ccc_install_dep() {
+    local ccc_linux_distro
+    ccc_linux_distro=$(lsb_release -is)
+    ccc_python_venv=$(apt-cache policy python3.12-venv 2>&1 | grep -q Installed)
+    if [ "$ccc_linux_distro" == "Ubuntu" ]; then
         # install dependencies
         add-apt-repository ppa:git-core/ppa -y
         apt-get --option=Dpkg::options::=--force-confmiss --option=Dpkg::options::=--force-confold --assume-yes install \
             build-essential curl gzip python3-pip python3-apt python3-venv gcc python3-dev sqlite3 git tar software-properties-common pigz \
             gnupg2 cron ccze rsync apt-transport-https tree haveged ufw unattended-upgrades tzdata ntp zstd idn \
             python3-distutils-extra libapt-pkg-dev bash-completion >/dev/null 2>&1
-        if $wo_python_venv; then
+        if $ccc_python_venv; then
             apt install -yy python3.12-venv >/dev/null 2>&1
         fi
 
@@ -235,11 +238,11 @@ wo_install_dep() {
     fi
 }
 
-wo_download_gpg_keys() {
-    local wo_distro_version
-    wo_distro_version=$(lsb_release -rs | grep -oE '[0-9]+')
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
+ccc_download_gpg_keys() {
+    local ccc_distro_version
+    ccc_distro_version=$(lsb_release -rs | grep -oE '[0-9]+')
+    local ccc_linux_distro
+    ccc_linux_distro=$(lsb_release -is)
 
     # create directories
     mkdir -p /usr/share/keyrings /etc/apt/keyrings
@@ -250,22 +253,22 @@ wo_download_gpg_keys() {
     # mariadb
     curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'
 
-    # nginx
-    if [ "$wo_linux_distro" == "Debian" ]; then
-        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Debian_$wo_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
+    # nginx - using WordOps repository for compatibility
+    if [ "$ccc_linux_distro" == "Debian" ]; then
+        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Debian_$ccc_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
     fi
-    if [ "$wo_linux_distro" == "Raspbian" ]; then
-        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Raspbian_$wo_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
+    if [ "$ccc_linux_distro" == "Raspbian" ]; then
+        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Raspbian_$ccc_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
     fi
 }
 
-wo_update_repo() {
-    local wo_linux_codename
-    wo_linux_codename=$(lsb_release -sc)
+ccc_update_repo() {
+    local ccc_linux_codename
+    ccc_linux_codename=$(lsb_release -sc)
     if [ -f /etc/apt/sources.list.d/wo-repo.list ]; then
         # properly define sury repository
         if grep -q sury /etc/apt/sources.list.d/wo-repo.list; then
-            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $wo_linux_codename main" >/etc/apt/sources.list.d/php.list
+            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $ccc_linux_codename main" >/etc/apt/sources.list.d/php.list
         fi
         # properly define mariadb repository
         repo_file="/etc/apt/sources.list.d/wo-repo.list"
@@ -277,30 +280,37 @@ wo_update_repo() {
             else
                 mariadb_repo=$(grep mariadb /etc/apt/sources.list.d/wo-repo.list | awk '{print $3}')
             fi
-            echo "deb [signed-by=/etc/apt/keyrings/mariadb-keyring.pgp] $mariadb_repo $wo_linux_codename main" >/etc/apt/sources.list.d/mariadb.list
+            echo "deb [signed-by=/etc/apt/keyrings/mariadb-keyring.pgp] $mariadb_repo $ccc_linux_codename main" >/etc/apt/sources.list.d/mariadb.list
         fi
         # properly define redis repository
         if grep -q redis /etc/apt/sources.list.d/wo-repo.list; then
-            echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $wo_linux_codename main" >/etc/apt/sources.list.d/redis.list
+            echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $ccc_linux_codename main" >/etc/apt/sources.list.d/redis.list
         fi
-        # properly define WordOps nginx repository
+        # properly define WordOps nginx repository (keep for compatibility)
         if grep -q WordOps /etc/apt/sources.list.d/wo-repo.list; then
             wo_repo=$(grep WordOps /etc/apt/sources.list.d/wo-repo.list | awk -F\  '{ print $2 }')
             echo "deb [signed-by=/usr/share/keyrings/wordops-archive-keyring.gpg] $wo_repo /" >/etc/apt/sources.list.d/wordops.list
         fi
         # cleanup wo-repo.list
-        if grep -Eqv "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list; then
+        if grep -Eqv "Wor dOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list; then
             rm -f /etc/apt/sources.list.d/wo-repo.list
         else
             clean_wo_repo=$(grep -Ev "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list)
             echo "$clean_wo_repo" >/etc/apt/sources.list.d/wo-repo.list
         fi
     fi
+    # Check for ccc-repo.list
+    if [ -f /etc/apt/sources.list.d/ccc-repo.list ]; then
+        # Same logic for CCC repositories
+        if grep -q sury /etc/apt/sources.list.d/ccc-repo.list; then
+            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $ccc_linux_codename main" >/etc/apt/sources.list.d/php.list
+        fi
+    fi
 }
 
-wo_timesync() {
+ccc_timesync() {
     # set default ntp pools
-    if [ "$wo_distro_codename" != "bookworm" ] && [ "$wo_distro_codename" != "noble" ]; then
+    if [ "$ccc_distro_codename" != "bookworm" ] && [ "$ccc_distro_codename" != "noble" ]; then
         if [ -f /etc/systemd/timesyncd.conf ]; then
             if ! grep -q "time.cloudflare.com" /etc/systemd/timesyncd.conf; then
                 sed -e 's/^#NTP=/NTP=time.cloudflare.com 0.ubuntu.pool.ntp.org 1.ubuntu.pool.ntp.org 2.ubuntu.pool.ntp.org 3.ubuntu.pool.ntp.org/' -i /etc/systemd/timesyncd.conf
@@ -314,23 +324,30 @@ wo_timesync() {
 ###
 # 3 - Create/migrate the essentials
 ###
-wo_sync_db() {
+ccc_sync_db() {
     ###
-    # Switching from EE -> WO
+    # Switching from EE/WO -> CCC
     ###
-    if [ ! -f /var/lib/wo/dbase.db ]; then
+    if [ ! -f /var/lib/ccc/dbase.db ]; then
 
         if [ -f /var/lib/ee/ee.db ]; then
 
             # Make a backup of the EasyEngine database
-            cp /var/lib/ee/ee.db /var/lib/wo/dbase-ee.db
+            cp /var/lib/ee/ee.db /var/lib/ccc/dbase-ee.db
 
             # Copy ee database
-            cp /var/lib/ee/ee.db /var/lib/wo/dbase.db
+            cp /var/lib/ee/ee.db /var/lib/ccc/dbase.db
+        elif [ -f /var/lib/wo/dbase.db ]; then
+
+            # Make a backup of the WordOps database
+            cp /var/lib/wo/dbase.db /var/lib/ccc/dbase-wo.db
+
+            # Copy wo database
+            cp /var/lib/wo/dbase.db /var/lib/ccc/dbase.db
         else
             if [ -d /etc/nginx/sites-available ] && [ -d /var/www ]; then
 
-                # Create an empty database for WordOps
+                # Create an empty database for CCC CODE
                 echo "CREATE TABLE sites (
            id INTEGER PRIMARY KEY     AUTOINCREMENT,
            sitename UNIQUE,
@@ -348,80 +365,80 @@ wo_sync_db() {
            db_host VARCHAR,
            is_hhvm INT INT DEFAULT '0',
            php_version VARCHAR
-            );" | sqlite3 /var/lib/wo/dbase.db
+            );" | sqlite3 /var/lib/ccc/dbase.db
 
                 # Check site is enable/live or disable
                 AV_SITES="$(basename -a /etc/nginx/sites-available/* | grep -v default)"
                 for site in $AV_SITES; do
                     if [ -h "/etc/nginx/sites-enabled/$site" ]; then
-                        wo_site_status='1'
+                        ccc_site_status='1'
                     else
-                        wo_site_status='0'
+                        ccc_site_status='0'
                     fi
 
                     # Acquire information about the current nginx configuration
 
-                    wo_site_current_type=$(grep "common/" "/etc/nginx/sites-available/$site" | awk -F "/" '{print $2}')
+                    ccc_site_current_type=$(grep "common/" "/etc/nginx/sites-available/$site" | awk -F "/" '{print $2}')
 
-                    if echo "$wo_site_current_type" | grep -q "redis"; then
-                        wo_site_current_cache="wpredis"
-                    elif echo "$wo_site_current_type" | grep -q wpsc; then
-                        wo_site_current_cache="wpsc"
-                    elif echo "$wo_site_current_type" | grep -q wpfc; then
-                        wo_site_current_cache="wpfc"
+                    if echo "$ccc_site_current_type" | grep -q "redis"; then
+                        ccc_site_current_cache="wpredis"
+                    elif echo "$ccc_site_current_type" | grep -q wpsc; then
+                        ccc_site_current_cache="wpsc"
+                    elif echo "$ccc_site_current_type" | grep -q wpfc; then
+                        ccc_site_current_cache="wpfc"
                     else
-                        wo_site_current_cache="basic"
+                        ccc_site_current_cache="basic"
                     fi
 
-                    if echo "$wo_site_current_type" | grep -q wp; then
-                        if echo "$wo_site_current_type" | grep -q wpsubdir; then
-                            wo_site_current="wpsubdir"
-                        elif echo "$wo_site_current_type" | grep -q wpsudomain; then
-                            wo_site_current="wpsubdomain"
+                    if echo "$ccc_site_current_type" | grep -q wp; then
+                        if echo "$ccc_site_current_type" | grep -q wpsubdir; then
+                            ccc_site_current="wpsubdir"
+                        elif echo "$ccc_site_current_type" | grep -q wpsudomain; then
+                            ccc_site_current="wpsubdomain"
                         else
-                            wo_site_current="wp"
+                            ccc_site_current="wp"
                         fi
                     else
-                        if echo "$wo_site_current_type" | grep -q location; then
-                            wo_site_current="proxy"
-                        elif echo "$wo_site_current_type" | grep -q php; then
-                            wo_site_current="html"
+                        if echo "$ccc_site_current_type" | grep -q location; then
+                            ccc_site_current="proxy"
+                        elif echo "$ccc_site_current_type" | grep -q php; then
+                            ccc_site_current="html"
                         else
-                            if [ -f "/var/www/${site}/ee-config.php" ] || [ -f "/var/www/${site}/wo-config.php" ]; then
-                                wo_site_current="mysql"
+                            if [ -f "/var/www/${site}/ee-config.php" ] || [ -f "/var/www/${site}/wo-config.php" ] || [ -f "/var/www/${site}/ccc-config.php" ]; then
+                                ccc_site_current="mysql"
                             else
-                                wo_site_current="php"
+                                ccc_site_current="php"
                             fi
                         fi
                     fi
 
-                    wo_webroot="/var/www/$site"
+                    ccc_webroot="/var/www/$site"
 
-                    # Import the configuration into the WordOps SQLite database
+                    # Import the configuration into the CCC CODE SQLite database
                     echo "INSERT INTO sites (sitename, site_type, cache_type, site_path, is_enabled, is_ssl, storage_fs, storage_db)
-            VALUES (\"$site\", \"$wo_site_current\", \"$wo_site_current_cache\", \"$wo_webroot\", \"$wo_site_status\", 0, 'ext4', 'mysql');" | sqlite3 /var/lib/wo/dbase.db
+            VALUES (\"$site\", \"$ccc_site_current\", \"$ccc_site_current_cache\", \"$ccc_webroot\", \"$ccc_site_status\", 0, 'ext4', 'mysql');" | sqlite3 /var/lib/ccc/dbase.db
 
                 done
             fi
         fi
 
-        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '5.6', '7.2');" | sqlite3 /var/lib/wo/dbase.db
-        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '7.0', '7.3');" | sqlite3 /var/lib/wo/dbase.db
+        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '5.6', '7.2');" | sqlite3 /var/lib/ccc/dbase.db
+        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '7.0', '7.3');" | sqlite3 /var/lib/ccc/dbase.db
     fi
 }
 
-# Once again, set the proper ACL on the WordOps configuration directory
-secure_wo_db() {
+# Once again, set the proper ACL on the CCC CODE configuration directory
+secure_ccc_db() {
 
     # The owner is root
-    chown -R root:root /var/lib/wo
+    chown -R root:root /var/lib/ccc
     # Only allow access by root, block others
-    chmod -R 600 /var/lib/wo
+    chmod -R 600 /var/lib/ccc
 
 }
 
-# Update the WP-CLI version
-wo_update_wp_cli() {
+# Update the WP-CLI version (keep for WordPress compatibility if needed)
+ccc_update_wp_cli() {
     WP_CLI_PATH=$(command -v wp)
     if [ -n "$WP_CLI_PATH" ]; then
         rm -rf "$WP_CLI_PATH"
@@ -438,7 +455,7 @@ wo_update_wp_cli() {
 
 }
 
-wo_install_acme_sh() {
+ccc_install_acme_sh() {
     # check if acme.sh is already installed
     if [ ! -x /etc/letsencrypt/acme.sh ]; then
 
@@ -460,7 +477,7 @@ wo_install_acme_sh() {
 
     if [ -x "$HOME/.acme.sh/acme.sh" ]; then
         # backup acme.sh folder
-        /bin/tar -I zstd -cf /var/lib/wo-backup/acme.sh.tar.zst "$HOME/.acme.sh"
+        /bin/tar -I zstd -cf /var/lib/ccc-backup/acme.sh.tar.zst "$HOME/.acme.sh"
         # rsync previous certificates to new acme.sh location
         /usr/bin/rsync -rltgoDpz --exclude="account.conf" \
             --exclude="acme.sh" \
@@ -494,164 +511,164 @@ wo_install_acme_sh() {
 
 }
 
-# WordOps install
-wo_install() {
+# CCC CODE install
+ccc_install() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    local wo_distro_codename
-    wo_distro_codename=$(lsb_release -sc)
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
+    local ccc_distro_codename
+    ccc_distro_codename=$(lsb_release -sc)
+    local ccc_linux_distro
+    ccc_linux_distro=$(lsb_release -is)
     if [ -d /usr/local/lib/python3."$python_ver"/dist-packages ]; then
         cd /usr/local/lib/python3."$python_ver"/dist-packages || exit 1
     fi
-    if [ "$wo_distro_codename" != "bookworm" ]; then
-        pip uninstall -yq wo wordops ee
+    if [ "$ccc_distro_codename" != "bookworm" ]; then
+        pip uninstall -yq wo wordops ee ccc ccccode
     fi
 
     cd || exit 1
-    if [ -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
-        source /opt/wo/bin/activate
-        /opt/wo/bin/pip uninstall -yq setuptools
-        /opt/wo/bin/pip install setuptools==80.0.1
-        /opt/wo/bin/pip install -U pip wheel distro
-        /opt/wo/bin/pip uninstall psutil -y
-        /opt/wo/bin/pip uninstall SQLAlchemy -y
+    if [ -d /opt/ccc/lib/python3."$python_ver"/site-packages/apt ]; then
+        source /opt/ccc/bin/activate
+        /opt/ccc/bin/pip uninstall -yq setuptools
+        /opt/ccc/bin/pip install setuptools==80.0.1
+        /opt/ccc/bin/pip install -U pip wheel distro
+        /opt/ccc/bin/pip uninstall psutil -y
+        /opt/ccc/bin/pip uninstall SQLAlchemy -y
     else
-        rm -rf /opt/wo
-        python3 -m venv /opt/wo
-        source /opt/wo/bin/activate
-        /opt/wo/bin/pip uninstall -yq setuptools
-        /opt/wo/bin/pip install setuptools==80.0.1
-        /opt/wo/bin/pip install -U pip wheel
-        /opt/wo/bin/pip install -U distro
-        if [ "$wo_linux_distro" = "Debian" ] || [ "$wo_linux_distro" = "Raspbian" ]; then
-            if [ "$wo_distro_codename" = "stretch" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
-            elif [ "$wo_distro_codename" = "bullseye" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
-            elif [ "$wo_distro_codename" = "bookworm" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
+        rm -rf /opt/ccc
+        python3 -m venv /opt/ccc
+        source /opt/ccc/bin/activate
+        /opt/ccc/bin/pip uninstall -yq setuptools
+        /opt/ccc/bin/pip install setuptools==80.0.1
+        /opt/ccc/bin/pip install -U pip wheel
+        /opt/ccc/bin/pip install -U distro
+        if [ "$ccc_linux_distro" = "Debian" ] || [ "$ccc_linux_distro" = "Raspbian" ]; then
+            if [ "$ccc_distro_codename" = "stretch" ]; then
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+            elif [ "$ccc_distro_codename" = "bullseye" ]; then
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+            elif [ "$ccc_distro_codename" = "bookworm" ]; then
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
             else
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
             fi
         else
-            if [ "$wo_distro_codename" = "focal" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
-            elif [ "$wo_distro_codename" = "bionic" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
-            elif [ "$wo_distro_codename" = "jammy" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+            if [ "$ccc_distro_codename" = "focal" ]; then
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
+            elif [ "$ccc_distro_codename" = "bionic" ]; then
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+            elif [ "$ccc_distro_codename" = "jammy" ]; then
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
             else
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
+                /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
             fi
         fi
     fi
 
-    if [ "$wo_branch" = "master" ]; then
-        /opt/wo/bin/pip install -U wordops --upgrade-strategy=eager
+    if [ "$ccc_branch" = "main" ] || [ "$ccc_branch" = "master" ]; then
+        /opt/ccc/bin/pip install -U ccccode --upgrade-strategy=eager
     else
-        /opt/wo/bin/pip install -I "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops" --upgrade-strategy=eager
+        /opt/ccc/bin/pip install -I "git+https://github.com/collective-context/ccc-code.git@$ccc_branch#egg=ccccode" --upgrade-strategy=eager
     fi
     local python_venv
     python_venv=$(python3 -c "import sys; print(sys.version_info[1])")
-    cp -rf /opt/wo/lib/python3."$python_venv"/site-packages/usr/* /usr/
-    cp -rn /opt/wo/lib/python3."$python_venv"/site-packages/etc/* /etc/
-    cp -f /opt/wo/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/wo_auto.rc /etc/bash_completion.d/wo_auto.rc
-    rm -rf /usr/local/bin/wo /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
-    ln -s /opt/wo/bin/wo /usr/local/bin/
+    cp -rf /opt/ccc/lib/python3."$python_venv"/site-packages/usr/* /usr/
+    cp -rn /opt/ccc/lib/python3."$python_venv"/site-packages/etc/* /etc/
+    cp -f /opt/ccc/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
+    rm -rf /usr/local/bin/ccc /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
+    ln -s /opt/ccc/bin/ccc /usr/local/bin/
     deactivate
-    if [ ! -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
-        python3 -m venv --system-site-packages /opt/wo
+    if [ ! -d /opt/ccc/lib/python3."$python_ver"/site-packages/apt ]; then
+        python3 -m venv --system-site-packages /opt/ccc
     fi
 }
 
 # Clone Github repository if it doesn't exist
-wo_travis_install() {
+ccc_travis_install() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    local wo_distro_codename
-    wo_distro_codename=$(lsb_release -sc)
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
+    local ccc_distro_codename
+    ccc_distro_codename=$(lsb_release -sc)
+    local ccc_linux_distro
+    ccc_linux_distro=$(lsb_release -is)
     if [ -d ./dist ]; then
         rm -rf dist
     fi
     if [ -f ./setup.py ]; then
-        if [ -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
-            source /opt/wo/bin/activate
-            /opt/wo/bin/pip uninstall -yq setuptools
-            /opt/wo/bin/pip install setuptools==80.0.1
-            /opt/wo/bin/pip install -U pip wheel
-            /opt/wo/bin/pip uninstall psutil -y
-            /opt/wo/bin/pip uninstall SQLAlchemy -y
+        if [ -d /opt/ccc/lib/python3."$python_ver"/site-packages/apt ]; then
+            source /opt/ccc/bin/activate
+            /opt/ccc/bin/pip uninstall -yq setuptools
+            /opt/ccc/bin/pip install setuptools==80.0.1
+            /opt/ccc/bin/pip install -U pip wheel
+            /opt/ccc/bin/pip uninstall psutil -y
+            /opt/ccc/bin/pip uninstall SQLAlchemy -y
         else
-            rm -rf /opt/wo
-            python3 -m venv /opt/wo
-            source /opt/wo/bin/activate
-            /opt/wo/bin/pip uninstall -yq setuptools
-            /opt/wo/bin/pip install setuptools==80.0.1
-            /opt/wo/bin/pip install -U pip wheel
-            if [ "$wo_linux_distro" = "Debian" ] || [ "$wo_linux_distro" = "Raspbian" ]; then
-                if [ "$wo_distro_codename" = "stretch" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
-                elif [ "$wo_distro_codename" = "bullseye" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
-                elif [ "$wo_distro_codename" = "bookworm" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
+            rm -rf /opt/ccc
+            python3 -m venv /opt/ccc
+            source /opt/ccc/bin/activate
+            /opt/ccc/bin/pip uninstall -yq setuptools
+            /opt/ccc/bin/pip install setuptools==80.0.1
+            /opt/ccc/bin/pip install -U pip wheel
+            if [ "$ccc_linux_distro" = "Debian" ] || [ "$ccc_linux_distro" = "Raspbian" ]; then
+                if [ "$ccc_distro_codename" = "stretch" ]; then
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+                elif [ "$ccc_distro_codename" = "bullseye" ]; then
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+                elif [ "$ccc_distro_codename" = "bookworm" ]; then
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
                 else
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
                 fi
             else
-                if [ "$wo_distro_codename" = "focal" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
-                elif [ "$wo_distro_codename" = "bionic" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
-                elif [ "$wo_distro_codename" = "jammy" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+                if [ "$ccc_distro_codename" = "focal" ]; then
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
+                elif [ "$ccc_distro_codename" = "bionic" ]; then
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+                elif [ "$ccc_distro_codename" = "jammy" ]; then
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
                 else
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
+                    /opt/ccc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
                 fi
             fi
         fi
-        /opt/wo/bin/pip install -U . --upgrade-strategy=eager
+        /opt/ccc/bin/pip install -U . --upgrade-strategy=eager
     else
-        /opt/wo/bin/pip install -U "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops" --upgrade-strategy=eager
+        /opt/ccc/bin/pip install -U "git+https://github.com/collective-context/ccc-code.git@$ccc_branch#egg=ccccode" --upgrade-strategy=eager
     fi
-    cp -rf /opt/wo/lib/python3."$python_ver"/site-packages/usr/* /usr/
-    cp -rn /opt/wo/lib/python3."$python_ver"/site-packages/etc/* /etc/
-    cp -f /opt/wo/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/wo_auto.rc /etc/bash_completion.d/wo_auto.rc
-    rm -f /usr/local/bin/wo
-    ln -s /opt/wo/bin/wo /usr/local/bin/
+    cp -rf /opt/ccc/lib/python3."$python_ver"/site-packages/usr/* /usr/
+    cp -rn /opt/ccc/lib/python3."$python_ver"/site-packages/etc/* /etc/
+    cp -f /opt/ccc/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/ccc_auto.rc /etc/bash_completion.d/ccc_auto.rc
+    rm -f /usr/local/bin/ccc
+    ln -s /opt/ccc/bin/ccc /usr/local/bin/
     deactivate
 }
 
-wo_upgrade_nginx() {
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
-    local wo_distro_version
-    wo_distro_version=$(lsb_release -sc)
+ccc_upgrade_nginx() {
+    local ccc_linux_distro
+    ccc_linux_distro=$(lsb_release -is)
+    local ccc_distro_version
+    ccc_distro_version=$(lsb_release -sc)
 
-    if [ -d /var/lib/wo-backup/nginx ]; then
-        /bin/tar -I zstd "$NGINX_BACKUP_FILE" /var/lib/wo-backup/nginx
-        rm -rf /var/lib/wo-backup/nginx
+    if [ -d /var/lib/ccc-backup/nginx ]; then
+        /bin/tar -I zstd "$NGINX_BACKUP_FILE" /var/lib/ccc-backup/nginx
+        rm -rf /var/lib/ccc-backup/nginx
     fi
     # backup nginx conf
     if [ -d /etc/nginx ]; then
-        /usr/bin/rsync -a --noatime /etc/nginx/ /var/lib/wo-backup/nginx/
+        /usr/bin/rsync -a --noatime /etc/nginx/ /var/lib/ccc-backup/nginx/
     fi
     if [ -d /etc/php ]; then
-        /usr/bin/rsync -a --noatime /etc/php/ /var/lib/wo-backup/php/
+        /usr/bin/rsync -a --noatime /etc/php/ /var/lib/ccc-backup/php/
     fi
-    # chec if the package nginx-ee is installed
+    # check if the package nginx-ee is installed
     CHECK_NGINX_EE=$(dpkg --list | grep nginx-ee)
     CHECK_PHP72=$(command -v php-fpm7.2)
 
     # install new nginx package
     if {
         if [ -n "$CHECK_NGINX_EE" ]; then
-            if [ -x /usr/local/bin/wo ]; then
-                [ -f /etc/apt/preferences.d/nginx-block ] && { mv /etc/apt/preferences.d/nginx-block /var/lib/wo/tmp/nginx-block; }
+            if [ -x /usr/local/bin/ccc ] || [ -x /usr/local/bin/wo ]; then
+                [ -f /etc/apt/preferences.d/nginx-block ] && { mv /etc/apt/preferences.d/nginx-block /var/lib/ccc/tmp/nginx-block; }
                 # stop nginx
                 service nginx stop
                 # remove previous package
@@ -665,21 +682,32 @@ wo_upgrade_nginx() {
                 if [ -d /etc/nginx ]; then
                     rm -rf /etc/nginx
                 fi
-                /usr/local/bin/wo stack install --nginx --php
-                rm -f /etc/nginx/common/acl.conf /etc/nginx/htpasswd-wo
-                /usr/bin/rsync -au --noatime /var/lib/wo-backup/nginx/ /etc/nginx/
-                /usr/local/bin/wo stack upgrade --nginx --force
+                if [ -x /usr/local/bin/ccc ]; then
+                    /usr/local/bin/ccc stack install --nginx --php
+                elif [ -x /usr/local/bin/wo ]; then
+                    /usr/local/bin/wo stack install --nginx --php
+                fi
+                rm -f /etc/nginx/common/acl.conf /etc/nginx/htpasswd-wo /etc/nginx/htpasswd-ccc
+                /usr/bin/rsync -au --noatime /var/lib/ccc-backup/nginx/ /etc/nginx/
+                if [ -x /usr/local/bin/ccc ]; then
+                    /usr/local/bin/ccc stack upgrade --nginx --force
+                elif [ -x /usr/local/bin/wo ]; then
+                    /usr/local/bin/wo stack upgrade --nginx --force
+                fi
             fi
         fi
     }; then
         # restore sites and configuration
-        [ -f /etc/nginx/htpasswd-ee ] && { cp -f /etc/nginx/htpasswd-ee /etc/nginx/htpasswd-wo; }
-        sed -i "s/locations.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php7.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php71.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php72.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php73.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/htpasswd-ee/htpasswd-wo/" /etc/nginx/common/acl.conf
+        [ -f /etc/nginx/htpasswd-ee ] && { cp -f /etc/nginx/htpasswd-ee /etc/nginx/htpasswd-ccc; }
+        [ -f /etc/nginx/htpasswd-wo ] && { cp -f /etc/nginx/htpasswd-wo /etc/nginx/htpasswd-ccc; }
+        sed -i "s/locations.conf/locations-ccc.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-wo.conf/locations-ccc.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php7.conf/locations-ccc.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php71.conf/locations-ccc.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php72.conf/locations-ccc.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php73.conf/locations-ccc.conf/" /etc/nginx/sites-available/*
+        sed -i "s/htpasswd-ee/htpasswd-ccc/" /etc/nginx/common/acl.conf
+        sed -i "s/htpasswd-wo/htpasswd-ccc/" /etc/nginx/common/acl.conf
         sed -i 's/ssl on;/#ssl on;/' /var/www/*/conf/nginx/ssl.conf
     fi
 
@@ -703,11 +731,11 @@ wo_upgrade_nginx() {
         systemctl stop nginx
         systemctl start nginx
     fi
-    [ -f /var/lib/wo/tmp/nginx-block ] && { mv /var/lib/wo/tmp/nginx-block /etc/apt/preferences.d/nginx-block; }
+    [ -f /var/lib/ccc/tmp/nginx-block ] && { mv /var/lib/ccc/tmp/nginx-block /etc/apt/preferences.d/nginx-block; }
     return 0
 }
 
-wo_update_latest() {
+ccc_update_latest() {
 
     # Move ~/.my.cnf to /etc/mysql/conf.d/my.cnf
     if [ -d /etc/mysql ]; then
@@ -728,7 +756,7 @@ wo_update_latest() {
     fi
 }
 
-wo_backup_ee() {
+ccc_backup_ee() {
     local BACKUP_EE=""
     [ -d /etc/nginx ] && { BACKUP_EE="$BACKUP_EE /etc/nginx"; }
     [ -d /etc/letsencrypt ] && { BACKUP_EE="$BACKUP_EE /etc/letsencrypt"; }
@@ -736,56 +764,83 @@ wo_backup_ee() {
     return 0
 }
 
-wo_backup_wo() {
-    if [ -d /etc/nginx ] && [ -d /etc/wo ] && [ -d /var/lib/wo ]; then
-        /bin/tar -I zstd -cf "$WO_BACKUP_FILE" /etc/nginx /etc/wo /var/lib/wo
+ccc_backup_wo() {
+    local BACKUP_WO=""
+    [ -d /etc/nginx ] && { BACKUP_WO="$BACKUP_WO /etc/nginx"; }
+    [ -d /etc/wo ] && { BACKUP_WO="$BACKUP_WO /etc/wo"; }
+    [ -d /var/lib/wo ] && { BACKUP_WO="$BACKUP_WO /var/lib/wo"; }
+    if [ -n "$BACKUP_WO" ]; then
+        /bin/tar -I zstd -cf "$WO_BACKUP_FILE" $BACKUP_WO
     fi
     return 0
 }
 
-wo_clean_ee() {
+ccc_backup_ccc() {
+    if [ -d /etc/nginx ] && [ -d /etc/ccc ] && [ -d /var/lib/ccc ]; then
+        /bin/tar -I zstd -cf "$CCC_BACKUP_FILE" /etc/nginx /etc/ccc /var/lib/ccc
+    fi
+    return 0
+}
+
+ccc_clean_ee() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
     rm -rf /usr/local/bin/ee /etc/bash_completion.d/ee_auto.rc /usr/lib/ee/templates /usr/local/lib/python3."$python_ver"/dist-packages/ee-*.egg /etc/ee /var/lib/ee
     return 0
 }
 
-wo_remove_ee_cron() {
+ccc_clean_wo() {
+    local python_ver
+    python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
+    rm -rf /usr/local/bin/wo /etc/bash_completion.d/wo_auto.rc /usr/lib/wo/templates /usr/local/lib/python3."$python_ver"/dist-packages/wo-*.egg /etc/wo /var/lib/wo
+    return 0
+}
+
+ccc_remove_ee_cron() {
 
     crontab -l | sed '/ee site update --le=renew --all 2> \/dev\/null/d' | crontab -
 
 }
 
-wo_domain_suffix() {
-    _curl https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat | sed '/^\/\//d' | sed '/^$/d' | sed 's/^\s+//g' >/var/lib/wo/public_suffix_list.dat
+ccc_remove_wo_cron() {
+
+    crontab -l | sed '/wo site update --le=renew --all 2> \/dev\/null/d' | crontab -
+
 }
 
-wo_clean() {
-    local python_ver
-    python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{wo-*.egg,cement-*.egg,wordops-*.egg}
+ccc_domain_suffix() {
+    _curl https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat | sed '/^\/\//d' | sed '/^$/d' | sed 's/^\s+//g' >/var/lib/ccc/public_suffix_list.dat
 }
 
-wo_uninstall() {
+ccc_clean() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    if { /opt/wo/bin/pip list | grep -q "wordops" >/dev/null 2>&1; }; then
-        /opt/wo/bin/pip uninstall wordops -y
+    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{wo-*.egg,cement-*.egg,wordops-*.egg,ccc-*.egg,ccccode-*.egg}
+}
+
+ccc_uninstall() {
+    local python_ver
+    python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
+    if { /opt/ccc/bin/pip list | grep -q "ccccode" >/dev/null 2>&1; }; then
+        /opt/ccc/bin/pip uninstall ccccode -y
     fi
-    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{pystache-*,cement-2.*,wo-*,wordops-*} /usr/local/bin/wo /etc/bash_completion.d/wo_auto.rc /var/lib/wo /etc/wo /usr/lib/wo/templates /opt/wo
+    if { /opt/ccc/bin/pip list | grep -q "wordops" >/dev/null 2>&1; }; then
+        /opt/ccc/bin/pip uninstall wordops -y
+    fi
+    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{pystache-*,cement-2.*,wo-*,wordops-*,ccc-*,ccccode-*} /usr/local/bin/ccc /etc/bash_completion.d/ccc_auto.rc /var/lib/ccc /etc/ccc /usr/lib/ccc/templates /opt/ccc
 }
 
-wo_clean_repo() {
+ccc_clean_repo() {
     # remove old EasyEngine Nginx repository
     if [ -f /etc/apt/sources.list.d/ee-repo.list ]; then
         cp -f /etc/apt/sources.list.d/ee-repo.list /etc/apt/sources.list.d/ee-repo.list.save
         grep -v "/home:/rtCamp:/EasyEngine" /etc/apt/sources.list.d/ee-repo.list.save >/etc/apt/sources.list.d/ee-repo.list
     fi
     if [ -f /etc/apt/sources.list.d/wo-repo.list ]; then
-        local wo_linux_distro
-        wo_linux_distro=$(lsb_release -is)
+        local ccc_linux_distro
+        ccc_linux_distro=$(lsb_release -is)
         cp -f /etc/apt/sources.list.d/wo-repo.list /etc/apt/sources.list.d/wo-repo.list.save
-        if [ "$wo_linux_distro" = "Ubuntu" ]; then
+        if [ "$ccc_linux_distro" = "Ubuntu" ]; then
             grep -v "opensuse" /etc/apt/sources.list.d/wo-repo.list.save >/etc/apt/sources.list.d/wo-repo.list
         else
             grep -v "/home:/rtCamp:/EasyEngine" /etc/apt/sources.list.d/wo-repo.list.save >/etc/apt/sources.list.d/wo-repo.list
@@ -793,33 +848,51 @@ wo_clean_repo() {
     fi
 }
 
-wo_woconf() {
-    if [ -f /etc/wo/wo.conf ]; then
-        if grep -q "log.logging" /etc/wo/wo.conf; then
-            sed -i "s/log.logging/log.colorlog/g" /etc/wo/wo.conf
+ccc_cccconf() {
+    if [ -f /etc/ccc/ccc.conf ]; then
+        if grep -q "log.logging" /etc/ccc/ccc.conf; then
+            sed -i "s/log.logging/log.colorlog/g" /etc/ccc/ccc.conf
         fi
-        if ! grep -q "letsencrypt" /etc/wo/wo.conf; then
-            echo -e '\n[letsencrypt]\n\nkeylength = "ec-384"' >>/etc/wo/wo.conf
+        if ! grep -q "letsencrypt" /etc/ccc/ccc.conf; then
+            echo -e '\n[letsencrypt]\n\nkeylength = "ec-384"' >>/etc/ccc/ccc.conf
         fi
-        if ! grep -q "php" /etc/wo/wo.conf; then
-            echo -e '\n[php]\n\nversion = 8.2' >>/etc/wo/wo.conf
+        if ! grep -q "php" /etc/ccc/ccc.conf; then
+            echo -e '\n[php]\n\nversion = 8.3' >>/etc/ccc/ccc.conf
         fi
     fi
 }
 
-wo_fix_kernel() {
+ccc_woconf() {
+    # Handle migration from WordOps config
+    if [ -f /etc/wo/wo.conf ] && [ ! -f /etc/ccc/ccc.conf ]; then
+        mkdir -p /etc/ccc
+        cp /etc/wo/wo.conf /etc/ccc/ccc.conf
+        sed -i "s/\[wo\]/[ccc]/g" /etc/ccc/ccc.conf
+        sed -i "s/\/var\/lib\/wo/\/var\/lib\/ccc/g" /etc/ccc/ccc.conf
+        sed -i "s/\/var\/log\/wo/\/var\/log\/ccc/g" /etc/ccc/ccc.conf
+        sed -i "s/wordops.log/ccc.log/g" /etc/ccc/ccc.conf
+    fi
+    ccc_cccconf
+}
+
+ccc_fix_kernel() {
+    if [ -f /opt/ccc-kernel.sh ]; then
+        chmod +x /opt/ccc-kernel.sh
+    fi
+    # Also check for wo-kernel.sh during migration
     if [ -f /opt/wo-kernel.sh ]; then
-        chmod +x /opt/wo-kernel.sh
+        cp /opt/wo-kernel.sh /opt/ccc-kernel.sh
+        chmod +x /opt/ccc-kernel.sh
     fi
 }
 
-wo_init() {
+ccc_init() {
 
     ###
     # 1- Update the apt sewers with fresh info
     ###
 
-    if [ -z "$wo_travis" ]; then
+    if [ -z "$ccc_travis" ]; then
         if ! {
             apt-get update --allow-releaseinfo-change -qq >/dev/null 2>&1
         }; then
@@ -838,145 +911,164 @@ wo_init() {
             apt-get install gpg -qq >/dev/null 2>&1
         fi
     fi
-    if [ "$wo_force_install" = "y" ]; then
+    if [ "$ccc_force_install" = "y" ]; then
         # Check if USER is empty and assign to a variable
-        USER_OR_WORDOPS=${USER:-WordOps}
+        USER_OR_CCC=${USER:-CCC}
 
         [ ! -f "$HOME/.gitconfig" ] && {
-            bash -c "echo -e \"[user]\n\tname = $USER_OR_WORDOPS\n\temail = root@$HOSTNAME.local\" > $HOME/.gitconfig"
+            bash -c "echo -e \"[user]\n\tname = $USER_OR_CCC\n\temail = root@$HOSTNAME.local\" > $HOME/.gitconfig"
         }
     fi
     if [ -f ./setup.py ]; then
-        wo_version_new=$(grep "version='" setup.py | awk -F "'" '{print $2}' 2>&1)
+        ccc_version_new=$(grep "version='" setup.py | awk -F "'" '{print $2}' 2>&1)
     else
-        wo_version_new=$(curl -m 5 --retry 3 -sL https://api.github.com/repos/WordOps/WordOps/releases/latest 2>&1 | jq -r '.tag_name')
+        ccc_version_new="1.0.0"
     fi
 
     echo ""
-    wo_lib_echo "Welcome to WordOps install/update script ${wo_version_new}"
+    ccc_lib_echo "Welcome to CCC CODE install/update script ${ccc_version_new}"
     echo ""
 
 }
 
-wo_php_fix() {
+ccc_php_fix() {
     if [ -f /lib/systemd/system/mariadb.service ]; then
         systemctl daemon-reload
         systemctl enable mariadb
     fi
 }
 
-wo_git_secure_path() {
+ccc_git_secure_path() {
     if ! grep -q "safe" ~/.gitconfig; then
         echo -e "\n[safe]\n  directory = *" >>~/.gitconfig
     fi
 }
 
 ###
-# 4 - WO MAIN SETUP
+# 4 - CCC MAIN SETUP
 ###
 
 # create required directories
-wo_dir_init
+ccc_dir_init
 # install lsb_release, curl, gpg and display header
-wo_init
+ccc_init
 # define main variables
-wo_init_variables
+ccc_init_variables
 # remove old repositories
-_run wo_clean_repo
-_run wo_download_gpg_keys
+_run ccc_clean_repo
+_run ccc_download_gpg_keys
 
-if [ -z "$wo_force_install" ]; then
+if [ -z "$ccc_force_install" ]; then
     # check distribution support
-    wo_check_distro
+    ccc_check_distro
 fi
 
-# wo uninstall script
-if [ "$wo_purge" = "y" ]; then
-    _run wo_backup_wo "Backing-up WO install"
-    _run wo_uninstall "Uninstalling WordOps"
-    wo_lib_echo "The WordOps backup files can be found in $WO_BACKUP_FILE"
+# ccc uninstall script
+if [ "$ccc_purge" = "y" ]; then
+    _run ccc_backup_ccc "Backing-up CCC install"
+    _run ccc_uninstall "Uninstalling CCC CODE"
+    ccc_lib_echo "The CCC CODE backup files can be found in $CCC_BACKUP_FILE"
     exit 0
 else
-    # 1 - WO already installed
-    if [ -x /usr/local/bin/wo ]; then
-        _run wo_clean
-        _run wo_woconf
-        _run wo_fix_kernel
-        _run wo_php_fix
-        _run wo_update_repo
-        # 2 - Migration from EEv3
-    else
-        if [ -x /usr/local/bin/ee ]; then
-            if [ -z "$wo_force_install" ]; then
-                echo -e "Migrate from EasyEngine to WordOps (y/n): " && read -r WO_ANSWER
-                if [ "$WO_ANSWER" != "y" ] && [ "$WO_ANSWER" != "Y" ]; then
-                    wo_lib_error "Not installing WordOps" 1
-                fi
+    # 1 - CCC already installed
+    if [ -x /usr/local/bin/ccc ]; then
+        _run ccc_clean
+        _run ccc_cccconf
+        _run ccc_fix_kernel
+        _run ccc_php_fix
+        _run ccc_update_repo
+        # 2 - Migration from WordOps
+    elif [ -x /usr/local/bin/wo ]; then
+        if [ -z "$ccc_force_install" ]; then
+            echo -e "Migrate from WordOps to CCC CODE (y/n): " && read -r CCC_ANSWER
+            if [ "$CCC_ANSWER" != "y" ] && [ "$CCC_ANSWER" != "Y" ]; then
+                ccc_lib_error "Not installing CCC CODE" 1
             fi
-            _run wo_backup_ee "Backing-up EE install"
-            _run wo_remove_ee_cron "Removing EasyEngine cronjob"
         fi
-
+        _run ccc_backup_wo "Backing-up WordOps install"
+        _run ccc_remove_wo_cron "Removing WordOps cronjob"
+        _run ccc_woconf "Migrating WordOps configuration"
+        # 3 - Migration from EEv3
+    elif [ -x /usr/local/bin/ee ]; then
+        if [ -z "$ccc_force_install" ]; then
+            echo -e "Migrate from EasyEngine to CCC CODE (y/n): " && read -r CCC_ANSWER
+            if [ "$CCC_ANSWER" != "y" ] && [ "$CCC_ANSWER" != "Y" ]; then
+                ccc_lib_error "Not installing CCC CODE" 1
+            fi
+        fi
+        _run ccc_backup_ee "Backing-up EE install"
+        _run ccc_remove_ee_cron "Removing EasyEngine cronjob"
     fi
-    _run wo_install_dep "Installing wo dependencies"
-    _run wo_timesync
+
+    _run ccc_install_dep "Installing CCC dependencies"
+    _run ccc_timesync
     # skip steps if travis
-    if [ -z "$wo_travis" ]; then
-        #_run wo_download "Downloading WordOps"
-        _run wo_sync_db
-        _run wo_install "Installing WordOps"
+    if [ -z "$ccc_travis" ]; then
+        #_run ccc_download "Downloading CCC CODE"
+        _run ccc_sync_db
+        _run ccc_install "Installing CCC CODE"
     else
-        _run wo_travis_install "Installing WordOps"
+        _run ccc_travis_install "Installing CCC CODE"
     fi
-    if [ -x /usr/local/bin/ee ]; then
-        _run wo_upgrade_nginx "Upgrading Nginx"
-        _run wo_clean_ee "Cleaning previous EasyEngine install"
+    if [ -x /usr/local/bin/ee ] || [ "$wo_migration" = "1" ]; then
+        _run ccc_upgrade_nginx "Upgrading Nginx"
+        if [ -x /usr/local/bin/ee ]; then
+            _run ccc_clean_ee "Cleaning previous EasyEngine install"
+        fi
+        if [ "$wo_migration" = "1" ]; then
+            _run ccc_clean_wo "Cleaning previous WordOps install"
+        fi
     fi
-    _run wo_install_acme_sh "Running post-install steps"
-    _run wo_domain_suffix
-    _run wo_update_wp_cli
-    _run wo_update_latest
-    _run secure_wo_db
+    _run ccc_install_acme_sh "Running post-install steps"
+    _run ccc_domain_suffix
+    _run ccc_update_wp_cli
+    _run ccc_update_latest
+    _run secure_ccc_db
 
-    wo sync
-    _run wo_git_secure_path
+    ccc sync
+    _run ccc_git_secure_path
 
     if [ "$ee_migration" = "1" ]; then
         echo
-        wo_lib_echo "The migration from EasyEngine to WordOps was successful!"
-        wo_lib_echo "The EasyEngine backup files can be found in /var/lib/wo-backup/ee-backup.tgz"
+        ccc_lib_echo "The migration from EasyEngine to CCC CODE was successful!"
+        ccc_lib_echo "The EasyEngine backup files can be found in $EE_BACKUP_FILE"
         echo
-    elif [ "$wo_upgrade" = "1" ]; then
-        wo_lib_echo "WordOps (wo) upgrade to $wo_version_new was successful!"
-        wo_lib_echo "Changelog is available on https://github.com/WordOps/WordOps/releases/tag/$wo_version_new"
+    elif [ "$wo_migration" = "1" ]; then
         echo
-        version_to_check="v3.21"
-        if echo "$wo_version_new" | grep -q "$version_to_check"; then
-            wo_lib_echo "To upgrade Nginx package and configuration for HTTP/3 QUIC, use the following command"
-            wo_lib_echo_info "wo stack migrate --nginx"
+        ccc_lib_echo "The migration from WordOps to CCC CODE was successful!"
+        ccc_lib_echo "The WordOps backup files can be found in $WO_BACKUP_FILE"
+        echo
+    elif [ "$ccc_upgrade" = "1" ]; then
+        ccc_lib_echo "CCC CODE upgrade to $ccc_version_new was successful!"
+        ccc_lib_echo "Changelog is available on https://github.com/collective-context/ccc-code/releases/tag/$ccc_version_new"
+        echo
+        version_to_check="v1.0"
+        if echo "$ccc_version_new" | grep -q "$version_to_check"; then
+            ccc_lib_echo "To upgrade Nginx package and configuration for HTTP/3 QUIC, use the following command"
+            ccc_lib_echo_info "ccc stack migrate --nginx"
         fi
         echo
-        wo_lib_echo "To upgrade WordOps web stacks, you can use the command:"
-        wo_lib_echo_info "wo stack upgrade"
+        ccc_lib_echo "To upgrade CCC CODE web stacks, you can use the command:"
+        ccc_lib_echo_info "ccc stack upgrade"
         echo
-        wo_lib_echo "To update all other packages, you can use the command:"
-        wo_lib_echo_info "wo maintenance"
+        ccc_lib_echo "To update all other packages, you can use the command:"
+        ccc_lib_echo_info "ccc maintenance"
     else
-        wo_lib_echo "WordOps (wo) installed successfully"
+        ccc_lib_echo "CCC CODE installed successfully"
         echo
-        wo_lib_echo "To enable bash-completion, just use the command:"
-        wo_lib_echo_info "bash -l"
+        ccc_lib_echo "To enable bash-completion, just use the command:"
+        ccc_lib_echo_info "bash -l"
         echo
-        wo_lib_echo "To install WordOps recommended stacks, you can use the command:"
-        wo_lib_echo_info "wo stack install"
+        ccc_lib_echo "To install CCC CODE recommended stacks, you can use the command:"
+        ccc_lib_echo_info "ccc stack install"
         echo
-        wo_lib_echo "To create a first WordPress site, you can use the command:"
-        wo_lib_echo_info "wo site create site.tld --wp"
+        ccc_lib_echo "To create a first site, you can use the command:"
+        ccc_lib_echo_info "ccc site create site.tld --html"
     fi
     echo
-    wo_lib_echo "WordOps Documentation : https://docs.wordops.net"
-    wo_lib_echo "WordOps Community Forum : https://community.wordops.net"
+    ccc_lib_echo "CCC CODE Documentation : https://collective-context.org/docs"
+    ccc_lib_echo "CCC CODE Community Forum : https://collective-context.org/community"
     echo
-    wo_lib_echo "Give WordOps a GitHub star : https://github.com/WordOps/WordOps/"
+    ccc_lib_echo "Give CCC CODE a GitHub star : https://github.com/collective-context/ccc-code/"
     echo
 fi
