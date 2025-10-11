@@ -1,0 +1,56 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name {{domain}} www.{{domain}};
+    
+    root {{webroot}}/htdocs;
+    index index.html index.htm{{#include_php}} index.php{{/include_php}};
+    
+    access_log {{webroot}}/logs/access.log;
+    error_log {{webroot}}/logs/error.log;
+    
+    {{#include_php}}
+    # PHP Configuration
+    include {{webroot}}/conf/nginx/php.conf;
+    {{/include_php}}
+    
+    {{#include_wpcommon}}
+    # WordPress Common Configuration
+    include /etc/nginx/common/wpcommon.conf;
+    {{/include_wpcommon}}
+    
+    {{#include_redis}}
+    # Redis Cache Configuration
+    include /etc/nginx/common/redis.conf;
+    {{/include_redis}}
+    
+    {{#include_wpfc}}
+    # FastCGI Cache Configuration
+    include /etc/nginx/common/wpfc.conf;
+    {{/include_wpfc}}
+    
+    location / {
+        try_files $uri $uri/ {{#include_php}}/index.php?$args{{/include_php}}{{^include_php}}=404{{/include_php}};
+    }
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    
+    # Deny access to hidden files
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    
+    # Static file caching
+    location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml|svg|webp)$ {
+        access_log off;
+        log_not_found off;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}

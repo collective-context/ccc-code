@@ -1,0 +1,67 @@
+.TH CCC 8 "December 2024" "CCC CODE 1.0.0" "System Administration"
+.SH NAME
+ccc \- CCC CODE - Collective Context Commander for NGINX Administration
+.SH SYNOPSIS
+.B ccc
+[\fICOMMAND\fR] [\fIOPTIONS\fR]
+.SH DESCRIPTION
+CCC CODE is an essential toolset that simplifies NGINX site and server administration.
+It provides a command-line interface for managing web stacks, sites, SSL certificates, and more.
+.SH COMMANDS
+.TP
+.B site
+Manage NGINX sites (create, delete, enable, disable, list)
+.TP
+.B stack
+Manage server stacks (install, upgrade, remove, status)
+.TP
+.B clean
+Clean various caches (opcache, redis, fastcgi)
+.TP
+.B secure
+Security management and hardening
+.TP
+.B sync
+Synchronize configurations
+.TP
+.B update
+Update CCC CODE to the latest version
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Show help message and exit
+.TP
+.B \-\-version
+Show version information
+.TP
+.B \-\-debug
+Enable debug mode
+.SH EXAMPLES
+.TP
+Install NGINX and PHP:
+.B ccc stack install --nginx --php
+.TP
+Create a new site:
+.B ccc site create example.com --html
+.TP
+Enable SSL for a site:
+.B ccc site update example.com --letsencrypt
+.TP
+List all sites:
+.B ccc site list
+.SH FILES
+.TP
+.I /etc/ccc/ccc.conf
+Main configuration file
+.TP
+.I /var/log/ccc/ccc.log
+Main log file
+.TP
+.I /var/lib/ccc/dbase.db
+Site database
+.SH AUTHOR
+CCC CODE Team <contact@collective-context.org>
+.SH SEE ALSO
+nginx(8), php-fpm(8), mysql(8), redis-server(8)
+.SH BUGS
+Report bugs at https://github.com/collective-context/ccc-code/issues
