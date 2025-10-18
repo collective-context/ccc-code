@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+# -------------------------------------------------------------------------
+# CCC Beta (ccb) Installation Script
+# -------------------------------------------------------------------------
+# Website:       https://collective-context.org
+# GitHub:        https://github.com/collective-context/ccc-code
+# Copyright (c) 2025 - CCC CODE
+# This script is licensed under M.I.T
+# -------------------------------------------------------------------------
+# wget -qO ccb https://raw.githubusercontent.com/collective-context/ccc-code/refs/heads/main/install-ccb && sudo -E bash ccb
+# -------------------------------------------------------------------------
+# Version 0.1.0 - 2025-01-15
+# -------------------------------------------------------------------------
+
+set -e  # Exit on error
+
+###
+# Variables
+###
+
+CCB_VERSION="0.1.0"
+CCB_INSTALL_DIR="/opt/ccb"
+CCB_REPO="https://github.com/collective-context/ccc-code.git"
+CCB_BRANCH="main"
+
+###
+# Functions
+###
+
+ccb_lib_echo() {
+    echo "[ccb] $*"
+}
+
+ccb_lib_error() {
+    echo "[ERROR] $*" >&2
+    exit 1
+}
+
+###
+# Check Requirements
+###
+
+ccb_check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        ccb_lib_error "This script must be run as root"
+    fi
+}
+
+ccb_check_distro() {
+    if [[ ! -f /etc/lsb-release ]] && [[ ! -f /etc/debian_version ]]; then
+        ccb_lib_error "Only Ubuntu/Debian supported"
+    fi
+}
+
+###
+# Install Dependencies
+###
+
+ccb_install_deps() {
+    ccb_lib_echo "Installing minimal dependencies..."
+    
+    apt-get update -qq
+    apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-venv \
+        git \
+        gh
+    
+    ccb_lib_echo "Dependencies installed ✓"
+}
+
+###
+# Install ccb
+###
+
+ccb_install() {
+    ccb_lib_echo "Installing ccb to $CCB_INSTALL_DIR..."
+    
+    # Create virtual environment
+    if [[ ! -d $CCB_INSTALL_DIR ]]; then
+        python3 -m venv $CCB_INSTALL_DIR
+        ccb_lib_echo "Virtual environment created ✓"
+    fi
+    
+    # Activate venv
+    source $CCB_INSTALL_DIR/bin/activate
+    
+    # Clone or update repo
+    if [[ ! -d /tmp/ccc-code ]]; then
+        git clone -b $CCB_BRANCH $CCB_REPO /tmp/ccc-code
+    else
+        cd /tmp/ccc-code && git pull
+    fi
+    
+    # Install ccb package
+    cd /tmp/ccc-code
+    pip install --upgrade pip setuptools wheel
+    
+    # Backup setup.py if exists
+    if [ -f setup.py ]; then
+        mv setup.py setup-temp-backup.py
+        ccb_lib_echo "Backed up setup.py → setup-temp-backup.py"
+    fi
+    
+    # Use setup-ccb.py as setup.py
+    cp setup-ccb.py setup.py
+    ccb_lib_echo "Using setup-ccb.py (Cement v3) for installation"
+    
+    # Install with cement v3
+    pip install -e .
+    
+    # Restore original setup.py
+    if [ -f setup-temp-backup.py ]; then
+        mv setup-temp-backup.py setup.py
+        ccb_lib_echo "Restored original setup.py"
+    fi
+    
+    ccb_lib_echo "ccb installed ✓"
+}
+
+###
+# Create Symlinks
+###
+
+ccb_create_symlinks() {
+    ccb_lib_echo "Creating symlinks..."
+    
+    ln -sf $CCB_INSTALL_DIR/bin/ccb /usr/local/bin/ccb
+    ln -sf $CCB_INSTALL_DIR/bin/ccb /usr/bin/ccb
+    
+    if [[ -L /usr/bin/ccb ]]; then
+        ccb_lib_echo "Symlinks created ✓"
+    else
+        ccb_lib_error "Symlink creation failed"
+    fi
+}
+
+###
+# Post-Install
+###
+
+ccb_post_install() {
+    ccb_lib_echo ""
+    ccb_lib_echo "============================================"
+    ccb_lib_echo "CCC Beta (ccb) v$CCB_VERSION installed!"
+    ccb_lib_echo "============================================"
+    ccb_lib_echo ""
+    ccb_lib_echo "Available commands:"
+    ccb_lib_echo "  ccb info              - Show version info"
+    ccb_lib_echo "  ccb --help            - Display help"
+    ccb_lib_echo "  ccb --version         - Display version"
+    ccb_lib_echo ""
+    ccb_lib_echo "Test installation:"
+    ccb_lib_echo "  ccb --help"
+    ccb_lib_echo ""
+    ccb_lib_echo "Logs directory: ./logs/"
+    ccb_lib_echo "============================================"
+}
+
+###
+# Main
+###
+
+main() {
+    ccb_lib_echo "CCC Beta (ccb) Installer v$CCB_VERSION"
+    ccb_lib_echo ""
+    
+    ccb_check_root
+    ccb_check_distro
+    ccb_install_deps
+    ccb_install
+    ccb_create_symlinks
+    ccb_post_install
+    
+    ccb_lib_echo "Installation complete! ✓"
+}
+
+# Run installer
+main "$@"

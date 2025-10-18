@@ -1,0 +1,79 @@
+name: test-cca
+
+on:
+  push:
+    paths:
+      - 'cca/**'
+      - 'tests-cca/**'
+      - 'setup.py'
+      - 'install-cca'
+      - '.github/workflows/test-cca.yml'
+  pull_request:
+    paths:
+      - 'cca/**'
+      - 'tests-cca/**'
+      - 'setup.py'
+      - 'install-cca'
+      - '.github/workflows/test-cca.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y python3-venv git
+    
+    - name: Install CCA via install-cca script
+      run: |
+        sudo -E bash install-cca
+    
+    - name: Verify CCA installation
+      run: |
+        which cca
+        cca --version
+        cca --help
+        cca info
+    
+    - name: Run bash tests
+      run: |
+        sudo bash tests-cca/travis.sh --ci
+    
+    - name: Install pytest for unit tests
+      run: |
+        pip install pytest
+    
+    - name: Run pytest
+      run: |
+        pytest tests-cca/cli/ -v
+    
+    - name: Test check plugin
+      run: |
+        cca check --help
+    
+    - name: Test debug plugin
+      run: |
+        cca debug --help
+        cca debug run --help
+        cca debug summary --help
+    
+    - name: Upload test logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cca-test-logs-py${{ matrix.python-version }}
+        path: logs/
+        if-no-files-found: ignore

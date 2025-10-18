@@ -1,0 +1,285 @@
+---
+name: Package Diagnostic
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  analyze-repository:
+    name: Analyze Repository Structure
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Count files in repository
+        run: |
+          echo "======================================"
+          echo "REPOSITORY STRUCTURE ANALYSIS"
+          echo "======================================"
+          echo ""
+          
+          echo "--- ccc/core/ ---"
+          if [ -d "ccc/core" ]; then
+            find ccc/core -name "*.py" -type f | sort
+            echo ""
+            echo "Total ccc/core/*.py: $(find ccc/core -name "*.py" -type f | wc -l)"
+          else
+            echo "ERROR: ccc/core/ directory not found"
+          fi
+          
+          echo ""
+          echo "--- wo/core/ (Reference) ---"
+          if [ -d "wo/core" ]; then
+            find wo/core -name "*.py" -type f | sort
+            echo ""
+            echo "Total wo/core/*.py: $(find wo/core -name "*.py" -type f | wc -l)"
+          fi
+          
+          echo ""
+          echo "--- Missing files in ccc/core/ ---"
+          if [ -d "ccc/core" ] && [ -d "wo/core" ]; then
+            comm -23 \
+              <(cd wo/core && ls -1 *.py 2>/dev/null | sort) \
+              <(cd ccc/core && ls -1 *.py 2>/dev/null | sort) || echo "All files present"
+          fi
+      
+      - name: Create file list artifact
+        run: |
+          mkdir -p artifacts
+          
+          echo "Repository Files" > artifacts/repo-structure.txt
+          echo "================" >> artifacts/repo-structure.txt
+          echo "" >> artifacts/repo-structure.txt
+          
+          echo "ccc/core/ files:" >> artifacts/repo-structure.txt
+          find ccc/core -name "*.py" -type f | sort >> artifacts/repo-structure.txt
+          
+          echo "" >> artifacts/repo-structure.txt
+          echo "wo/core/ files:" >> artifacts/repo-structure.txt
+          find wo/core -name "*.py" -type f | sort >> artifacts/repo-structure.txt
+      
+      - name: Upload repository structure
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-structure
+          path: artifacts/
+
+  test-installation:
+    name: Test Package Installation
+    runs-on: ubuntu-latest
+    needs: analyze-repository
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install package
+        run: |
+          sudo pip install -e .
+      
+      - name: Analyze installed package
+        run: |
+          echo "======================================"
+          echo "INSTALLED PACKAGE ANALYSIS"
+          echo "======================================"
+          echo ""
+          
+          sudo python3 << 'PYTHON_EOF'
+          import site
+          import os
+          import sys
+          import importlib.util
+          
+          print("Python version:", sys.version)
+          print("Site packages:", site.getsitepackages())
+          print()
+          
+          # Try to find ccc package - works for both regular and editable installs
+          ccc_spec = importlib.util.find_spec('ccc')
+          
+          if ccc_spec is None:
+              print("ERROR: CCC package not found - cannot import 'ccc'")
+              sys.exit(1)
+          
+          if ccc_spec.origin:
+              ccc_path = os.path.dirname(ccc_spec.origin)
+              print(f"CCC package found at: {ccc_path}")
+              print(f"Installation type: {'editable' if '.egg-link' in str(ccc_spec) or 'site-packages' not in ccc_path else 'regular'}")
+              print()
+              
+              core_path = os.path.join(ccc_path, 'core')
+              if os.path.exists(core_path):
+                  core_files = [f for f in os.listdir(core_path) if f.endswith('.py')]
+                  print(f"Files in ccc/core/: {len(core_files)}")
+                  print("Installed modules:")
+                  for f in sorted(core_files):
+                      print(f"  - {f}")
+              else:
+                  print("ERROR: ccc/core/ not found in installed package")
+                  sys.exit(1)
+              
+              print()
+              
+              print("Testing imports:")
+              test_imports = [
+                  'ccc.core.database',
+                  'ccc.core.variables',
+                  'ccc.core.logging',
+                  'ccc.core.fileutils',
+                  'ccc.core.aptget',
+              ]
+              
+              failed_imports = []
+              for imp in test_imports:
+                  try:
+                      __import__(imp)
+                      print(f"  ✓ {imp}")
+                  except ImportError as e:
+                      print(f"  ✗ {imp}: {e}")
+                      failed_imports.append(imp)
+              
+              if failed_imports:
+                  print()
+                  print(f"ERROR: {len(failed_imports)} import(s) failed")
+                  sys.exit(1)
+          else:
+              print("ERROR: CCC package found but has no origin path")
+              sys.exit(1)
+          PYTHON_EOF
+      
+      - name: Create installation report
+        run: |
+          mkdir -p artifacts
+          
+          sudo python3 << 'PYTHON_EOF' > artifacts/installation-report.txt
+          import importlib.util
+          import os
+          
+          print("Installation Report")
+          print("==================")
+          print()
+          
+          ccc_spec = importlib.util.find_spec('ccc')
+          if ccc_spec and ccc_spec.origin:
+              ccc_path = os.path.dirname(ccc_spec.origin)
+              core_path = os.path.join(ccc_path, 'core')
+              
+              if os.path.exists(core_path):
+                  files = sorted([f for f in os.listdir(core_path) if f.endswith('.py')])
+                  print(f"Installed in: {core_path}")
+                  print(f"Total files: {len(files)}")
+                  print()
+                  print("Files:")
+                  for f in files:
+                      print(f"  {f}")
+              else:
+                  print("ERROR: ccc/core/ not found")
+          else:
+              print("ERROR: CCC package not found")
+          PYTHON_EOF
+          
+          cat artifacts/installation-report.txt
+      
+      - name: Upload installation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: installation-report
+          path: artifacts/
+
+  test-full-install-script:
+    name: Test install Script
+    runs-on: ubuntu-24.04
+    needs: analyze-repository
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Run install script
+        run: |
+          sudo -E bash install
+      
+      - name: Analyze installed files
+        run: |
+          echo "======================================"
+          echo "INSTALL SCRIPT RESULTS"
+          echo "======================================"
+          echo ""
+          
+          python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
+          site_packages="/opt/ccc/lib/python3.$python_ver/site-packages"
+          
+          echo "Site packages location: $site_packages"
+          echo ""
+          
+          if [ -d "$site_packages/ccc/core" ]; then
+              echo "ccc/core/ exists"
+              echo "Files installed:"
+              sudo ls -1 "$site_packages/ccc/core/"*.py 2>/dev/null || echo "No .py files"
+              echo ""
+              echo "Total .py files: $(sudo ls -1 "$site_packages/ccc/core/"*.py 2>/dev/null | wc -l)"
+          else
+              echo "ERROR: $site_packages/ccc/core/ not found"
+          fi
+          
+          echo ""
+          echo "Comparing with repository:"
+          repo_count=$(find ccc/core -name "*.py" -type f | wc -l)
+          installed_count=$(sudo ls -1 "$site_packages/ccc/core/"*.py 2>/dev/null | wc -l)
+          
+          echo "Repository has: $repo_count files"
+          echo "Installed has: $installed_count files"
+          echo "Missing: $((repo_count - installed_count)) files"
+      
+      - name: Test ccc commands
+        run: |
+          echo "Testing ccc commands:"
+          sudo ccc --version || echo "✗ ccc --version failed"
+          sudo ccc --help || echo "✗ ccc --help failed"
+          
+          echo ""
+          echo "Testing ccc info:"
+          sudo ccc info || echo "✗ ccc info failed"
+      
+      - name: Create comparison report
+        if: always()
+        run: |
+          mkdir -p artifacts
+          
+          python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
+          site_packages="/opt/ccc/lib/python3.$python_ver/site-packages"
+          
+          {
+            echo "Comparison Report"
+            echo "================="
+            echo ""
+            echo "Files in repository:"
+            find ccc/core -name "*.py" -type f | wc -l
+            echo ""
+            echo "Files installed:"
+            sudo ls -1 "$site_packages/ccc/core/"*.py 2>/dev/null | wc -l || echo "0"
+            echo ""
+            echo "Missing files:"
+            comm -23 \
+              <(cd ccc/core && ls -1 *.py 2>/dev/null | sort) \
+              <(cd "$site_packages/ccc/core" && sudo ls -1 *.py 2>/dev/null | sort) || echo "Cannot compare"
+          } > artifacts/comparison.txt
+          
+          cat artifacts/comparison.txt
+      
+      - name: Upload comparison report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: install-script-comparison
+          path: artifacts/

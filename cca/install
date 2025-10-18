@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# CCA Installer Script
+# Installs CCC Alpha (cca) to /opt/cca
+
+set -e
+
+# Colors for output
+CYAN='\033[1;36m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Prefix for messages
+PREFIX="${CYAN}[cca]${NC}"
+
+echo -e "${PREFIX} CCC Alpha (cca) Installer v1.0.0"
+echo -e "${PREFIX} "
+
+# Check if running as root
+if [[ $EUID -ne 0 ]]; then
+   echo -e "${RED}This script must be run as root (use sudo)${NC}" 
+   exit 1
+fi
+
+# Install minimal dependencies
+echo -e "${PREFIX} Installing minimal dependencies..."
+apt-get update -qq
+apt-get install -y python3 python3-pip python3-venv git gh > /dev/null 2>&1
+echo -e "${PREFIX} Dependencies installed ✓"
+
+# Install cca to /opt/cca
+echo -e "${PREFIX} Installing cca to /opt/cca..."
+
+# Remove old installation if exists
+if [ -d "/opt/cca" ]; then
+    rm -rf /opt/cca
+fi
+
+# Create virtual environment
+python3 -m venv /opt/cca
+echo -e "${PREFIX} Virtual environment created ✓"
+
+# Clone or use current directory
+if [ -d ".git" ]; then
+    # We're in the repo, use current directory
+    REPO_DIR=$(pwd)
+else
+    # Clone the repo
+    TEMP_DIR=$(mktemp -d)
+    git clone https://github.com/collective-context/ccc-code.git "$TEMP_DIR"
+    REPO_DIR="$TEMP_DIR"
+fi
+
+# Upgrade pip, setuptools, wheel in venv
+/opt/cca/bin/pip install --upgrade pip setuptools wheel > /dev/null 2>&1
+
+# Install cca package
+cd "$REPO_DIR"
+/opt/cca/bin/pip install . > /dev/null 2>&1
+echo -e "${PREFIX} cca installed ✓"
+
+# Create config directories
+echo -e "${PREFIX} Setting up configuration..."
+mkdir -p /etc/cca/plugins.d
+
+# Only copy config files for plugins that exist in cca/cli/plugins/
+echo -e "${PREFIX} Copying plugin configs..."
+if [ -d "$REPO_DIR/config/plugins.d" ]; then
+    cp "$REPO_DIR/config/plugins.d/check.conf" /etc/cca/plugins.d/
+    cp "$REPO_DIR/config/plugins.d/debug.conf" /etc/cca/plugins.d/
+    echo -e "${PREFIX} Plugin configs copied ✓"
+fi
+
+# Create symlinks
+echo -e "${PREFIX} Creating symlinks..."
+ln -sf /opt/cca/bin/cca /usr/local/bin/cca
+echo -e "${PREFIX} Symlinks created ✓"
+
+# Create logs directory
+mkdir -p ./logs
+
+echo -e "${PREFIX} "
+echo -e "${PREFIX} ============================================"
+echo -e "${PREFIX} CCC Alpha (cca) v1.0.0 installed!"
+echo -e "${PREFIX} ============================================"
+echo -e "${PREFIX} "
+echo -e "${PREFIX} Available commands:"
+echo -e "${PREFIX}   cca info              - Show version info"
+echo -e "${PREFIX}   cca check actions     - Fetch GitHub Actions logs"
+echo -e "${PREFIX} "
+echo -e "${PREFIX} Test installation:"
+echo -e "${PREFIX}   cca --help"
+echo -e "${PREFIX} "
+echo -e "${PREFIX} Logs directory: ./logs/"
+echo -e "${PREFIX} Config directory: /etc/cca/plugins.d/"
+echo -e "${PREFIX} ============================================"
+echo -e "${PREFIX} Installation complete! ✓"

@@ -1,0 +1,66 @@
+name: Test CCB Installation
+
+on:
+  push:
+    paths:
+      - 'install-ccb'
+      - 'ccb/**'
+      - 'setup.py'
+      - '.github/workflows/test-ccb-install.yml'
+  pull_request:
+    paths:
+      - 'install-ccb'
+      - 'ccb/**'
+      - 'setup.py'
+      - '.github/workflows/test-ccb-install.yml'
+
+jobs:
+  test-install:
+    name: Test ccb installation on Ubuntu 24.04
+    runs-on: ubuntu-24.04
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install ccb
+        run: |
+          sudo -E bash install-ccb
+          
+      - name: Verify ccb binary exists
+        run: |
+          which ccb || (echo "ccb binary not found" && exit 1)
+          echo "✓ ccb binary found at $(which ccb)"
+          
+      - name: Test ccb --version
+        run: |
+          ccb --version || (echo "ccb --version failed" && exit 1)
+          echo "✓ ccb --version works"
+          
+      - name: Test ccb info
+        run: |
+          ccb info || (echo "ccb info failed" && exit 1)
+          echo "✓ ccb info works"
+          
+      - name: Test Python package import
+        run: |
+          python3 -c "import ccb; print(f'ccb v{ccb.__version__}')" || (echo "Python import failed" && exit 1)
+          echo "✓ Python package imported successfully"
+          
+      - name: Test ccb --help
+        run: |
+          ccb --help || (echo "ccb --help failed" && exit 1)
+          echo "✓ ccb --help works"
+          
+      - name: Test ccb check --help
+        run: |
+          ccb check --help || (echo "ccb check --help failed" && exit 1)
+          echo "✓ ccb check --help works"
+          
+      - name: Display installation summary
+        run: |
+          echo "=== Installation Summary ==="
+          echo "Binary location: $(which ccb)"
+          echo "Version: $(ccb --version 2>&1 | head -n1)"
+          echo "Python package: $(python3 -c 'import ccb; print(ccb.__version__)')"
+          echo "Virtual env: /opt/ccb"

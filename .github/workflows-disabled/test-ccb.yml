@@ -1,0 +1,64 @@
+name: Test CCB Beta
+
+on:
+  push:
+    paths:
+      - 'install-ccb'
+      - 'ccb/**'
+      - 'tests-ccb/**'
+      - 'setup.py'
+      - '.github/workflows/test-ccb.yml'
+  pull_request:
+    paths:
+      - 'install-ccb'
+      - 'ccb/**'
+      - 'tests-ccb/**'
+      - 'setup.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-ccb:
+    name: Test CCB on Ubuntu
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+#       os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-24.04]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Prepare VM
+        run: |
+          unset LANG
+          export LANG='en_US.UTF-8'
+          export LC_ALL='C.UTF-8'
+          sudo apt update -qq > /dev/null 2>&1
+          sudo apt-get install -qq git tree python3-venv python3-pip > /dev/null 2>&1
+          sudo bash -c 'echo -e "[user]\n\tname = ccb-ci\n\temail = ci@collective-context.org" > $HOME/.gitconfig'
+      
+      - name: Install CCB
+        run: sudo -E bash install-ccb
+      
+      - name: Run CCB test suite
+        run: sudo timeout 600 bash tests-ccb/travis.sh --ci
+      
+      - name: Display test log
+        if: always()
+        run: |
+          if [ -f ./logs/ccb-test.log ]; then
+            echo "=== CCB Test Log ==="
+            cat ./logs/ccb-test.log
+          fi
+      
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccb-test-log-${{ matrix.os }}
+          path: ./logs/ccb-test.log
+          if-no-files-found: ignore

@@ -1,0 +1,215 @@
+---
+name: CCC CLI Command Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-cli-commands:
+    name: Test CCC CLI Commands
+    runs-on: ubuntu-24.04
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Install CCC CODE
+        run: |
+          echo "======================================"
+          echo "Installing CCC CODE"
+          echo "======================================"
+          sudo -E bash install --travis
+      
+      - name: Test ccc --help
+        run: |
+          echo "======================================"
+          echo "Testing: ccc --help"
+          echo "======================================"
+          
+          output=$(sudo ccc --help 2>&1)
+          exit_code=$?
+          
+          echo "--- Command Output ---"
+          echo "$output"
+          echo "--- Exit Code: $exit_code ---"
+          echo ""
+          
+          # Zeige spezifische Fehler
+          if echo "$output" | grep -qi "Duplicate command"; then
+            echo "❌ ERROR: Duplicate command detected!"
+            echo "$output" | grep -i "Duplicate"
+            exit 1
+          fi
+          
+          if echo "$output" | grep -qi "FrameworkError"; then
+            echo "❌ ERROR: FrameworkError detected!"
+            echo "$output" | grep -i "FrameworkError"
+            exit 1
+          fi
+          
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ ERROR: Command failed with exit code $exit_code"
+            echo "Full output above"
+            exit 1
+          fi
+          
+          echo "✓ ccc --help passed"
+      
+      - name: Test ccc stack --help
+        run: |
+          echo "======================================"
+          echo "Testing: ccc stack --help"
+          echo "======================================"
+          
+          output=$(sudo ccc stack --help 2>&1)
+          exit_code=$?
+          
+          echo "--- Command Output ---"
+          echo "$output"
+          echo "--- Exit Code: $exit_code ---"
+          echo ""
+          
+          # Zeige spezifische Fehler
+          if echo "$output" | grep -qi "Duplicate command"; then
+            echo "❌ ERROR: Duplicate command detected!"
+            echo "$output" | grep -i "Duplicate"
+            exit 1
+          fi
+          
+          if echo "$output" | grep -qi "FrameworkError"; then
+            echo "❌ ERROR: FrameworkError detected!"
+            echo "$output" | grep -i "FrameworkError"
+            exit 1
+          fi
+          
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ ERROR: Command failed with exit code $exit_code"
+            echo "Full output above"
+            exit 1
+          fi
+          
+          echo "✓ ccc stack --help passed"
+      
+      - name: Test ccc stack install --help
+        run: |
+          echo "======================================"
+          echo "Testing: ccc stack install --help"
+          echo "======================================"
+          
+          output=$(sudo ccc stack install --help 2>&1)
+          exit_code=$?
+          
+          echo "--- Command Output ---"
+          echo "$output"
+          echo "--- Exit Code: $exit_code ---"
+          echo ""
+          
+          # Zeige spezifische Fehler
+          if echo "$output" | grep -qi "Duplicate command"; then
+            echo "❌ ERROR: Duplicate command detected!"
+            echo "$output" | grep -i "Duplicate"
+            exit 1
+          fi
+          
+          if echo "$output" | grep -qi "FrameworkError"; then
+            echo "❌ ERROR: FrameworkError detected!"
+            echo "$output" | grep -i "FrameworkError"
+            exit 1
+          fi
+          
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ ERROR: Command failed with exit code $exit_code"
+            echo "Full output above"
+            exit 1
+          fi
+          
+          echo "✓ ccc stack install --help passed"
+      
+      - name: Test ccc stack upgrade --help
+        run: |
+          echo "======================================"
+          echo "Testing: ccc stack upgrade --help"
+          echo "======================================"
+          
+          output=$(sudo ccc stack upgrade --help 2>&1)
+          exit_code=$?
+          
+          echo "--- Command Output ---"
+          echo "$output"
+          echo "--- Exit Code: $exit_code ---"
+          echo ""
+          
+          # Zeige spezifische Fehler
+          if echo "$output" | grep -qi "Duplicate command"; then
+            echo "❌ ERROR: Duplicate command detected!"
+            echo "$output" | grep -i "Duplicate"
+            exit 1
+          fi
+          
+          if echo "$output" | grep -qi "FrameworkError"; then
+            echo "❌ ERROR: FrameworkError detected!"
+            echo "$output" | grep -i "FrameworkError"
+            exit 1
+          fi
+          
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ ERROR: Command failed with exit code $exit_code"
+            echo "Full output above"
+            exit 1
+          fi
+          
+          echo "✓ ccc stack upgrade --help passed"
+      
+      - name: Test ccc stack migrate --help
+        run: |
+          echo "======================================"
+          echo "Testing: ccc stack migrate --help"
+          echo "======================================"
+          
+          output=$(sudo ccc stack migrate --help 2>&1)
+          exit_code=$?
+          
+          echo "--- Command Output ---"
+          echo "$output"
+          echo "--- Exit Code: $exit_code ---"
+          echo ""
+          
+          # Zeige spezifische Fehler
+          if echo "$output" | grep -qi "Duplicate command"; then
+            echo "❌ ERROR: Duplicate command detected!"
+            echo "$output" | grep -i "Duplicate"
+            exit 1
+          fi
+          
+          if echo "$output" | grep -qi "FrameworkError"; then
+            echo "❌ ERROR: FrameworkError detected!"
+            echo "$output" | grep -i "FrameworkError"
+            exit 1
+          fi
+          
+          if [ $exit_code -ne 0 ]; then
+            echo "❌ ERROR: Command failed with exit code $exit_code"
+            echo "Full output above"
+            exit 1
+          fi
+          
+          echo "✓ ccc stack migrate --help passed"
+      
+      - name: Summary
+        if: success()
+        run: |
+          echo "======================================"
+          echo "ALL CLI TESTS PASSED"
+          echo "======================================"
+          echo ""
+          echo "✓ ccc --help"
+          echo "✓ ccc stack --help"
+          echo "✓ ccc stack install --help"
+          echo "✓ ccc stack upgrade --help"
+          echo "✓ ccc stack migrate --help"
+          echo ""
+          echo "No duplicate commands detected"
+          echo "No framework errors detected"
