@@ -179,11 +179,11 @@ echo -e "${RED}═════════════════════�
 echo -e "${YELLOW}"
 echo "This script will DELETE ONLY TEST SITES created by travis.sh!"
 echo ""
-echo "Test sites to be deleted:"
-printf '%s\n' "${TO_DELETE[@]}" | sed 's/^/  - /'
+# echo "Test sites to be deleted:"
+# printf '%s\n' "${TO_DELETE[@]}" | sed 's/^/  - /'
 echo ""
 echo "What will be deleted for each test site:"
-echo "  - Website files in /var/www/<testsite>/"
+echo "  - Website files in /var/www/<testsite>"
 echo "  - Nginx configuration in /etc/nginx/sites-*/<testsite>"
 echo "  - Databases (if created by WordOps)"
 echo "  - SSL certificates"

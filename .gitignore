@@ -75,6 +75,8 @@ man/
 .*
 !.gitignore
 !.aider.conf.yml
+!.context-chat.md
+!.context-project.md
 !.github/
 
 # Projekt-spezifische Ignores
