@@ -16,7 +16,7 @@ weak-model: openrouter/deepseek/deepseek-coder
 read:
   - ../context-aider.md      # Context: Aider-Rollen-Info
   - .context-project.md      # Projekt-spezifische Infos
-  - .logs/purge.log
+  - .context.log
   - .local/work/2025-10-18/2025-10-18_work-ai1-01.md # Folge dem Arbeitsauftrag 2025-10-14_work-ai1-01.md
 # - .init-work.md             # Arbeitsauftrag-spezifische Infos
 # - ../checkit.txt            # Temorär für einen Auftrag
