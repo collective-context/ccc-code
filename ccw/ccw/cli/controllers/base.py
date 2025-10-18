@@ -1,18 +1,18 @@
-"""WordOps base controller."""
+"""CCC CODE base controller."""
 
 from cement.core.controller import CementBaseController, expose
 
-from wo.core.variables import WOVar
+from ccw.core.variables import CCWVar
 
-VERSION = WOVar.wo_version
+VERSION = CCWVar.ccw_version
 
 BANNER = """
-WordOps v%s
-Copyright (c) 2024 WordOps.
+Collective Context Commander v%s
+Copyright (c) 2025 CCC CODE.
 """ % VERSION
 
 
-class WOBaseController(CementBaseController):
+class CCWBaseController(CementBaseController):
     class Meta:
         label = 'base'
         description = ("An essential toolset that eases WordPress "

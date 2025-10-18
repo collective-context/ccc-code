@@ -1,4 +1,4 @@
-"""WordOps main application entry point."""
+"""CCC CODE main application entry point."""
 import sys
 from os import geteuid
 
@@ -7,20 +7,20 @@ from cement.core.foundation import CementApp
 from cement.ext.ext_argparse import ArgParseArgumentHandler
 from cement.utils.misc import init_defaults
 
-from wo.core import exc
+from ccw.core import exc
 
-# Application default.  Should update config/wo.conf to reflect any
+# Application default.  Should update config/ccw.conf to reflect any
 # changes, or additions here.
-defaults = init_defaults('wo')
+defaults = init_defaults('ccw')
 
 # All internal/external plugin configurations are loaded from here
-defaults['wo']['plugin_config_dir'] = '/etc/wo/plugins.d'
+defaults['ccw']['plugin_config_dir'] = '/etc/ccw/plugins.d'
 
 # External plugins (generally, do not ship with application code)
-defaults['wo']['plugin_dir'] = '/var/lib/wo/plugins'
+defaults['ccw']['plugin_dir'] = '/var/lib/ccw/plugins'
 
 # External templates (generally, do not ship with application code)
-defaults['wo']['template_dir'] = '/var/lib/wo/templates'
+defaults['ccw']['template_dir'] = '/var/lib/ccw/templates'
 
 
 def encode_output(app, text):
@@ -34,28 +34,28 @@ def encode_output(app, text):
     return text.encode("utf-8")
 
 
-class WOArgHandler(ArgParseArgumentHandler):
+class CCWArgHandler(ArgParseArgumentHandler):
     class Meta:
-        label = 'wo_args_handler'
+        label = 'ccw_args_handler'
 
     def error(self, message):
-        super(WOArgHandler, self).error("unknown args")
+        super(CCWArgHandler, self).error("unknown args")
 
 
-class WOApp(CementApp):
+class CCWApp(CementApp):
     class Meta:
-        label = 'wo'
+        label = 'ccw'
 
         config_defaults = defaults
 
         # All built-in application bootstrapping (always run)
-        bootstrap = 'wo.cli.bootstrap'
+        bootstrap = 'ccw.cli.bootstrap'
 
         # Internal plugins (ship with application code)
-        plugin_bootstrap = 'wo.cli.plugins'
+        plugin_bootstrap = 'ccw.cli.plugins'
 
         # Internal templates (ship with application code)
-        template_module = 'wo.cli.templates'
+        template_module = 'ccw.cli.templates'
 
         extensions = ['mustache', 'argcomplete', 'colorlog']
 
@@ -67,11 +67,11 @@ class WOApp(CementApp):
 
         log_handler = 'colorlog'
 
-        arg_handler = WOArgHandler
+        arg_handler = CCWArgHandler
         exit_on_close = True
 
 
-class WOTestApp(WOApp):
+class CCWTestApp(CCWApp):
     """A test app that is better suited for testing."""
     class Meta:
         # default argv to empty (don't use sys.argv)
@@ -86,7 +86,7 @@ class WOTestApp(WOApp):
 
 # Define the applicaiton object outside of main, as some libraries might wish
 # to import it as a global (rather than passing it into another class/func)
-app = WOApp()
+app = CCWApp()
 
 
 def main():
@@ -96,16 +96,16 @@ def main():
 
             # if not root...kick out
             if not geteuid() == 0:
-                print("\nNon-privileged users cant use WordOps. "
+                print("\nNon-privileged users cant use CCC CODE. "
                       "Switch to root or invoke sudo.\n")
                 app.close(1)
             app.run()
         except AssertionError as e:
             print("AssertionError => %s" % e.args[0])
             app.exit_code = 1
-        except exc.WOError as e:
+        except exc.CCWError as e:
             # Catch our application errors and exit 1 (error)
-            print('WOError > %s' % e)
+            print('CCWError > %s' % e)
             app.exit_code = 1
         except CaughtSignal as e:
             # Default Cement signals are SIGINT and SIGTERM, exit 0 (non-error)
