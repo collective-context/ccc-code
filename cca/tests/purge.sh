@@ -1,45 +1,11 @@
 #!/usr/bin/env bash
-# CCA Alpha Purge Script bevore running Testing Script
-# Based on CCC CODE tests/travis.sh pattern
-# Usage:
-#   sudo bash cca/tests/purge.sh           # Vorsicht: Löscht unwiederruflich alle vorhanden Web-Sites!!!!
-#   sudo bash cca/tests/travis.sh          # Full test suite
-#   sudo bash cca/tests/travis.sh --ci     # CI optimized
-
-#echo "Cleaning up old test sites..."
-#wo site list | while read site; do
-#    wo site delete "$site" --no-prompt 2>/dev/null || true
-#done
-
-#!/usr/bin/env bash
 #
 # CCA Alpha Purge Script before running Testing Script
 # Based on CCC CODE tests/travis.sh pattern
 #
 # Usage:
 #   sudo bash cca/tests/purge.sh           # Vorsicht: Löscht unwiederruflich Test Web-Sites!!!!
-#   sudo bash cca/tests/travis.sh          # Full test suite
-#   sudo bash cca/tests/travis.sh --ci     # CI optimized
-#
-
-#!/usr/bin/env bash
-#
-# CCA Alpha Purge Script before running Testing Script
-# Based on CCC CODE tests/travis.sh pattern
-#
-# Usage:
-#   sudo bash cca/tests/purge.sh           # Vorsicht: Löscht unwiederruflich Test Web-Sites!!!!
-#   sudo bash cca/tests/travis.sh          # Full test suite
-#   sudo bash cca/tests/travis.sh --ci     # CI optimized
-#
-
-#!/usr/bin/env bash
-#
-# CCA Alpha Purge Script before running Testing Script
-# Based on CCC CODE tests/travis.sh pattern
-#
-# Usage:
-#   sudo bash cca/tests/purge.sh           # Vorsicht: Löscht unwiederruflich Test Web-Sites!!!!
+#   sudo bash cca/tests/purge.sh --debug   # Mit Debug-Output
 #   sudo bash cca/tests/travis.sh          # Full test suite
 #   sudo bash cca/tests/travis.sh --ci     # CI optimized
 #
@@ -52,6 +18,18 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# Debug mode
+DEBUG=false
+if [[ "$1" == "--debug" ]]; then
+    DEBUG=true
+fi
+
+debug_log() {
+    if [[ "$DEBUG" == "true" ]]; then
+        echo -e "${BLUE}[DEBUG]${NC} $*" >&2
+    fi
+}
 
 # ==============================================================================
 # TEST SITES ARRAY
@@ -116,6 +94,65 @@ if ! command -v wo &> /dev/null; then
     exit 1
 fi
 
+debug_log "TEST_SITES array has ${#TEST_SITES[@]} entries"
+debug_log "First 3 TEST_SITES: ${TEST_SITES[0]}, ${TEST_SITES[1]}, ${TEST_SITES[2]}"
+
+# Function to check if a site is in the TEST_SITES array
+is_test_site() {
+    local site="$1"
+    for test_site in "${TEST_SITES[@]}"; do
+        if [[ "$site" == "$test_site" ]]; then
+            return 0  # true - is a test site
+        fi
+    done
+    return 1  # false - not a test site
+}
+
+# Get all existing sites and separate test sites from manual sites
+TO_DELETE=()
+MANUAL_SITES=()
+
+debug_log "Getting site list from 'wo site list'..."
+debug_log "Raw output (first 3 lines with visible whitespace):"
+
+# Better parsing with explicit trimming
+while IFS= read -r site; do
+    # Trim whitespace using parameter expansion
+    site="${site#"${site%%[![:space:]]*}"}"  # Remove leading whitespace
+    site="${site%"${site##*[![:space:]]}"}"  # Remove trailing whitespace
+    
+    # Skip empty lines
+    [ -z "$site" ] && continue
+    
+    debug_log "Checking site: '$site' (length: ${#site})"
+    
+    # Check if this site is a test site
+    if is_test_site "$site"; then
+        TO_DELETE+=("$site")
+        debug_log "  -> MATCH (test site)"
+    else
+        MANUAL_SITES+=("$site")
+        debug_log "  -> NO MATCH (manual site)"
+    fi
+done < <(wo site list 2>/dev/null)
+
+debug_log "Classification complete:"
+debug_log "  Test sites to delete: ${#TO_DELETE[@]}"
+debug_log "  Manual sites to preserve: ${#MANUAL_SITES[@]}"
+
+# Check if there are test sites to delete
+if [ ${#TO_DELETE[@]} -eq 0 ]; then
+    echo -e "${GREEN}No test sites found. Nothing to delete.${NC}"
+    
+    if [ ${#MANUAL_SITES[@]} -gt 0 ]; then
+        echo -e "${BLUE}Found ${#MANUAL_SITES[@]} manual site(s) (will NOT be deleted):${NC}"
+        printf '%s\n' "${MANUAL_SITES[@]}" | sed 's/^/  - /'
+    fi
+    
+    exit 0
+fi
+
+# NOW display the warning with correct site lists
 echo -e "${RED}═══════════════════════════════════════════════════════════${NC}"
 echo -e "${RED}  WARNING: DESTRUCTIVE OPERATION${NC}"
 echo -e "${RED}═══════════════════════════════════════════════════════════${NC}"
@@ -136,48 +173,6 @@ echo -e "${GREEN}✓ Only sites listed in TEST_SITES array are affected!${NC}"
 echo -e "${YELLOW}"
 echo "This action CANNOT be undone!"
 echo -e "${NC}"
-
-# Function to check if a site is in the TEST_SITES array
-is_test_site() {
-    local site="$1"
-    for test_site in "${TEST_SITES[@]}"; do
-        if [[ "$site" == "$test_site" ]]; then
-            return 0  # true - is a test site
-        fi
-    done
-    return 1  # false - not a test site
-}
-
-# Get all existing sites
-mapfile -t EXISTING_SITES < <(wo site list 2>/dev/null)
-
-# Separate test sites from manual sites
-TO_DELETE=()
-MANUAL_SITES=()
-
-for site in "${EXISTING_SITES[@]}"; do
-    # Skip empty lines
-    [ -z "$site" ] && continue
-    
-    # Check if this site is a test site
-    if is_test_site "$site"; then
-        TO_DELETE+=("$site")
-    else
-        MANUAL_SITES+=("$site")
-    fi
-done
-
-# Check if there are test sites to delete
-if [ ${#TO_DELETE[@]} -eq 0 ]; then
-    echo -e "${GREEN}No test sites found. Nothing to delete.${NC}"
-    
-    if [ ${#MANUAL_SITES[@]} -gt 0 ]; then
-        echo -e "${BLUE}Found ${#MANUAL_SITES[@]} manual site(s) (will NOT be deleted):${NC}"
-        printf '%s\n' "${MANUAL_SITES[@]}" | sed 's/^/  - /'
-    fi
-    
-    exit 0
-fi
 
 # Display sites to be deleted
 echo -e "${YELLOW}Found ${#TO_DELETE[@]} test site(s) to delete:${NC}"
