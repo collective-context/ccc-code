@@ -4,8 +4,8 @@
 # Based on CCC CODE tests/travis.sh pattern
 #
 # Usage:
-#   sudo bash tests-cca/travis.sh          # Full test suite
-#   sudo bash tests-cca/travis.sh --ci     # CI optimized
+#   sudo bash cca/tests/travis.sh          # Full test suite
+#   sudo bash cca/tests/travis.sh --ci     # CI optimized
 
 # Colors (wie CCC CODE)
 CSI='\033['
@@ -70,11 +70,11 @@ fi
 # Install cca
 echo -ne "   Installing cca                      [..]\r"
 if {
-    sudo -E bash install-cca
+    sudo -E bash cca/install
 } >> "$CCA_LOG_FILE" 2>&1; then
-    echo -ne "   Installing cca                      [${CGREEN}OK${CEND}]\r\n"
+    echo -ne "   Installing cca/install             [${CGREEN}OK${CEND}]\r\n"
 else
-    echo -e "   Installing cca                      [${CRED}FAIL${CEND}]"
+    echo -e  "   Installing cca/install             [${CRED}FAIL${CEND}]"
     exit_script
 fi
 
@@ -291,7 +291,7 @@ if command -v pytest >/dev/null 2>&1; then
     echo ""
     
     echo -ne "   Running pytest suite                [..]\r"
-    if pytest tests-cca/ -v >> "$CCA_LOG_FILE" 2>&1; then
+    if pytest cca/tests/ -v >> "$CCA_LOG_FILE" 2>&1; then
         echo -ne "   Running pytest suite                [${CGREEN}OK${CEND}]\r\n"
     else
         echo -e "   Running pytest suite                [${CYELLOW}WARN${CEND}]"
