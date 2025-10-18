@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, func
 
-from wo.core.database import Base
+from ccw.core.database import Base
 
 
 class SiteDB(Base):

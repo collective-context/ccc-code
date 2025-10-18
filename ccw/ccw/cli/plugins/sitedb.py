@@ -3,9 +3,9 @@ from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 
-from wo.cli.plugins.models import SiteDB
-from wo.core.database import db_session
-from wo.core.logging import Log
+from ccw.cli.plugins.models import SiteDB
+from ccw.core.database import db_session
+from ccw.core.logging import Log
 
 
 def addNewSite(self, site, stype, cache, path,
@@ -13,7 +13,7 @@ def addNewSite(self, site, stype, cache, path,
                db_name=None, db_user=None, db_password=None,
                db_host='localhost', hhvm=0, php_version='8.1'):
     """
-    Add New Site record information into the wo database.
+    Add New Site record information into the ccw database.
     """
     try:
         newRec = SiteDB(site, stype, cache, path, enabled, ssl, fs, db,
@@ -28,7 +28,7 @@ def addNewSite(self, site, stype, cache, path,
 
 def getSiteInfo(self, site):
     """
-        Retrieves site record from ee databse
+        Retrieves site record from ccw databse
     """
     try:
         q = SiteDB.query.filter(SiteDB.sitename == site).first()
@@ -115,7 +115,7 @@ def deleteSiteInfo(self, site):
 
 def getAllsites(self):
     """
-        1. returns all records from ee database
+        1. returns all records from ccw database
     """
     try:
         q = SiteDB.query.all()
