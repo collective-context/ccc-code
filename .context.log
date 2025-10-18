@@ -1,0 +1,55 @@
+═══════════════════════════════════════════════════════════                                                                                                                                                                                                                    
+  WARNING: DESTRUCTIVE OPERATION                                                                                                                                                                                                                                               
+═══════════════════════════════════════════════════════════
+
+This script will DELETE ONLY TEST SITES created by travis.sh!
+
+
+What will be deleted for each test site:
+  - Website files in /var/www/<testsite>
+  - Nginx configuration in /etc/nginx/sites-*/<testsite>
+  - Databases (if created by WordOps)
+  - SSL certificates
+
+✓ Manual sites in /var/www/ will be PRESERVED!
+✓ Only sites listed in TEST_SITES array are affected!
+
+This action CANNOT be undone!
+
+Found 31 test site(s) to delete:
+  - html.net
+  - php.net
+  - php74.net
+  - php80.net
+  - php81.net
+  - php82.net
+  - php83.net
+  - php84.net
+  - mysql.net
+  - wp.net
+  - wpfc.net
+  - wpsc.net
+  - wpredis.net
+  - wpce.net
+  - wprocket.net
+  - wpsubdomain.net
+  - wpsubdir.net
+  - ngxblocker.net
+  - proxy.net
+  - alias.net
+  - wp.io
+  - wpsubdirwpfc.io
+  - wpsubdirwpsc.io
+  - wpsubdirwpce.io
+  - wpsubdirwprocket.io
+  - wpsubdirwpredis.io
+  - wpsubdomainwpfc.io
+  - wpsubdomainwpsc.io
+  - wpsubdomainwpce.io
+  - wpsubdomainwprocket.io
+  - wpsubdomainwpredis.io
+
+To confirm deletion of 31 test site(s), type exactly:
+Yes, delete all test sites
+
+Confirmation: 

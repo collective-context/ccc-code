@@ -77,6 +77,7 @@ man/
 !.aider.conf.yml
 !.context-chat.md
 !.context-project.md
+!.context.log
 !.github/
 
 # Projekt-spezifische Ignores
