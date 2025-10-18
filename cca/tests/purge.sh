@@ -37,50 +37,40 @@ debug_log() {
 # Diese Sites werden vom travis.sh Testskript angelegt und können gelöscht werden
 # Manuelle Sites werden NICHT gelöscht!
 # ==============================================================================
-TEST_SITES=(
-    # Basic sites
-    "html.net"
-    "php.net"
-    "mysql.net"
-    
-    # PHP version specific sites
-    "php74.net"
-    "php80.net"
-    "php81.net"
-    "php82.net"
-    "php83.net"
-    "php84.net"
-    
-    # WordPress sites with different cache backends
-    "wp.net"
-    "wpfc.net"
-    "wpsc.net"
-    "wpredis.net"
-    "wpce.net"
-    "wprocket.net"
-    
-    # WordPress Multisite
-    "wpsubdomain.net"
-    "wpsubdir.net"
-    
-    # Special configurations
-    "ngxblocker.net"
-    "proxy.net"
-    "alias.net"
-    
-    # .io domain sites
-    "wp.io"
-    "wpsubdirwpfc.io"
-    "wpsubdirwpsc.io"
-    "wpsubdirwpce.io"
-    "wpsubdirwprocket.io"
-    "wpsubdirwpredis.io"
-    "wpsubdomainwpfc.io"
-    "wpsubdomainwpsc.io"
-    "wpsubdomainwpce.io"
-    "wpsubdomainwprocket.io"
-    "wpsubdomainwpredis.io"
-)
+
+# Alternative robustere Array-Definition ohne Kommentare dazwischen
+TEST_SITES=()
+TEST_SITES+=("html.net")
+TEST_SITES+=("php.net")
+TEST_SITES+=("mysql.net")
+TEST_SITES+=("php74.net")
+TEST_SITES+=("php80.net")
+TEST_SITES+=("php81.net")
+TEST_SITES+=("php82.net")
+TEST_SITES+=("php83.net")
+TEST_SITES+=("php84.net")
+TEST_SITES+=("wp.net")
+TEST_SITES+=("wpfc.net")
+TEST_SITES+=("wpsc.net")
+TEST_SITES+=("wpredis.net")
+TEST_SITES+=("wpce.net")
+TEST_SITES+=("wprocket.net")
+TEST_SITES+=("wpsubdomain.net")
+TEST_SITES+=("wpsubdir.net")
+TEST_SITES+=("ngxblocker.net")
+TEST_SITES+=("proxy.net")
+TEST_SITES+=("alias.net")
+TEST_SITES+=("wp.io")
+TEST_SITES+=("wpsubdirwpfc.io")
+TEST_SITES+=("wpsubdirwpsc.io")
+TEST_SITES+=("wpsubdirwpce.io")
+TEST_SITES+=("wpsubdirwprocket.io")
+TEST_SITES+=("wpsubdirwpredis.io")
+TEST_SITES+=("wpsubdomainwpfc.io")
+TEST_SITES+=("wpsubdomainwpsc.io")
+TEST_SITES+=("wpsubdomainwpce.io")
+TEST_SITES+=("wpsubdomainwprocket.io")
+TEST_SITES+=("wpsubdomainwpredis.io")
 
 # Check if running as root
 if [[ $EUID -ne 0 ]]; then
@@ -100,6 +90,7 @@ debug_log "First 3 TEST_SITES: ${TEST_SITES[0]}, ${TEST_SITES[1]}, ${TEST_SITES[
 # Function to check if a site is in the TEST_SITES array
 is_test_site() {
     local site="$1"
+    local test_site
     for test_site in "${TEST_SITES[@]}"; do
         if [[ "$site" == "$test_site" ]]; then
             return 0  # true - is a test site
@@ -108,23 +99,41 @@ is_test_site() {
     return 1  # false - not a test site
 }
 
+# Function to clean site name from any formatting
+clean_site_name() {
+    local site="$1"
+    # Remove ANSI color codes
+    site=$(echo "$site" | sed 's/\x1b\[[0-9;]*m//g')
+    # Remove all whitespace (spaces, tabs, newlines)
+    site=$(echo "$site" | tr -d '[:space:]')
+    # Remove any non-printable characters
+    site=$(echo "$site" | tr -cd '[:print:]')
+    echo "$site"
+}
+
 # Get all existing sites and separate test sites from manual sites
 TO_DELETE=()
 MANUAL_SITES=()
 
 debug_log "Getting site list from 'wo site list'..."
-debug_log "Raw output (first 3 lines with visible whitespace):"
 
-# Better parsing with explicit trimming
-while IFS= read -r site; do
-    # Trim whitespace using parameter expansion
-    site="${site#"${site%%[![:space:]]*}"}"  # Remove leading whitespace
-    site="${site%"${site##*[![:space:]]}"}"  # Remove trailing whitespace
-    
+if [[ "$DEBUG" == "true" ]]; then
+    debug_log "Raw output with visible special chars:"
+    wo site list 2>/dev/null | head -n 3 | cat -A >&2
+fi
+
+# Robustere Parsing-Methode
+while IFS= read -r raw_site; do
     # Skip empty lines
-    [ -z "$site" ] && continue
+    [[ -z "$raw_site" ]] && continue
     
-    debug_log "Checking site: '$site' (length: ${#site})"
+    # Clean the site name
+    site=$(clean_site_name "$raw_site")
+    
+    # Skip if still empty after cleaning
+    [[ -z "$site" ]] && continue
+    
+    debug_log "Raw: '$raw_site' -> Cleaned: '$site' (length: ${#site})"
     
     # Check if this site is a test site
     if is_test_site "$site"; then
@@ -139,6 +148,17 @@ done < <(wo site list 2>/dev/null)
 debug_log "Classification complete:"
 debug_log "  Test sites to delete: ${#TO_DELETE[@]}"
 debug_log "  Manual sites to preserve: ${#MANUAL_SITES[@]}"
+
+if [[ "$DEBUG" == "true" ]]; then
+    debug_log "TO_DELETE array contents:"
+    for site in "${TO_DELETE[@]}"; do
+        debug_log "  - '$site'"
+    done
+    debug_log "MANUAL_SITES array contents:"
+    for site in "${MANUAL_SITES[@]}"; do
+        debug_log "  - '$site'"
+    done
+fi
 
 # Check if there are test sites to delete
 if [ ${#TO_DELETE[@]} -eq 0 ]; then
