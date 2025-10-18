@@ -33,6 +33,17 @@
 #   sudo bash cca/tests/travis.sh --ci     # CI optimized
 #
 
+#!/usr/bin/env bash
+#
+# CCA Alpha Purge Script before running Testing Script
+# Based on CCC CODE tests/travis.sh pattern
+#
+# Usage:
+#   sudo bash cca/tests/purge.sh           # Vorsicht: Löscht unwiederruflich Test Web-Sites!!!!
+#   sudo bash cca/tests/travis.sh          # Full test suite
+#   sudo bash cca/tests/travis.sh --ci     # CI optimized
+#
+
 set -e
 
 # Colors for output
@@ -126,16 +137,21 @@ echo -e "${YELLOW}"
 echo "This action CANNOT be undone!"
 echo -e "${NC}"
 
+# Function to check if a site is in the TEST_SITES array
+is_test_site() {
+    local site="$1"
+    for test_site in "${TEST_SITES[@]}"; do
+        if [[ "$site" == "$test_site" ]]; then
+            return 0  # true - is a test site
+        fi
+    done
+    return 1  # false - not a test site
+}
+
 # Get all existing sites
 mapfile -t EXISTING_SITES < <(wo site list 2>/dev/null)
 
-# Create associative array for faster lookup
-declare -A TEST_SITES_MAP
-for site in "${TEST_SITES[@]}"; do
-    TEST_SITES_MAP["$site"]=1
-done
-
-# Filter: Only test sites that actually exist
+# Separate test sites from manual sites
 TO_DELETE=()
 MANUAL_SITES=()
 
@@ -143,8 +159,8 @@ for site in "${EXISTING_SITES[@]}"; do
     # Skip empty lines
     [ -z "$site" ] && continue
     
-    # Check if this site is in our test sites array
-    if [[ -n "${TEST_SITES_MAP[$site]}" ]]; then
+    # Check if this site is a test site
+    if is_test_site "$site"; then
         TO_DELETE+=("$site")
     else
         MANUAL_SITES+=("$site")
