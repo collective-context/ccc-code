@@ -1,0 +1,45 @@
+######################################################
+# CCC CODE Projekt Aider-Konfiguration
+# Speicherort: collective-context/ccc-code/.aider.conf.yml
+######################################################
+
+# Model Configuration
+# Lösche die Environment Variablen, damit die Config hier greift
+# unset AIDER_MODEL && unset AIDER_WEAK_MODEL
+model: anthropic/claude-sonnet-4-5-20250929
+#eak-model: openrouter/deepseek/deepseek-r1-0528
+weak-model: openrouter/deepseek/deepseek-coder
+#eak-model: openrouter/qwen/qwen3-coder
+#eak-model: anthropic/claude-3-5-haiku-20241022
+
+# Read-only Dateien (werden bei jedem LLM-Request geladen)
+read:
+  - ../context-aider.md      # Context: Aider-Rollen-Info
+  - .context-project.md      # Projekt-spezifische Infos
+# - .local/work/2025-10-17/2025-10-17_work-ai1-04.md # Folge dem Arbeitsauftrag 2025-10-14_work-ai1-01.md
+# - logs/cca-test.log
+# - .init-work.md             # Arbeitsauftrag-spezifische Infos
+# - ../checkit.txt            # Temorär für einen Auftrag
+
+# Git Repository Einstellungen
+subtree-only: true        # Nur Dateien im aktuellen Subtree berücksichtigen
+auto-commits: true        # Automatische Commits von LLM-Änderungen
+dirty-commits: true       # Commits auch wenn Repo dirty ist
+
+# Model & Performance
+map-tokens: 8192          # Tokens für Repository Map 2048 | 4096 | 8192
+
+# Chat-Einstellungen
+chat-language: de         # Antworten in Deutsch
+commit-language: de       # Commit-Messages in Deutsch
+
+# Optional: Commands beim Start ausführen (nur für /commands!)
+# load: .aider-commands.md
+
+# Optional: Coding Conventions
+# read:
+#   - CONVENTIONS.md
+
+# Optional: Auto-Test nach Änderungen
+# auto-test: false
+# test-cmd: pytest tests/

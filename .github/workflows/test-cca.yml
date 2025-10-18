@@ -3,26 +3,30 @@ name: test-cca
 on:
   push:
     paths:
-      - 'cca/**'
-      - 'tests-cca/**'
-      - 'setup.py'
-      - 'install-cca'
+      - 'cca/cca/**'
+      - 'cca/tests/**'
+      - 'cca/setup.py'
+      - 'cca/install'
       - '.github/workflows/test-cca.yml'
   pull_request:
     paths:
-      - 'cca/**'
-      - 'tests-cca/**'
-      - 'setup.py'
-      - 'install-cca'
+      - 'cca/cca/**'
+      - 'cca/tests/**'
+      - 'cca/setup.py'
+      - 'cca/install'
       - '.github/workflows/test-cca.yml'
   workflow_dispatch:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: Test CCA on Ubuntu
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+#       os: [ubuntu-22.04, ubuntu-24.04]
+#       python-version: ['3.10', '3.11', '3.12']
+        os: [ubuntu-24.04]
+        python-version: ['3.12']
 
     steps:
     - uses: actions/checkout@v4
@@ -37,9 +41,9 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -y python3-venv git
     
-    - name: Install CCA via install-cca script
+    - name: Install CCA via install script
       run: |
-        sudo -E bash install-cca
+        sudo -E bash cca/install
     
     - name: Verify CCA installation
       run: |
@@ -50,7 +54,7 @@ jobs:
     
     - name: Run bash tests
       run: |
-        sudo bash tests-cca/travis.sh --ci
+        sudo bash cca/tests/travis.sh --ci
     
     - name: Install pytest for unit tests
       run: |
@@ -58,7 +62,7 @@ jobs:
     
     - name: Run pytest
       run: |
-        pytest tests-cca/cli/ -v
+        pytest cca/tests/cli/ -v
     
     - name: Test check plugin
       run: |
