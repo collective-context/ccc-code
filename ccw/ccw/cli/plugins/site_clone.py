@@ -1,24 +1,24 @@
 import os
 
 from cement.core.controller import CementBaseController, expose
-from wo.cli.plugins.site_functions import (
+from ccw.cli.plugins.site_functions import (
     detSitePar, check_domain_exists, site_package_check,
     pre_run_checks, setupdomain, SiteError,
     doCleanupAction, setupdatabase, setupwordpress, setwebrootpermissions,
     display_cache_settings, copyWildcardCert)
-from wo.cli.plugins.sitedb import (addNewSite, deleteSiteInfo,
+from ccw.cli.plugins.sitedb import (addNewSite, deleteSiteInfo,
                                    updateSiteInfo)
-from wo.core.acme import WOAcme
-from wo.core.domainvalidate import WODomain
-from wo.core.git import WOGit
-from wo.core.logging import Log
-from wo.core.nginxhashbucket import hashbucket
-from wo.core.services import WOService
-from wo.core.sslutils import SSL
-from wo.core.variables import WOVar
+from ccw.core.acme import CCWAcme
+from ccw.core.domainvalidate import CCWDomain
+from ccw.core.git import CCWGit
+from ccw.core.logging import Log
+from ccw.core.nginxhashbucket import hashbucket
+from ccw.core.services import CCWService
+from ccw.core.sslutils import SSL
+from ccw.core.variables import CCWVar
 
 
-class WOSiteCloneController(CementBaseController):
+class CCWSiteCloneController(CementBaseController):
     class Meta:
         label = 'clone'
         stacked_on = 'site'
@@ -141,29 +141,29 @@ class WOSiteCloneController(CementBaseController):
                 Log.error(self, "Unable to input site name, Please try again!")
 
         pargs.site_name = pargs.site_name.strip()
-        wo_domain = WODomain.validate(self, pargs.site_name)
-        wo_www_domain = "www.{0}".format(wo_domain)
-        (wo_domain_type, wo_root_domain) = WODomain.getlevel(
-            self, wo_domain)
-        if not wo_domain.strip():
+        ccw_domain = CCWDomain.validate(self, pargs.site_name)
+        ccw_www_domain = "www.{0}".format(ccw_domain)
+        (ccw_domain_type, ccw_root_domain) = CCWDomain.getlevel(
+            self, ccw_domain)
+        if not ccw_domain.strip():
             Log.error(self, "Invalid domain name, "
                       "Provide valid domain name")
 
-        wo_site_webroot = WOVar.wo_webroot + wo_domain
+        ccw_site_webroot = CCWVar.ccw_webroot + ccw_domain
 
-        if check_domain_exists(self, wo_domain):
-            Log.error(self, "site {0} already exists".format(wo_domain))
+        if check_domain_exists(self, ccw_domain):
+            Log.error(self, "site {0} already exists".format(ccw_domain))
         elif os.path.isfile('/etc/nginx/sites-available/{0}'
-                            .format(wo_domain)):
+                            .format(ccw_domain)):
             Log.error(self, "Nginx configuration /etc/nginx/sites-available/"
-                      "{0} already exists".format(wo_domain))
+                      "{0} already exists".format(ccw_domain))
 
         if stype == 'proxy':
             data = dict(
-                site_name=wo_domain, www_domain=wo_www_domain,
+                site_name=ccw_domain, www_domain=ccw_www_domain,
                 static=True, basic=False, wp=False,
                 wpfc=False, wpsc=False, wprocket=False, wpce=False,
-                multisite=False, wpsubdir=False, webroot=wo_site_webroot)
+                multisite=False, wpsubdir=False, webroot=ccw_site_webroot)
             data['proxy'] = True
             data['host'] = host
             data['port'] = port
@@ -171,19 +171,19 @@ class WOSiteCloneController(CementBaseController):
 
         if pargs.php72 or pargs.php73 or pargs.php74:
             data = dict(
-                site_name=wo_domain, www_domain=wo_www_domain,
+                site_name=ccw_domain, www_domain=ccw_www_domain,
                 static=False, basic=False,
                 wp=False, wpfc=False, wpsc=False, wprocket=False,
                 wpce=False, multisite=False,
-                wpsubdir=False, webroot=wo_site_webroot)
+                wpsubdir=False, webroot=ccw_site_webroot)
             data['basic'] = True
 
         if stype in ['html', 'php']:
             data = dict(
-                site_name=wo_domain, www_domain=wo_www_domain,
+                site_name=ccw_domain, www_domain=ccw_www_domain,
                 static=True, basic=False, wp=False,
                 wpfc=False, wpsc=False, wprocket=False, wpce=False,
-                multisite=False, wpsubdir=False, webroot=wo_site_webroot)
+                multisite=False, wpsubdir=False, webroot=ccw_site_webroot)
 
             if stype == 'php':
                 data['static'] = False
@@ -192,12 +192,12 @@ class WOSiteCloneController(CementBaseController):
         elif stype in ['mysql', 'wp', 'wpsubdir', 'wpsubdomain']:
 
             data = dict(
-                site_name=wo_domain, www_domain=wo_www_domain,
+                site_name=ccw_domain, www_domain=ccw_www_domain,
                 static=False, basic=True, wp=False, wpfc=False,
                 wpsc=False, wpredis=False, wprocket=False, wpce=False,
-                multisite=False, wpsubdir=False, webroot=wo_site_webroot,
-                wo_db_name='', wo_db_user='', wo_db_pass='',
-                wo_db_host='')
+                multisite=False, wpsubdir=False, webroot=ccw_site_webroot,
+                ccw_db_name='', ccw_db_user='', ccw_db_pass='',
+                ccw_db_host='')
 
             if stype in ['wp', 'wpsubdir', 'wpsubdomain']:
                 data['wp'] = True
@@ -219,29 +219,29 @@ class WOSiteCloneController(CementBaseController):
 
         if data and pargs.php73:
             data['php73'] = True
-            data['wo_php'] = 'php73'
+            data['ccw_php'] = 'php73'
         elif data and pargs.php74:
             data['php74'] = True
-            data['wo_php'] = 'php74'
+            data['ccw_php'] = 'php74'
         elif data and pargs.php72:
             data['php72'] = True
-            data['wo_php'] = 'php72'
+            data['ccw_php'] = 'php72'
         else:
             if self.app.config.has_section('php'):
                 config_php_ver = self.app.config.get(
                     'php', 'version')
                 if config_php_ver == '7.2':
                     data['php72'] = True
-                    data['wo_php'] = 'php72'
+                    data['ccw_php'] = 'php72'
                 elif config_php_ver == '7.3':
                     data['php73'] = True
-                    data['wo_php'] = 'php73'
+                    data['ccw_php'] = 'php73'
                 elif config_php_ver == '7.4':
                     data['php74'] = True
-                    data['wo_php'] = 'php74'
+                    data['ccw_php'] = 'php74'
             else:
                 data['php73'] = True
-                data['wo_php'] = 'php73'
+                data['ccw_php'] = 'php73'
 
         if ((not pargs.wpfc) and (not pargs.wpsc) and
             (not pargs.wprocket) and
@@ -256,7 +256,7 @@ class WOSiteCloneController(CementBaseController):
             pargs.wpredis = True
 
         # Check rerequired packages are installed or not
-        wo_auth = site_package_check(self, stype)
+        ccw_auth = site_package_check(self, stype)
 
         try:
             pre_run_checks(self)
@@ -276,32 +276,32 @@ class WOSiteCloneController(CementBaseController):
                 Log.info(self, Log.FAIL +
                          "There was a serious error encountered...")
                 Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                doCleanupAction(self, domain=wo_domain,
+                doCleanupAction(self, domain=ccw_domain,
                                 webroot=data['webroot'])
                 Log.debug(self, str(e))
                 Log.error(self, "Check the log for details: "
-                          "`tail /var/log/wo/wordops.log` "
+                          "`tail /var/log/ccw/cccode.log` "
                           "and please try again")
 
             if 'proxy' in data.keys() and data['proxy']:
-                addNewSite(self, wo_domain, stype, cache, wo_site_webroot)
+                addNewSite(self, ccw_domain, stype, cache, ccw_site_webroot)
                 # Service Nginx Reload
-                if not WOService.reload_service(self, 'nginx'):
+                if not CCWService.reload_service(self, 'nginx'):
                     Log.info(self, Log.FAIL +
                              "There was a serious error encountered...")
                     Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                    doCleanupAction(self, domain=wo_domain)
-                    deleteSiteInfo(self, wo_domain)
+                    doCleanupAction(self, domain=ccw_domain)
+                    deleteSiteInfo(self, ccw_domain)
                     Log.error(self, "service nginx reload failed. "
                               "check issues with `nginx -t` command")
                     Log.error(self, "Check the log for details: "
-                              "`tail /var/log/wo/wordops.log` "
+                              "`tail /var/log/ccw/cccode.log` "
                               "and please try again")
-                if wo_auth and len(wo_auth):
-                    for msg in wo_auth:
+                if ccw_auth and len(ccw_auth):
+                    for msg in ccw_auth:
                         Log.info(self, Log.ENDC + msg, log=False)
                 Log.info(self, "Successfully created site"
-                         " http://{0}".format(wo_domain))
+                         " http://{0}".format(ccw_domain))
                 return
 
             if data['php72']:
@@ -311,114 +311,114 @@ class WOSiteCloneController(CementBaseController):
             else:
                 php_version = "7.3"
 
-            addNewSite(self, wo_domain, stype, cache, wo_site_webroot,
+            addNewSite(self, ccw_domain, stype, cache, ccw_site_webroot,
                        php_version=php_version)
 
             # Setup database for MySQL site
-            if 'wo_db_name' in data.keys() and not data['wp']:
+            if 'ccw_db_name' in data.keys() and not data['wp']:
                 try:
                     data = setupdatabase(self, data)
                     # Add database information for site into database
-                    updateSiteInfo(self, wo_domain, db_name=data['wo_db_name'],
-                                   db_user=data['wo_db_user'],
-                                   db_password=data['wo_db_pass'],
-                                   db_host=data['wo_db_host'])
+                    updateSiteInfo(self, ccw_domain, db_name=data['ccw_db_name'],
+                                   db_user=data['ccw_db_user'],
+                                   db_password=data['ccw_db_pass'],
+                                   db_host=data['ccw_db_host'])
                 except SiteError as e:
                     # call cleanup actions on failure
                     Log.debug(self, str(e))
                     Log.info(self, Log.FAIL +
                              "There was a serious error encountered...")
                     Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                    doCleanupAction(self, domain=wo_domain,
+                    doCleanupAction(self, domain=cc_domain,
                                     webroot=data['webroot'],
-                                    dbname=data['wo_db_name'],
-                                    dbuser=data['wo_db_user'],
-                                    dbhost=data['wo_db_host'])
-                    deleteSiteInfo(self, wo_domain)
+                                    dbname=data['ccw_db_name'],
+                                    dbuser=data['ccw_db_user'],
+                                    dbhost=data['ccw_db_host'])
+                    deleteSiteInfo(self, ccw_domain)
                     Log.error(self, "Check the log for details: "
-                              "`tail /var/log/wo/wordops.log` "
+                              "`tail /var/log/ccw/cccode.log` "
                               "and please try again")
 
                 try:
-                    wodbconfig = open("{0}/wo-config.php"
-                                      .format(wo_site_webroot),
+                    ccwdbconfig = open("{0}/ccw-config.php"
+                                      .format(ccw_site_webroot),
                                       encoding='utf-8', mode='w')
-                    wodbconfig.write("<?php \ndefine('DB_NAME', '{0}');"
+                    ccwdbconfig.write("<?php \ndefine('DB_NAME', '{0}');"
                                      "\ndefine('DB_USER', '{1}'); "
                                      "\ndefine('DB_PASSWORD', '{2}');"
                                      "\ndefine('DB_HOST', '{3}');\n?>"
-                                     .format(data['wo_db_name'],
-                                             data['wo_db_user'],
-                                             data['wo_db_pass'],
-                                             data['wo_db_host']))
-                    wodbconfig.close()
+                                     .format(data['ccw_db_name'],
+                                             data['ccw_db_user'],
+                                             data['ccw_db_pass'],
+                                             data['ccw_db_host']))
+                    ccwdbconfig.close()
                     stype = 'mysql'
                 except IOError as e:
                     Log.debug(self, str(e))
                     Log.debug(self, "Error occured while generating "
-                              "wo-config.php")
+                              "ccw-config.php")
                     Log.info(self, Log.FAIL +
                              "There was a serious error encountered...")
                     Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                    doCleanupAction(self, domain=wo_domain,
+                    doCleanupAction(self, domain=ccw_domain,
                                     webroot=data['webroot'],
-                                    dbname=data['wo_db_name'],
-                                    dbuser=data['wo_db_user'],
-                                    dbhost=data['wo_db_host'])
-                    deleteSiteInfo(self, wo_domain)
+                                    dbname=data['ccw_db_name'],
+                                    dbuser=data['ccw_db_user'],
+                                    dbhost=data['ccw_db_host'])
+                    deleteSiteInfo(self, ccw_domain)
                     Log.error(self, "Check the log for details: "
-                              "`tail /var/log/wo/wordops.log` "
+                              "`tail /var/log/ccw/cccode.log` "
                               "and please try again")
 
             # Setup WordPress if Wordpress site
             if data['wp']:
                 vhostonly = bool(pargs.vhostonly)
                 try:
-                    wo_wp_creds = setupwordpress(self, data, vhostonly)
+                    ccw_wp_creds = setupwordpress(self, data, vhostonly)
                     # Add database information for site into database
-                    updateSiteInfo(self, wo_domain,
-                                   db_name=data['wo_db_name'],
-                                   db_user=data['wo_db_user'],
-                                   db_password=data['wo_db_pass'],
-                                   db_host=data['wo_db_host'])
+                    updateSiteInfo(self, ccw_domain,
+                                   db_name=data['ccw_db_name'],
+                                   db_user=data['ccw_db_user'],
+                                   db_password=data['ccw_db_pass'],
+                                   db_host=data['ccw_db_host'])
                 except SiteError as e:
                     # call cleanup actions on failure
                     Log.debug(self, str(e))
                     Log.info(self, Log.FAIL +
                              "There was a serious error encountered...")
                     Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                    doCleanupAction(self, domain=wo_domain,
+                    doCleanupAction(self, domain=ccw_domain,
                                     webroot=data['webroot'],
-                                    dbname=data['wo_db_name'],
-                                    dbuser=data['wo_db_user'],
-                                    dbhost=data['wo_mysql_grant_host'])
-                    deleteSiteInfo(self, wo_domain)
+                                    dbname=data['ccw_db_name'],
+                                    dbuser=data['ccw_db_user'],
+                                    dbhost=data['ccw_mysql_grant_host'])
+                    deleteSiteInfo(self, ccw_domain)
                     Log.error(self, "Check the log for details: "
-                              "`tail /var/log/wo/wordops.log` "
+                              "`tail /var/log/ccw/cccode.log` "
                               "and please try again")
 
             # Service Nginx Reload call cleanup if failed to reload nginx
-            if not WOService.reload_service(self, 'nginx'):
+            if not CCWService.reload_service(self, 'nginx'):
                 Log.info(self, Log.FAIL +
                          "There was a serious error encountered...")
                 Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                doCleanupAction(self, domain=wo_domain,
+                doCleanupAction(self, domain=ccw_domain,
                                 webroot=data['webroot'])
-                if 'wo_db_name' in data.keys():
-                    doCleanupAction(self, domain=wo_domain,
-                                    dbname=data['wo_db_name'],
-                                    dbuser=data['wo_db_user'],
-                                    dbhost=data['wo_mysql_grant_host'])
-                deleteSiteInfo(self, wo_domain)
+                if 'ccw_db_name' in data.keys():
+                    doCleanupAction(self, domain=ccw_domain,
+                                    dbname=data['ccw_db_name'],
+                                    dbuser=data['ccw_db_user'],
+                                    dbhost=data['ccw_mysql_grant_host'])
+                deleteSiteInfo(self, ccw_domain)
                 Log.info(self, Log.FAIL + "service nginx reload failed."
                          " check issues with `nginx -t` command.")
                 Log.error(self, "Check the log for details: "
-                          "`tail /var/log/wo/wordops.log` "
+                          "`tail /var/log/ccw/cccode.log` "
                           "and please try again")
 
-            WOGit.add(self, ["/etc/nginx"],
+            CCWGit.add(self, ["/etc/nginx"],
                       msg="{0} created with {1} {2}"
-                      .format(wo_www_domain, stype, cache))
+                      .format(ccw_www_domain, stype, cache))
             # Setup Permissions for webroot
             try:
                 setwebrootpermissions(self, data['webroot'])
@@ -427,36 +427,36 @@ class WOSiteCloneController(CementBaseController):
                 Log.info(self, Log.FAIL +
                          "There was a serious error encountered...")
                 Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                doCleanupAction(self, domain=wo_domain,
+                doCleanupAction(self, domain=ccw_domain,
                                 webroot=data['webroot'])
-                if 'wo_db_name' in data.keys():
+                if 'ccw_db_name' in data.keys():
                     print("Inside db cleanup")
-                    doCleanupAction(self, domain=wo_domain,
-                                    dbname=data['wo_db_name'],
-                                    dbuser=data['wo_db_user'],
-                                    dbhost=data['wo_mysql_grant_host'])
-                deleteSiteInfo(self, wo_domain)
+                    doCleanupAction(self, domain=ccw_domain,
+                                    dbname=data['ccw_db_name'],
+                                    dbuser=data['ccw_db_user'],
+                                    dbhost=data['ccw_mysql_grant_host'])
+                deleteSiteInfo(self, ccw_domain)
                 Log.error(self, "Check the log for details: "
-                          "`tail /var/log/wo/wordops.log` and "
+                          "`tail /var/log/ccw/cccode.log` and "
                           "please try again")
 
-            if wo_auth and len(wo_auth):
-                for msg in wo_auth:
+            if ccw_auth and len(ccw_auth):
+                for msg in ccw_auth:
                     Log.info(self, Log.ENDC + msg, log=False)
 
             if data['wp'] and (not pargs.vhostonly):
                 Log.info(self, Log.ENDC + "WordPress admin user :"
-                         " {0}".format(wo_wp_creds['wp_user']), log=False)
+                         " {0}".format(ccw_wp_creds['wp_user']), log=False)
                 Log.info(self, Log.ENDC + "WordPress admin password : {0}"
-                         .format(wo_wp_creds['wp_pass']), log=False)
+                         .format(ccw_wp_creds['wp_pass']), log=False)
 
                 display_cache_settings(self, data)
 
             Log.info(self, "Successfully created site"
-                     " http://{0}".format(wo_domain))
+                     " http://{0}".format(ccw_domain))
         except SiteError:
             Log.error(self, "Check the log for details: "
-                      "`tail /var/log/wo/wordops.log` and please try again")
+                      "`tail /var/log/ccw/cccode.log` and please try again")
 
         if pargs.letsencrypt:
             acme_domains = []
@@ -494,9 +494,9 @@ class WOSiteCloneController(CementBaseController):
                 acme_subdomain = False
                 acmedata['dns'] = True
             else:
-                if ((wo_domain_type == 'subdomain')):
+                if ((ccw_domain_type == 'subdomain')):
                     Log.debug(self, "Domain type = {0}"
-                              .format(wo_domain_type))
+                              .format(ccw_domain_type))
                     acme_subdomain = True
                 else:
                     acme_subdomain = False
@@ -504,68 +504,68 @@ class WOSiteCloneController(CementBaseController):
 
             if acme_subdomain is True:
                 Log.info(self, "Certificate type : subdomain")
-                acme_domains = acme_domains + ['{0}'.format(wo_domain)]
+                acme_domains = acme_domains + ['{0}'.format(ccw_domain)]
             elif acme_wildcard is True:
                 Log.info(self, "Certificate type : wildcard")
-                acme_domains = acme_domains + ['{0}'.format(wo_domain),
-                                               '*.{0}'.format(wo_domain)]
+                acme_domains = acme_domains + ['{0}'.format(ccw_domain),
+                                               '*.{0}'.format(ccw_domain)]
             else:
                 Log.info(self, "Certificate type : domain")
-                acme_domains = acme_domains + ['{0}'.format(wo_domain),
-                                               'www.{0}'.format(wo_domain)]
+                acme_domains = acme_domains + ['{0}'.format(ccw_domain),
+                                               'www.{0}'.format(ccw_domain)]
 
-            if WOAcme.cert_check(self, wo_domain):
-                SSL.archivedcertificatehandle(self, wo_domain, acme_domains)
+            if CCWAcme.cert_check(self, ccw_domain):
+                SSL.archivedcertificatehandle(self, ccw_domain, acme_domains)
             else:
                 if acme_subdomain is True:
                     # check if a wildcard cert for the root domain exist
                     Log.debug(self, "checkWildcardExist on *.{0}"
-                              .format(wo_root_domain))
-                    if SSL.checkwildcardexist(self, wo_root_domain):
+                              .format(ccw_root_domain))
+                    if SSL.checkwildcardexist(self, ccw_root_domain):
                         Log.info(self, "Using existing Wildcard SSL "
                                  "certificate from {0} to secure {1}"
-                                 .format(wo_root_domain, wo_domain))
+                                 .format(ccw_root_domain, ccw_domain))
                         Log.debug(self, "symlink wildcard "
                                   "cert between {0} & {1}"
-                                  .format(wo_domain, wo_root_domain))
+                                  .format(ccw_domain, ccw_root_domain))
                         # copy the cert from the root domain
-                        copyWildcardCert(self, wo_domain, wo_root_domain)
+                        copyWildcardCert(self, ccw_domain, ccw_root_domain)
                     else:
                         # check DNS records before issuing cert
                         if not acmedata['dns'] is True:
                             if not pargs.force:
-                                if not WOAcme.check_dns(self, acme_domains):
+                                if not CCWAcme.check_dns(self, acme_domains):
                                     Log.error(self,
                                               "Aborting SSL "
                                               "certificate issuance")
                         Log.debug(self, "Setup Cert with acme.sh for {0}"
-                                  .format(wo_domain))
-                        if WOAcme.setupletsencrypt(
+                                  .format(ccw_domain))
+                        if CCWAcme.setupletsencrypt(
                                 self, acme_domains, acmedata):
-                            WOAcme.deploycert(self, wo_domain)
+                            CCWAcme.deploycert(self, ccw_domain)
                 else:
                     if not acmedata['dns'] is True:
                         if not pargs.force:
-                            if not WOAcme.check_dns(self, acme_domains):
+                            if not CCWAcme.check_dns(self, acme_domains):
                                 Log.error(self,
                                           "Aborting SSL certificate issuance")
-                    if WOAcme.setupletsencrypt(
+                    if CCWAcme.setupletsencrypt(
                             self, acme_domains, acmedata):
-                        WOAcme.deploycert(self, wo_domain)
+                        CCWAcme.deploycert(self, ccw_domain)
 
                 if pargs.hsts:
-                    SSL.setuphsts(self, wo_domain)
+                    SSL.setuphsts(self, ccw_domain)
 
-                SSL.httpsredirect(self, wo_domain, acme_domains, True)
-                SSL.siteurlhttps(self, wo_domain)
-                if not WOService.reload_service(self, 'nginx'):
+                SSL.httpsredirect(self, ccw_domain, acme_domains, True)
+                SSL.siteurlhttps(self, ccw_domain)
+                if not CCWService.reload_service(self, 'nginx'):
                     Log.error(self, "service nginx reload failed. "
                               "check issues with `nginx -t` command")
                 Log.info(self, "Congratulations! Successfully Configured "
-                         "SSL on https://{0}".format(wo_domain))
+                         "SSL on https://{0}".format(ccw_domain))
 
                 # Add nginx conf folder into GIT
-                WOGit.add(self, ["{0}/conf/nginx".format(wo_site_webroot)],
+                CCWGit.add(self, ["{0}/conf/nginx".format(ccw_site_webroot)],
                           msg="Adding letsencrypts config of site: {0}"
-                          .format(wo_domain))
-                updateSiteInfo(self, wo_domain, ssl=letsencrypt)
+                          .format(ccw_domain))
+                updateSiteInfo(self, ccw_domain, ssl=letsencrypt)
