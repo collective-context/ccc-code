@@ -1,22 +1,22 @@
-"""Clean Plugin for WordOps."""
+"""Clean Plugin for CCC CODE."""
 
 import os
 import requests
 
 from cement.core.controller import CementBaseController, expose
 
-from ccw.core.aptget import WOAptGet
+from ccw.core.aptget import CCWAptGet
 from ccw.core.logging import Log
-from ccw.core.services import WOService
-from ccw.core.shellexec import WOShellExec
-from ccw.core.variables import WOVar
+from ccw.core.services import CCWService
+from ccw.core.shellexec import CCWShellExec
+from ccw.core.variables import CCWVar
 
 
 def ccw_clean_hook(app):
     pass
 
 
-class WOCleanController(CementBaseController):
+class CCWCleanController(CementBaseController):
     class Meta:
         label = 'clean'
         stacked_on = 'base'
@@ -55,9 +55,9 @@ class WOCleanController(CementBaseController):
     @expose(hide=True)
     def clean_redis(self):
         """This function clears Redis cache"""
-        if (WOAptGet.is_installed(self, "redis-server")):
+        if (CCWAptGet.is_installed(self, "redis-server")):
             Log.info(self, "Cleaning Redis cache")
-            WOShellExec.cmd_exec(self, "redis-cli flushall")
+            CCWShellExec.cmd_exec(self, "redis-cli flushall")
         else:
             Log.info(self, "Redis is not installed")
 
@@ -66,8 +66,8 @@ class WOCleanController(CementBaseController):
         if (os.path.isdir("/var/run/nginx-cache") and
            os.path.exists('/usr/sbin/nginx')):
             Log.info(self, "Cleaning NGINX FastCGI cache")
-            WOShellExec.cmd_exec(self, "rm -rf /var/run/nginx-cache/*")
-            WOService.restart_service(self, 'nginx')
+            CCWShellExec.cmd_exec(self, "rm -rf /var/run/nginx-cache/*")
+            CCWService.restart_service(self, 'nginx')
         else:
             Log.error(self, "Unable to clean FastCGI cache", False)
 
@@ -79,7 +79,7 @@ class WOCleanController(CementBaseController):
                     '/var/www/22222/htdocs/cache/opcache')):
             try:
                 Log.info(self, "Cleaning opcache")
-                ccw_php_version = list(WOVar.ccw_php_versions.keys())
+                ccw_php_version = list(CCWVar.ccw_php_versions.keys())
                 for ccw_php in ccw_php_version:
                     if os.path.exists('{0}{1}.php'.format(opcache_dir, ccw_php)):
                         requests.get(
@@ -98,6 +98,6 @@ class WOCleanController(CementBaseController):
 
 def load(app):
     # register the plugin class.. this only happens if the plugin is enabled
-    app.handler.register(WOCleanController)
+    app.handler.register(CCWCleanController)
     # register a hook (function) to run after arguments are parsed.
     app.hook.register('post_argument_parsing', ccw_clean_hook)
