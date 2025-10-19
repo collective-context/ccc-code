@@ -329,7 +329,7 @@ class CCWSiteCloneController(CementBaseController):
                     Log.info(self, Log.FAIL +
                              "There was a serious error encountered...")
                     Log.info(self, Log.FAIL + "Cleaning up afterwards...")
-                    doCleanupAction(self, domain=cc_domain,
+                    doCleanupAction(self, domain=ccw_domain,
                                     webroot=data['webroot'],
                                     dbname=data['ccw_db_name'],
                                     dbuser=data['ccw_db_user'],
