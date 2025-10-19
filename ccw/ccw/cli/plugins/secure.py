@@ -150,7 +150,7 @@ class CCWSecureController(CementBaseController):
             if not ("exist_ip_address " + ip_addr in open('/etc/nginx/common/'
                                                           'acl.conf').read()):
                 CCWShellExec.cmd_exec(self, "sed -i "
-                                     "\"/deny/i allow {whitelist_address}\;\""
+                                     "\"/deny/i allow {whitelist_address}\\;\""
                                      " /etc/nginx/common/acl.conf"
                                      .format(whitelist_address=ip_addr))
         CCWGit.add(self, ["/etc/nginx"],
