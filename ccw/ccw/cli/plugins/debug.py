@@ -462,7 +462,7 @@ class CCWDebugController(CementBaseController):
                          encoding='utf-8', mode='a').close()
                     CCWShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/wp-"
                                          "content/debug.log"
-                                         "".format(web root,
+                                         "".format(webroot,
                                                    CCWVar.ccw_php_user))
                     CCWShellExec.cmd_exec(self, "sed -i \"s/define(\'WP_DEBUG\'"
                                          ".*/define(\'WP_DEBUG\', true);\\n"
