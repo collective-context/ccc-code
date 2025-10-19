@@ -1,8 +1,8 @@
-"""Maintenance Plugin for WordOps"""
+"""Maintenance Plugin for CCC CODE"""
 
 from cement.core.controller import CementBaseController, expose
 
-from ccw.core.aptget import WOAptGet
+from ccw.core.aptget import CCWAptGet
 from ccw.core.logging import Log
 
 
@@ -23,12 +23,12 @@ class CCWMaintenanceController(CementBaseController):
 
         try:
             Log.info(self, "updating apt-cache, please wait...")
-            WOAptGet.update(self)
+            CCWAptGet.update(self)
             Log.info(self, "updating packages, please wait...")
-            WOAptGet.dist_upgrade(self)
+            CCWAptGet.dist_upgrade(self)
             Log.info(self, "cleaning-up packages, please wait...")
-            WOAptGet.auto_remove(self)
-            WOAptGet.auto_clean(self)
+            CCWAptGet.auto_remove(self)
+            CCWAptGet.auto_clean(self)
         except OSError as e:
             Log.debug(self, str(e))
             Log.error(self, "Package updates failed !")
