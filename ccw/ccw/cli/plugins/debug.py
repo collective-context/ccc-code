@@ -105,9 +105,9 @@ class CCWDebugController(CementBaseController):
                                                             encoding='utf-8').read()):
                     Log.info(self, "Setting up Nginx debug connection"
                              " for "+ip_addr)
-                    CCWShellExec.cmd_exec(self, "sed -i \"/events {{/a\\ \\ \\ "
-                                               "\\ $(echo debug_connection "
-                                               "{ip}\;)\" /etc/nginx/"
+                    CCWShellExec.cmd_exec(self, r"sed -i \"/events {{/a\\ \\ \\ "
+                                               r"\\ $(echo debug_connection "
+                                               r"{ip}\;)\" /etc/nginx/"
                                                "nginx.conf".format(ip=ip_addr))
                     self.trigger_nginx = True
 
@@ -528,7 +528,7 @@ class CCWDebugController(CementBaseController):
             if not CCWShellExec.cmd_exec(self, "grep \"rewrite_log on;\" "
                                         "/etc/nginx/nginx.conf"):
                 Log.info(self, "Setting up Nginx rewrite logs")
-                CCWShellExec.cmd_exec(self, "sed -i \'/http {/a \\\\t"
+                CCWShellExec.cmd_exec(self, r"sed -i \'/http {/a \\t"
                                      "rewrite_log on;\' /etc/nginx/nginx.conf")
                 self.trigger_nginx = True
             else:
@@ -556,7 +556,7 @@ class CCWDebugController(CementBaseController):
                                         .format(config_path)):
                 Log.info(self, "Setting up Nginx rewrite logs for {0}"
                          .format(self.app.pargs.site_name))
-                CCWShellExec.cmd_exec(self, "sed -i \"/access_log/i \\\\\\t"
+                CCWShellExec.cmd_exec(self, r"sed -i \"/access_log/i \\\t"
                                      "rewrite_log on;\" {0}"
                                      .format(config_path))
                 self.trigger_nginx = True
@@ -685,13 +685,13 @@ class CCWDebugController(CementBaseController):
                                  " please wait...")
                         if not CCWShellExec.cmd_exec(self, "/bin/bash -c "
                                                     "\"crontab "
-                                                    "-l | sed '/CCC CODE "
-                                                    "start MySQL slow "
-                                                    "log/!b;n;c\*\/{0} "
-                                                    "\* \* \* "
-                                                    "\* \/usr"
-                                                    "\/local\/bin\/ccw debug "
-                                                    "--import\-slow\-log' "
+                                                    r"-l | sed '/CCC CODE "
+                                                    r"start MySQL slow "
+                                                    r"log/!b;n;c\*\/{0} "
+                                                    r"\* \* \* "
+                                                    r"\* \/usr"
+                                                    r"\/local\/bin\/ccw debug "
+                                                    r"--import\-slow\-log' "
                                                     "| crontab -\""
                                                     .format(cron_time)):
                             Log.error(self, "failed to update crontab entry")
