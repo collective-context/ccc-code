@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
 
-def WOSendMail(send_from, send_to, subject, text, files, server="localhost",
+def CCWSendMail(send_from, send_to, subject, text, files, server="localhost",
                port=587, username='', password='', isTls=True):
     msg = MIMEMultipart()
     msg['From'] = send_from
