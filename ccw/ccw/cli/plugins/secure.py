@@ -3,21 +3,21 @@ import os
 
 from cement.core.controller import CementBaseController, expose
 
-from wo.core.fileutils import WOFileUtils
-from wo.core.git import WOGit
-from wo.core.logging import Log
-from wo.core.random import RANDOM
-from wo.core.services import WOService
-from wo.core.shellexec import WOShellExec
-from wo.core.template import WOTemplate
-from wo.core.variables import WOVar
+from ccw.core.fileutils import CCWFileUtils
+from ccw.core.git import CCWGit
+from ccw.core.logging import Log
+from ccw.core.random import RANDOM
+from ccw.core.services import CCWService
+from ccw.core.shellexec import CCWShellExec
+from ccw.core.template import CCWTemplate
+from ccw.core.variables import CCWVar
 
 
-def wo_secure_hook(app):
+def ccw_secure_hook(app):
     pass
 
 
-class WOSecureController(CementBaseController):
+class CCWSecureController(CementBaseController):
     class Meta:
         label = 'secure'
         stacked_on = 'base'
@@ -47,7 +47,7 @@ class WOSecureController(CementBaseController):
                 dict(help='user input', nargs='?', default=None)),
             (['user_pass'],
                 dict(help='user pass', nargs='?', default=None))]
-        usage = "wo secure [options]"
+        usage = "ccw secure [options]"
 
     @expose(hide=True)
     def default(self):
@@ -66,16 +66,16 @@ class WOSecureController(CementBaseController):
     @expose(hide=True)
     def secure_auth(self):
         """This function secures authentication"""
-        WOGit.add(self, ["/etc/nginx"],
+        CCWGit.add(self, ["/etc/nginx"],
                   msg="Add Nginx to into Git")
         pargs = self.app.pargs
         passwd = RANDOM.long(self)
         if not pargs.user_input:
             username = input("Provide HTTP authentication user "
-                             "name [{0}] :".format(WOVar.wo_user))
+                             "name [{0}] :".format(CCWVar.ccw_user))
             pargs.user_input = username
             if username == "":
-                pargs.user_input = WOVar.wo_user
+                pargs.user_input = CCWVar.ccw_user
         if not pargs.user_pass:
             password = getpass.getpass("Provide HTTP authentication "
                                        "password [{0}] :".format(passwd))
@@ -85,46 +85,46 @@ class WOSecureController(CementBaseController):
         Log.debug(self, "printf username:"
                   "$(openssl passwd --apr1 "
                   "password 2> /dev/null)\n\""
-                  "> /etc/nginx/htpasswd-wo 2>/dev/null")
-        WOShellExec.cmd_exec(self, "printf \"{username}:"
+                  "> /etc/nginx/htpasswd-ccw 2>/dev/null")
+        CCWShellExec.cmd_exec(self, "printf \"{username}:"
                              "$(openssl passwd -apr1 "
                              "{password} 2> /dev/null)\n\""
-                             "> /etc/nginx/htpasswd-wo 2>/dev/null"
+                             "> /etc/nginx/htpasswd-ccw 2>/dev/null"
                              .format(username=pargs.user_input,
                                      password=pargs.user_pass),
                              log=False)
-        WOGit.add(self, ["/etc/nginx"],
+        CCWGit.add(self, ["/etc/nginx"],
                   msg="Adding changed secure auth into Git")
 
     @expose(hide=True)
     def secure_port(self):
         """This function Secures port"""
-        WOGit.add(self, ["/etc/nginx"],
+        CCWGit.add(self, ["/etc/nginx"],
                   msg="Add Nginx to into Git")
         pargs = self.app.pargs
         if pargs.user_input:
             while ((not pargs.user_input.isdigit()) and
                    (not pargs.user_input < 65536)):
                 Log.info(self, "Please enter a valid port number ")
-                pargs.user_input = input("WordOps "
+                pargs.user_input = input("CCC Code "
                                          "admin port [22222]:")
         else:
-            port = input("WordOps admin port [22222]:")
+            port = input("CCC Code admin port [22222]:")
             if port == "":
                 port = 22222
             while ((not port.isdigit()) and (not port != "") and
                    (not port < 65536)):
                 Log.info(self, "Please Enter valid port number :")
-                port = input("WordOps admin port [22222]:")
+                port = input("CCC Code admin port [22222]:")
             pargs.user_input = port
-        data = dict(release=WOVar.wo_version,
+        data = dict(release=CCWVar.ccw_version,
                     port=pargs.user_input, webroot='/var/www/')
-        WOTemplate.deploy(
+        CCWTemplate.deploy(
             self, '/etc/nginx/sites-available/22222',
             '22222.mustache', data)
-        WOGit.add(self, ["/etc/nginx"],
+        CCWGit.add(self, ["/etc/nginx"],
                   msg="Adding changed secure port into Git")
-        if not WOService.reload_service(self, 'nginx'):
+        if not CCWService.reload_service(self, 'nginx'):
             Log.error(self, "service nginx reload failed. "
                       "check issues with `nginx -t` command")
         Log.info(self, "Successfully port changed {port}"
@@ -134,7 +134,7 @@ class WOSecureController(CementBaseController):
     def secure_ip(self):
         """IP whitelisting"""
         if os.path.exists('/etc/nginx'):
-            WOGit.add(self, ["/etc/nginx"],
+            CCWGit.add(self, ["/etc/nginx"],
                       msg="Add Nginx to into Git")
         pargs = self.app.pargs
         if not pargs.user_input:
@@ -149,11 +149,11 @@ class WOSecureController(CementBaseController):
         for ip_addr in user_ip:
             if not ("exist_ip_address " + ip_addr in open('/etc/nginx/common/'
                                                           'acl.conf').read()):
-                WOShellExec.cmd_exec(self, "sed -i "
+                CCWShellExec.cmd_exec(self, "sed -i "
                                      "\"/deny/i allow {whitelist_address}\;\""
                                      " /etc/nginx/common/acl.conf"
                                      .format(whitelist_address=ip_addr))
-        WOGit.add(self, ["/etc/nginx"],
+        CCWGit.add(self, ["/etc/nginx"],
                   msg="Adding changed secure ip into Git")
 
         Log.info(self, "Successfully added IP address in acl.conf file")
@@ -172,7 +172,7 @@ class WOSecureController(CementBaseController):
             if start_secure != "Y" and start_secure != "y":
                 Log.error(self, "Not hardening SSH security")
         if os.path.exists('/etc/ssh'):
-            WOGit.add(self, ["/etc/ssh"],
+            CCWGit.add(self, ["/etc/ssh"],
                       msg="Adding SSH into Git")
         Log.debug(self, "check if /etc/ssh/sshd_config exist")
         if os.path.isfile('/etc/ssh/sshd_config'):
@@ -188,16 +188,16 @@ class WOSecureController(CementBaseController):
             else:
                 sudo_user = ''
             if pargs.allowpassword:
-                wo_allowpassword = 'yes'
+                ccw_allowpassword = 'yes'
             else:
-                wo_allowpassword = 'no'
-            data = dict(sshport=current_ssh_port, allowpass=wo_allowpassword,
+                ccw_allowpassword = 'no'
+            data = dict(sshport=current_ssh_port, allowpass=ccw_allowpassword,
                         user=sudo_user)
-            WOTemplate.deploy(self, '/etc/ssh/sshd_config',
+            CCWTemplate.deploy(self, '/etc/ssh/sshd_config',
                               'sshd.mustache', data)
-            WOGit.add(self, ["/etc/ssh"],
+            CCWGit.add(self, ["/etc/ssh"],
                       msg="Adding changed SSH port into Git")
-            if not WOService.restart_service(self, 'ssh'):
+            if not CCWService.restart_service(self, 'ssh'):
                 Log.error(self, "service SSH restart failed.")
                 Log.info(self, "Successfully harden SSH security")
         else:
@@ -206,7 +206,7 @@ class WOSecureController(CementBaseController):
     @expose(hide=True)
     def secure_ssh_port(self):
         """Change SSH port"""
-        WOGit.add(self, ["/etc/ssh"],
+        CCWGit.add(self, ["/etc/ssh"],
                   msg="Adding changed SSH port into Git")
         pargs = self.app.pargs
         if pargs.user_input:
@@ -223,37 +223,37 @@ class WOSecureController(CementBaseController):
                 Log.info(self, "Please Enter valid port number :")
                 port = input("Server SSH port [22]:")
             pargs.user_input = port
-        if WOFileUtils.grepcheck(self, '/etc/ssh/sshd_config', '#Port'):
-            WOShellExec.cmd_exec(self, "sed -i \"s/#Port.*/Port "
+        if CCWFileUtils.grepcheck(self, '/etc/ssh/sshd_config', '#Port'):
+            CCWShellExec.cmd_exec(self, "sed -i \"s/#Port.*/Port "
                                  "{port}/\" /etc/ssh/sshd_config"
                                  .format(port=pargs.user_input))
         else:
-            WOShellExec.cmd_exec(self, "sed -i \"s/Port.*/Port "
+            CCWShellExec.cmd_exec(self, "sed -i \"s/Port.*/Port "
                                  "{port}/\" /etc/ssh/sshd_config"
                                  .format(port=pargs.user_input))
         # allow new ssh port if ufw is enabled
         if os.path.isfile('/etc/ufw/ufw.conf'):
             # add rule for proftpd with UFW
-            if WOFileUtils.grepcheck(
+            if CCWFileUtils.grepcheck(
                     self, '/etc/ufw/ufw.conf', 'ENABLED=yes'):
                 try:
-                    WOShellExec.cmd_exec(
+                    CCWShellExec.cmd_exec(
                         self, 'ufw limit {0}'.format(pargs.user_input))
-                    WOShellExec.cmd_exec(
+                    CCWShellExec.cmd_exec(
                         self, 'ufw reload')
                 except Exception as e:
                     Log.debug(self, "{0}".format(e))
                     Log.error(self, "Unable to add UFW rule")
         # add ssh into git
-        WOGit.add(self, ["/etc/ssh"],
+        CCWGit.add(self, ["/etc/ssh"],
                   msg="Adding changed SSH port into Git")
         # restart ssh service
-        if not WOService.restart_service(self, 'ssh'):
+        if not CCWService.restart_service(self, 'ssh'):
             Log.error(self, "service SSH restart failed.")
         Log.info(self, "Successfully changed SSH port to {port}"
                  .format(port=pargs.user_input))
 
 
 def load(app):
-    app.handler.register(WOSecureController)
-    app.hook.register('post_argument_parsing', wo_secure_hook)
+    app.handler.register(CCWSecureController)
+    app.hook.register('post_argument_parsing', ccw_secure_hook)
