@@ -1,0 +1,3 @@
+"""
+CCC CODE core module
+"""
