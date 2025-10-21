@@ -8,16 +8,18 @@
 # unset AIDER_MODEL && unset AIDER_WEAK_MODEL
 model: anthropic/claude-sonnet-4-5-20250929
 #eak-model: openrouter/deepseek/deepseek-r1-0528
-weak-model: openrouter/deepseek/deepseek-coder
-#eak-model: openrouter/qwen/qwen3-coder
+#eak-model: openrouter/deepseek/deepseek-coder
+weak-model: openrouter/qwen/qwen3-coder
 #eak-model: anthropic/claude-3-5-haiku-20241022
 
 # Read-only Dateien (werden bei jedem LLM-Request geladen)
 read:
   - ../context-aider.md      # Context: Aider-Rollen-Info
   - .context-project.md      # Projekt-spezifische Infos
-  - .context.log
-  - .local/work/2025-10-18/2025-10-18_work-ai1-01.md # Folge dem Arbeitsauftrag 2025-10-14_work-ai1-01.md
+# - .context.log
+# - tree-ccw-ccw.txt
+  - fehlt-noch.txt
+  - .local/work/2025-10-18/2025-10-18_work-ai1-02.md # Folge dem Arbeitsauftrag 2025-10-14_work-ai1-01.md
 # - .init-work.md             # Arbeitsauftrag-spezifische Infos
 # - ../checkit.txt            # Temorär für einen Auftrag
 
