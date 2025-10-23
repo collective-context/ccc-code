@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # -------------------------------------------------------------------------
-# WordOps install and update script
+# CCC CODE install and update script
 # -------------------------------------------------------------------------
-# Website:       https://wordops.net
-# GitHub:        https://github.com/WordOps/WordOps
-# Copyright (c) 2019-2025 - WordOps
+# Website:       https://collective-context.org
+# GitHub:        https://github.com/collective-context/ccw-code
+# Copyright (c) 2025 - CCC CODE
 # This script is licensed under M.I.T
 # -------------------------------------------------------------------------
-# wget -qO wo wops.cc && sudo -E bash wo
+# wget -qO ccw ccw.cc && sudo -E bash ccw
 # -------------------------------------------------------------------------
 # Version 3.22.0 - 2024-12-06
 # -------------------------------------------------------------------------
@@ -29,17 +29,17 @@ TPUT_FAIL="${CSI}1;31m"
 TPUT_ECHO="${CSI}1;36m"
 TPUT_OK="${CSI}1;32m"
 
-wo_lib_echo() {
+ccw_lib_echo() {
 
     echo -e "${TPUT_ECHO}${*}${TPUT_RESET}"
 }
 
-wo_lib_echo_info() {
+ccw_lib_echo_info() {
 
     echo -e "$*"
 }
 
-wo_lib_echo_fail() {
+ccw_lib_echo_fail() {
 
     echo -e "${TPUT_FAIL}${*}${TPUT_RESET}"
 }
@@ -48,7 +48,7 @@ wo_lib_echo_fail() {
 # 1 - Capture errors
 ###
 
-wo_lib_error() {
+ccw_lib_error() {
     echo -e "[ $(date) ] ${TPUT_FAIL}${*}${TPUT_RESET}"
     exit "$2"
 }
@@ -60,24 +60,24 @@ wo_lib_error() {
 while [ "$#" -gt 0 ]; do
     case "$1" in
     -b | --branch)
-        wo_branch="$2"
+        ccw_branch="$2"
         shift
         ;;
     --force)
-        wo_force_install="y"
+        ccw_force_install="y"
         ;;
     --travis)
-        wo_travis="y"
-        wo_force_install="y"
+        ccw_travis="y"
+        ccw_force_install="y"
         ;;
     --mainline | --beta)
-        wo_branch="mainline"
+        ccw_branch="mainline"
         ;;
     -s | --silent)
-        wo_force_install="y"
+        ccw_force_install="y"
         ;;
     --purge | --uninstall)
-        wo_purge="y"
+        ccw_purge="y"
         ;;
     *) # positional args
         ;;
@@ -89,8 +89,8 @@ done
 # 1 - Check whether the installation is called with elevated rights
 ###
 if [[ $EUID -ne 0 ]]; then
-    wo_lib_echo_fail "Sudo privilege required..."
-    wo_lib_echo_fail "Use: wget -qO wo wops.cc && sudo bash wo  "
+    ccw_lib_echo_fail "Sudo privilege required..."
+    ccw_lib_echo_fail "Use: wget -qO ccw ccw.cc && sudo bash ccw  "
     exit 100
 fi
 
@@ -113,7 +113,7 @@ _run() {
     if [ -n "$2" ]; then
         echo -ne "${TPUT_ECHO}${2}${TPUT_RESET}\t"
     fi
-    if ! { "$1" >>"$wo_install_log" 2>&1; }; then
+    if ! { "$1" >>"$ccw_install_log" 2>&1; }; then
         if [ -n "$2" ]; then
             echo -e "${TPUT_FAIL}[KO]${TPUT_RESET}"
         fi
@@ -129,26 +129,26 @@ _curl() {
     curl -m 10 --retry 3 -sL "$@"
 }
 
-wo_init_variables() {
-    if [ -z "$wo_branch" ]; then
-        if [ "$wo_travis" = "y" ]; then
-            wo_branch=updating-configuration
+ccw_init_variables() {
+    if [ -z "$ccw_branch" ]; then
+        if [ "$ccw_travis" = "y" ]; then
+            ccw_branch=updating-configuration
         else
-            wo_branch=master
+            ccw_branch=master
         fi
     fi
-    readonly wo_install_log=/var/log/wo/install.log
+    readonly ccw_install_log=/var/log/ccw/install.log
     readonly TIME_FORMAT='%d-%b-%Y-%H%M%S'
     TIME=$(date +"$TIME_FORMAT")
     readonly TIME
-    readonly NGINX_BACKUP_FILE="/var/lib/wo-backup/nginx-backup.$TIME.tar.zst"
-    readonly EE_BACKUP_FILE="/var/lib/wo-backup/ee-backup.$TIME.tar.zst"
-    readonly WO_BACKUP_FILE="/var/lib/wo-backup/wo-backup.$TIME.tar.zst"
+    readonly NGINX_BACKUP_FILE="/var/lib/ccw-backup/nginx-backup.$TIME.tar.zst"
+    readonly EE_BACKUP_FILE="/var/lib/ccw-backup/ee-backup.$TIME.tar.zst"
+    readonly CCC_BACKUP_FILE="/var/lib/ccw-backup/ccw-backup.$TIME.tar.zst"
 
     if [ -x /usr/local/bin/ee ]; then
         ee_migration=1
-    elif [ -x /usr/local/bin/wo ]; then
-        wo_upgrade=1
+    elif [ -x /usr/local/bin/ccw ]; then
+        ccw_upgrade=1
     fi
 }
 
@@ -156,21 +156,21 @@ wo_init_variables() {
 # 1 - Checking linux distro
 ###
 
-wo_check_distro() {
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
-    local wo_distro_version
-    wo_distro_version=$(lsb_release -sc)
-    if [ -z "$wo_force_install" ]; then
-        if [ "$wo_linux_distro" != "Ubuntu" ] && [ "$wo_linux_distro" != "Debian" ] && [ "$wo_linux_distro" != "Raspbian" ]; then
-            wo_lib_echo_fail "WordOps (wo) only supports Ubuntu, Debian & Raspbian at the moment."
-            wo_lib_echo_fail "You can bypass this warning by adding the flag --force to the install command"
-            wo_lib_echo_fail "Feel free to open a pull-request if you want to add support for another Linux distributions"
+ccw_check_distro() {
+    local ccw_linux_distro
+    ccw_linux_distro=$(lsb_release -is)
+    local ccw_distro_version
+    ccw_distro_version=$(lsb_release -sc)
+    if [ -z "$ccw_force_install" ]; then
+        if [ "$ccw_linux_distro" != "Ubuntu" ] && [ "$ccw_linux_distro" != "Debian" ] && [ "$ccw_linux_distro" != "Raspbian" ]; then
+            ccw_lib_echo_fail "CCC CODE (ccw) only supports Ubuntu, Debian & Raspbian at the moment."
+            ccw_lib_echo_fail "You can bypass this warning by adding the flag --force to the install command"
+            ccw_lib_echo_fail "Feel free to open a pull-request if you want to add support for another Linux distributions"
             exit 100
         else
-            check_wo_linux_distro=$(lsb_release -sc | grep -E "buster|focal|jammy|bullseye|bookworm|noble")
-            if [ -z "$check_wo_linux_distro" ]; then
-                wo_lib_echo_fail "WordOps (wo) only supports Ubuntu 20.04/22.04/24.04 LTS, Debian 10.x/11.x/12.x and Raspbian 10x./11.x/12.x \n
+            check_ccw_linux_distro=$(lsb_release -sc | grep -E "buster|focal|jammy|bullseye|bookworm|noble")
+            if [ -z "$check_ccw_linux_distro" ]; then
+                ccw_lib_echo_fail "CCC CODE (ccw) only supports Ubuntu 20.04/22.04/24.04 LTS, Debian 10.x/11.x/12.x and Raspbian 10x./11.x/12.x \n
                 You can bypass this warning by adding the flag --force to the install command"
                 exit 100
             fi
@@ -182,19 +182,19 @@ wo_check_distro() {
 ###
 # 1 - To prevent errors or unexpected behaviour, create the log and ACL it
 ###
-wo_dir_init() {
-    local wo_log_dir=/var/log/wo
-    local wo_backup_dir=/var/lib/wo-backup
-    local wo_tmp_dir=/var/lib/wo/tmp
-    if [ ! -d "$wo_log_dir" ] || [ ! -d "$wo_backup_dir" ] || [ ! -d "$wo_tmp_dir" ]; then
+ccw_dir_init() {
+    local ccw_log_dir=/var/log/ccw
+    local ccw_backup_dir=/var/lib/ccw-backup
+    local ccw_tmp_dir=/var/lib/ccw/tmp
+    if [ ! -d "$ccw_log_dir" ] || [ ! -d "$ccw_backup_dir" ] || [ ! -d "$ccw_tmp_dir" ]; then
 
-        mkdir -p "$wo_backup_dir" "$wo_log_dir" "$wo_tmp_dir"
+        mkdir -p "$ccw_backup_dir" "$ccw_log_dir" "$ccw_tmp_dir"
 
-        # create wordops log files
-        touch /var/log/wo/{wordops.log,install.log}
+        # create ccw-code log files
+        touch /var/log/ccw/{ccw-code.log,install.log}
 
-        chmod -R 750 "$wo_log_dir" "$wo_backup_dir" "$wo_tmp_dir"
-        chown -R root:adm "$wo_log_dir"
+        chmod -R 750 "$ccw_log_dir" "$ccw_backup_dir" "$ccw_tmp_dir"
+        chown -R root:adm "$ccw_log_dir"
     fi
 
 }
@@ -203,18 +203,18 @@ wo_dir_init() {
 # 2 - Setup the dependencies for installation
 ####
 
-wo_install_dep() {
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
-    wo_python_venv=$(apt-cache policy python3.12-venv 2>&1 | grep -q Installed)
-    if [ "$wo_linux_distro" == "Ubuntu" ]; then
+ccw_install_dep() {
+    local ccw_linux_distro
+    ccw_linux_distro=$(lsb_release -is)
+    ccw_python_venv=$(apt-cache policy python3.12-venv 2>&1 | grep -q Installed)
+    if [ "$ccw_linux_distro" == "Ubuntu" ]; then
         # install dependencies
         add-apt-repository ppa:git-core/ppa -y
         apt-get --option=Dpkg::options::=--force-confmiss --option=Dpkg::options::=--force-confold --assume-yes install \
             build-essential curl gzip python3-pip python3-apt python3-venv gcc python3-dev sqlite3 git tar software-properties-common pigz \
             gnupg2 cron ccze rsync apt-transport-https tree haveged ufw unattended-upgrades tzdata ntp zstd idn \
             python3-distutils-extra libapt-pkg-dev bash-completion >/dev/null 2>&1
-        if $wo_python_venv; then
+        if $ccw_python_venv; then
             apt install -yy python3.12-venv >/dev/null 2>&1
         fi
 
@@ -235,11 +235,11 @@ wo_install_dep() {
     fi
 }
 
-wo_download_gpg_keys() {
-    local wo_distro_version
-    wo_distro_version=$(lsb_release -rs | grep -oE '[0-9]+')
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
+ccw_download_gpg_keys() {
+    local ccw_distro_version
+    ccw_distro_version=$(lsb_release -rs | grep -oE '[0-9]+')
+    local ccw_linux_distro
+    ccw_linux_distro=$(lsb_release -is)
 
     # create directories
     mkdir -p /usr/share/keyrings /etc/apt/keyrings
@@ -251,56 +251,56 @@ wo_download_gpg_keys() {
     curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'
 
     # nginx
-    if [ "$wo_linux_distro" == "Debian" ]; then
-        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Debian_$wo_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
+    if [ "$ccw_linux_distro" == "Debian" ]; then
+        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Debian_$ccw_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
     fi
-    if [ "$wo_linux_distro" == "Raspbian" ]; then
-        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Raspbian_$wo_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
+    if [ "$ccw_linux_distro" == "Raspbian" ]; then
+        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Raspbian_$ccw_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
     fi
 }
 
-wo_update_repo() {
-    local wo_linux_codename
-    wo_linux_codename=$(lsb_release -sc)
-    if [ -f /etc/apt/sources.list.d/wo-repo.list ]; then
+ccw_update_repo() {
+    local ccw_linux_codename
+    ccw_linux_codename=$(lsb_release -sc)
+    if [ -f /etc/apt/sources.list.d/ccw-repo.list ]; then
         # properly define sury repository
-        if grep -q sury /etc/apt/sources.list.d/wo-repo.list; then
-            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $wo_linux_codename main" >/etc/apt/sources.list.d/php.list
+        if grep -q sury /etc/apt/sources.list.d/ccw-repo.list; then
+            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $ccw_linux_codename main" >/etc/apt/sources.list.d/php.list
         fi
         # properly define mariadb repository
-        repo_file="/etc/apt/sources.list.d/wo-repo.list"
-        if grep -q mariadb /etc/apt/sources.list.d/wo-repo.list; then
+        repo_file="/etc/apt/sources.list.d/ccw-repo.list"
+        if grep -q mariadb /etc/apt/sources.list.d/ccw-repo.list; then
             repo_number=$(grep -c "mariadb" "$repo_file")
             if [ "$repo_number" -gt 1 ]; then
                 get_urls=$(grep "mariadb" "$repo_file" | awk '{print $3}')
                 mariadb_repo=$(echo "$get_urls" | sort -t '/' -k 6,6 -V | tail -n 1)
             else
-                mariadb_repo=$(grep mariadb /etc/apt/sources.list.d/wo-repo.list | awk '{print $3}')
+                mariadb_repo=$(grep mariadb /etc/apt/sources.list.d/ccw-repo.list | awk '{print $3}')
             fi
-            echo "deb [signed-by=/etc/apt/keyrings/mariadb-keyring.pgp] $mariadb_repo $wo_linux_codename main" >/etc/apt/sources.list.d/mariadb.list
+            echo "deb [signed-by=/etc/apt/keyrings/mariadb-keyring.pgp] $mariadb_repo $ccw_linux_codename main" >/etc/apt/sources.list.d/mariadb.list
         fi
         # properly define redis repository
-        if grep -q redis /etc/apt/sources.list.d/wo-repo.list; then
-            echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $wo_linux_codename main" >/etc/apt/sources.list.d/redis.list
+        if grep -q redis /etc/apt/sources.list.d/ccw-repo.list; then
+            echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $ccw_linux_codename main" >/etc/apt/sources.list.d/redis.list
         fi
-        # properly define WordOps nginx repository
-        if grep -q WordOps /etc/apt/sources.list.d/wo-repo.list; then
-            wo_repo=$(grep WordOps /etc/apt/sources.list.d/wo-repo.list | awk -F\  '{ print $2 }')
-            echo "deb [signed-by=/usr/share/keyrings/wordops-archive-keyring.gpg] $wo_repo /" >/etc/apt/sources.list.d/wordops.list
+        # properly define CCC CODE nginx repository
+        if grep -q WordOps /etc/apt/sources.list.d/ccw-repo.list; then
+            ccw_repo=$(grep WordOps /etc/apt/sources.list.d/ccw-repo.list | awk -F\  '{ print $2 }')
+            echo "deb [signed-by=/usr/share/keyrings/wordops-archive-keyring.gpg] $ccw_repo /" >/etc/apt/sources.list.d/wordops.list
         fi
-        # cleanup wo-repo.list
-        if grep -Eqv "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list; then
-            rm -f /etc/apt/sources.list.d/wo-repo.list
+        # cleanup ccw-repo.list
+        if grep -Eqv "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/ccw-repo.list; then
+            rm -f /etc/apt/sources.list.d/ccw-repo.list
         else
-            clean_wo_repo=$(grep -Ev "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list)
-            echo "$clean_wo_repo" >/etc/apt/sources.list.d/wo-repo.list
+            clean_ccw_repo=$(grep -Ev "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/ccw-repo.list)
+            echo "$clean_ccw_repo" >/etc/apt/sources.list.d/ccw-repo.list
         fi
     fi
 }
 
-wo_timesync() {
+ccw_timesync() {
     # set default ntp pools
-    if [ "$wo_distro_codename" != "bookworm" ] && [ "$wo_distro_codename" != "noble" ]; then
+    if [ "$ccw_distro_codename" != "bookworm" ] && [ "$ccw_distro_codename" != "noble" ]; then
         if [ -f /etc/systemd/timesyncd.conf ]; then
             if ! grep -q "time.cloudflare.com" /etc/systemd/timesyncd.conf; then
                 sed -e 's/^#NTP=/NTP=time.cloudflare.com 0.ubuntu.pool.ntp.org 1.ubuntu.pool.ntp.org 2.ubuntu.pool.ntp.org 3.ubuntu.pool.ntp.org/' -i /etc/systemd/timesyncd.conf
@@ -314,23 +314,23 @@ wo_timesync() {
 ###
 # 3 - Create/migrate the essentials
 ###
-wo_sync_db() {
+ccw_sync_db() {
     ###
-    # Switching from EE -> WO
+    # Switching from EE -> CCC
     ###
-    if [ ! -f /var/lib/wo/dbase.db ]; then
+    if [ ! -f /var/lib/ccw/dbase.db ]; then
 
         if [ -f /var/lib/ee/ee.db ]; then
 
             # Make a backup of the EasyEngine database
-            cp /var/lib/ee/ee.db /var/lib/wo/dbase-ee.db
+            cp /var/lib/ee/ee.db /var/lib/ccw/dbase-ee.db
 
             # Copy ee database
-            cp /var/lib/ee/ee.db /var/lib/wo/dbase.db
+            cp /var/lib/ee/ee.db /var/lib/ccw/dbase.db
         else
             if [ -d /etc/nginx/sites-available ] && [ -d /var/www ]; then
 
-                # Create an empty database for WordOps
+                # Create an empty database for CCC CODE
                 echo "CREATE TABLE sites (
            id INTEGER PRIMARY KEY     AUTOINCREMENT,
            sitename UNIQUE,
@@ -348,80 +348,80 @@ wo_sync_db() {
            db_host VARCHAR,
            is_hhvm INT INT DEFAULT '0',
            php_version VARCHAR
-            );" | sqlite3 /var/lib/wo/dbase.db
+            );" | sqlite3 /var/lib/ccw/dbase.db
 
                 # Check site is enable/live or disable
                 AV_SITES="$(basename -a /etc/nginx/sites-available/* | grep -v default)"
                 for site in $AV_SITES; do
                     if [ -h "/etc/nginx/sites-enabled/$site" ]; then
-                        wo_site_status='1'
+                        ccw_site_status='1'
                     else
-                        wo_site_status='0'
+                        ccw_site_status='0'
                     fi
 
                     # Acquire information about the current nginx configuration
 
-                    wo_site_current_type=$(grep "common/" "/etc/nginx/sites-available/$site" | awk -F "/" '{print $2}')
+                    ccw_site_current_type=$(grep "common/" "/etc/nginx/sites-available/$site" | awk -F "/" '{print $2}')
 
-                    if echo "$wo_site_current_type" | grep -q "redis"; then
-                        wo_site_current_cache="wpredis"
-                    elif echo "$wo_site_current_type" | grep -q wpsc; then
-                        wo_site_current_cache="wpsc"
-                    elif echo "$wo_site_current_type" | grep -q wpfc; then
-                        wo_site_current_cache="wpfc"
+                    if echo "$ccw_site_current_type" | grep -q "redis"; then
+                        ccw_site_current_cache="wpredis"
+                    elif echo "$ccw_site_current_type" | grep -q wpsc; then
+                        ccw_site_current_cache="wpsc"
+                    elif echo "$ccw_site_current_type" | grep -q wpfc; then
+                        ccw_site_current_cache="wpfc"
                     else
-                        wo_site_current_cache="basic"
+                        ccw_site_current_cache="basic"
                     fi
 
-                    if echo "$wo_site_current_type" | grep -q wp; then
-                        if echo "$wo_site_current_type" | grep -q wpsubdir; then
-                            wo_site_current="wpsubdir"
-                        elif echo "$wo_site_current_type" | grep -q wpsudomain; then
-                            wo_site_current="wpsubdomain"
+                    if echo "$ccw_site_current_type" | grep -q wp; then
+                        if echo "$ccw_site_current_type" | grep -q wpsubdir; then
+                            ccw_site_current="wpsubdir"
+                        elif echo "$ccw_site_current_type" | grep -q wpsudomain; then
+                            ccw_site_current="wpsubdomain"
                         else
-                            wo_site_current="wp"
+                            ccw_site_current="wp"
                         fi
                     else
-                        if echo "$wo_site_current_type" | grep -q location; then
-                            wo_site_current="proxy"
-                        elif echo "$wo_site_current_type" | grep -q php; then
-                            wo_site_current="html"
+                        if echo "$ccw_site_current_type" | grep -q location; then
+                            ccw_site_current="proxy"
+                        elif echo "$ccw_site_current_type" | grep -q php; then
+                            ccw_site_current="html"
                         else
-                            if [ -f "/var/www/${site}/ee-config.php" ] || [ -f "/var/www/${site}/wo-config.php" ]; then
-                                wo_site_current="mysql"
+                            if [ -f "/var/www/${site}/ee-config.php" ] || [ -f "/var/www/${site}/ccw-config.php" ]; then
+                                ccw_site_current="mysql"
                             else
-                                wo_site_current="php"
+                                ccw_site_current="php"
                             fi
                         fi
                     fi
 
-                    wo_webroot="/var/www/$site"
+                    ccw_webroot="/var/www/$site"
 
-                    # Import the configuration into the WordOps SQLite database
+                    # Import the configuration into the CCC CODE SQLite database
                     echo "INSERT INTO sites (sitename, site_type, cache_type, site_path, is_enabled, is_ssl, storage_fs, storage_db)
-            VALUES (\"$site\", \"$wo_site_current\", \"$wo_site_current_cache\", \"$wo_webroot\", \"$wo_site_status\", 0, 'ext4', 'mysql');" | sqlite3 /var/lib/wo/dbase.db
+            VALUES (\"$site\", \"$ccw_site_current\", \"$ccw_site_current_cache\", \"$ccw_webroot\", \"$ccw_site_status\", 0, 'ext4', 'mysql');" | sqlite3 /var/lib/ccw/dbase.db
 
                 done
             fi
         fi
 
-        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '5.6', '7.2');" | sqlite3 /var/lib/wo/dbase.db
-        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '7.0', '7.3');" | sqlite3 /var/lib/wo/dbase.db
+        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '5.6', '7.2');" | sqlite3 /var/lib/ccw/dbase.db
+        #        echo "UPDATE sites SET php_version = REPLACE(php_version, '7.0', '7.3');" | sqlite3 /var/lib/ccw/dbase.db
     fi
 }
 
-# Once again, set the proper ACL on the WordOps configuration directory
-secure_wo_db() {
+# Once again, set the proper ACL on the CCC CODE configuration directory
+secure_ccw_db() {
 
     # The owner is root
-    chown -R root:root /var/lib/wo
+    chown -R root:root /var/lib/ccw
     # Only allow access by root, block others
-    chmod -R 600 /var/lib/wo
+    chmod -R 600 /var/lib/ccw
 
 }
 
 # Update the WP-CLI version
-wo_update_wp_cli() {
+ccw_update_wp_cli() {
     WP_CLI_PATH=$(command -v wp)
     if [ -n "$WP_CLI_PATH" ]; then
         rm -rf "$WP_CLI_PATH"
@@ -438,7 +438,7 @@ wo_update_wp_cli() {
 
 }
 
-wo_install_acme_sh() {
+ccw_install_acme_sh() {
     # check if acme.sh is already installed
     if [ ! -x /etc/letsencrypt/acme.sh ]; then
 
@@ -460,7 +460,7 @@ wo_install_acme_sh() {
 
     if [ -x "$HOME/.acme.sh/acme.sh" ]; then
         # backup acme.sh folder
-        /bin/tar -I zstd -cf /var/lib/wo-backup/acme.sh.tar.zst "$HOME/.acme.sh"
+        /bin/tar -I zstd -cf /var/lib/ccw-backup/acme.sh.tar.zst "$HOME/.acme.sh"
         # rsync previous certificates to new acme.sh location
         /usr/bin/rsync -rltgoDpz --exclude="account.conf" \
             --exclude="acme.sh" \
@@ -494,154 +494,154 @@ wo_install_acme_sh() {
 
 }
 
-# WordOps install
-wo_install() {
+# CCC CODE install
+ccw_install() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    local wo_distro_codename
-    wo_distro_codename=$(lsb_release -sc)
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
+    local ccw_distro_codename
+    ccw_distro_codename=$(lsb_release -sc)
+    local ccw_linux_distro
+    ccw_linux_distro=$(lsb_release -is)
     if [ -d /usr/local/lib/python3."$python_ver"/dist-packages ]; then
         cd /usr/local/lib/python3."$python_ver"/dist-packages || exit 1
     fi
-    if [ "$wo_distro_codename" != "bookworm" ]; then
-        pip uninstall -yq wo wordops ee
+    if [ "$ccw_distro_codename" != "bookworm" ]; then
+        pip uninstall -yq ccw ccw-code ee
     fi
 
     cd || exit 1
-    if [ -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
-        source /opt/wo/bin/activate
-        /opt/wo/bin/pip uninstall -yq setuptools
-        /opt/wo/bin/pip install setuptools==80.0.1
-        /opt/wo/bin/pip install -U pip wheel distro
-        /opt/wo/bin/pip uninstall psutil -y
-        /opt/wo/bin/pip uninstall SQLAlchemy -y
+    if [ -d /opt/ccw/lib/python3."$python_ver"/site-packages/apt ]; then
+        source /opt/ccw/bin/activate
+        /opt/ccw/bin/pip uninstall -yq setuptools
+        /opt/ccw/bin/pip install setuptools==80.0.1
+        /opt/ccw/bin/pip install -U pip wheel distro
+        /opt/ccw/bin/pip uninstall psutil -y
+        /opt/ccw/bin/pip uninstall SQLAlchemy -y
     else
-        rm -rf /opt/wo
-        python3 -m venv /opt/wo
-        source /opt/wo/bin/activate
-        /opt/wo/bin/pip uninstall -yq setuptools
-        /opt/wo/bin/pip install setuptools==80.0.1
-        /opt/wo/bin/pip install -U pip wheel
-        /opt/wo/bin/pip install -U distro
-        if [ "$wo_linux_distro" = "Debian" ] || [ "$wo_linux_distro" = "Raspbian" ]; then
-            if [ "$wo_distro_codename" = "stretch" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
-            elif [ "$wo_distro_codename" = "bullseye" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
-            elif [ "$wo_distro_codename" = "bookworm" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
+        rm -rf /opt/ccw
+        python3 -m venv /opt/ccw
+        source /opt/ccw/bin/activate
+        /opt/ccw/bin/pip uninstall -yq setuptools
+        /opt/ccw/bin/pip install setuptools==80.0.1
+        /opt/ccw/bin/pip install -U pip wheel
+        /opt/ccw/bin/pip install -U distro
+        if [ "$ccw_linux_distro" = "Debian" ] || [ "$ccw_linux_distro" = "Raspbian" ]; then
+            if [ "$ccw_distro_codename" = "stretch" ]; then
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+            elif [ "$ccw_distro_codename" = "bullseye" ]; then
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+            elif [ "$ccw_distro_codename" = "bookworm" ]; then
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
             else
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
             fi
         else
-            if [ "$wo_distro_codename" = "focal" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
-            elif [ "$wo_distro_codename" = "bionic" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
-            elif [ "$wo_distro_codename" = "jammy" ]; then
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+            if [ "$ccw_distro_codename" = "focal" ]; then
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
+            elif [ "$ccw_distro_codename" = "bionic" ]; then
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+            elif [ "$ccw_distro_codename" = "jammy" ]; then
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
             else
-                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
+                /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
             fi
         fi
     fi
 
-    if [ "$wo_branch" = "master" ]; then
-        /opt/wo/bin/pip install -U wordops --upgrade-strategy=eager
+    if [ "$ccw_branch" = "master" ]; then
+        /opt/ccw/bin/pip install -U ccw-code --upgrade-strategy=eager
     else
-        /opt/wo/bin/pip install -I "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops" --upgrade-strategy=eager
+        /opt/ccw/bin/pip install -I "git+https://github.com/collective-context/ccw-code.git@$ccw_branch#egg=ccw-code" --upgrade-strategy=eager
     fi
     local python_venv
     python_venv=$(python3 -c "import sys; print(sys.version_info[1])")
-    cp -rf /opt/wo/lib/python3."$python_venv"/site-packages/usr/* /usr/
-    cp -rn /opt/wo/lib/python3."$python_venv"/site-packages/etc/* /etc/
-    cp -f /opt/wo/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/wo_auto.rc /etc/bash_completion.d/wo_auto.rc
-    rm -rf /usr/local/bin/wo /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
-    ln -s /opt/wo/bin/wo /usr/local/bin/
+    cp -rf /opt/ccw/lib/python3."$python_venv"/site-packages/usr/* /usr/
+    cp -rn /opt/ccw/lib/python3."$python_venv"/site-packages/etc/* /etc/
+    cp -f /opt/ccw/lib/python3."$python_venv"/site-packages/etc/bash_completion.d/ccw_auto.rc /etc/bash_completion.d/ccw_auto.rc
+    rm -rf /usr/local/bin/ccw /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
+    ln -s /opt/ccw/bin/ccw /usr/local/bin/
     deactivate
-    if [ ! -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
-        python3 -m venv --system-site-packages /opt/wo
+    if [ ! -d /opt/ccw/lib/python3."$python_ver"/site-packages/apt ]; then
+        python3 -m venv --system-site-packages /opt/ccw
     fi
 }
 
 # Clone Github repository if it doesn't exist
-wo_travis_install() {
+ccw_travis_install() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    local wo_distro_codename
-    wo_distro_codename=$(lsb_release -sc)
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
+    local ccw_distro_codename
+    ccw_distro_codename=$(lsb_release -sc)
+    local ccw_linux_distro
+    ccw_linux_distro=$(lsb_release -is)
     if [ -d ./dist ]; then
         rm -rf dist
     fi
     if [ -f ./setup.py ]; then
-        if [ -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
-            source /opt/wo/bin/activate
-            /opt/wo/bin/pip uninstall -yq setuptools
-            /opt/wo/bin/pip install setuptools==80.0.1
-            /opt/wo/bin/pip install -U pip wheel
-            /opt/wo/bin/pip uninstall psutil -y
-            /opt/wo/bin/pip uninstall SQLAlchemy -y
+        if [ -d /opt/ccw/lib/python3."$python_ver"/site-packages/apt ]; then
+            source /opt/ccw/bin/activate
+            /opt/ccw/bin/pip uninstall -yq setuptools
+            /opt/ccw/bin/pip install setuptools==80.0.1
+            /opt/ccw/bin/pip install -U pip wheel
+            /opt/ccw/bin/pip uninstall psutil -y
+            /opt/ccw/bin/pip uninstall SQLAlchemy -y
         else
-            rm -rf /opt/wo
-            python3 -m venv /opt/wo
-            source /opt/wo/bin/activate
-            /opt/wo/bin/pip uninstall -yq setuptools
-            /opt/wo/bin/pip install setuptools==80.0.1
-            /opt/wo/bin/pip install -U pip wheel
-            if [ "$wo_linux_distro" = "Debian" ] || [ "$wo_linux_distro" = "Raspbian" ]; then
-                if [ "$wo_distro_codename" = "stretch" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
-                elif [ "$wo_distro_codename" = "bullseye" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
-                elif [ "$wo_distro_codename" = "bookworm" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
+            rm -rf /opt/ccw
+            python3 -m venv /opt/ccw
+            source /opt/ccw/bin/activate
+            /opt/ccw/bin/pip uninstall -yq setuptools
+            /opt/ccw/bin/pip install setuptools==80.0.1
+            /opt/ccw/bin/pip install -U pip wheel
+            if [ "$ccw_linux_distro" = "Debian" ] || [ "$ccw_linux_distro" = "Raspbian" ]; then
+                if [ "$ccw_distro_codename" = "stretch" ]; then
+                    /opt/c cc/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+                elif [ "$ccw_distro_codename" = "bullseye" ]; then
+                    /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+                elif [ "$ccw_distro_codename" = "bookworm" ]; then
+                    /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
                 else
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
+                    /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
                 fi
             else
-                if [ "$wo_distro_codename" = "focal" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
-                elif [ "$wo_distro_codename" = "bionic" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
-                elif [ "$wo_distro_codename" = "jammy" ]; then
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+                if [ "$ccw_distro_codename" = "focal" ]; then
+                    /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
+                elif [ "$ccw_distro_codename" = "bionic" ]; then
+                    /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+                elif [ "$ccw_distro_codename" = "jammy" ]; then
+                    /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
                 else
-                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
+                    /opt/ccw/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
                 fi
             fi
         fi
-        /opt/wo/bin/pip install -U . --upgrade-strategy=eager
+        /opt/ccw/bin/pip install -U . --upgrade-strategy=eager
     else
-        /opt/wo/bin/pip install -U "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops" --upgrade-strategy=eager
+        /opt/ccw/bin/pip install -U "git+https://github.com/collective-context/ccw-code.git@$ccw_branch#egg=ccw-code" --upgrade-strategy=eager
     fi
-    cp -rf /opt/wo/lib/python3."$python_ver"/site-packages/usr/* /usr/
-    cp -rn /opt/wo/lib/python3."$python_ver"/site-packages/etc/* /etc/
-    cp -f /opt/wo/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/wo_auto.rc /etc/bash_completion.d/wo_auto.rc
-    rm -f /usr/local/bin/wo
-    ln -s /opt/wo/bin/wo /usr/local/bin/
+    cp -rf /opt/ccw/lib/python3."$python_ver"/site-packages/usr/* /usr/
+    cp -rn /opt/ccw/lib/python3."$python_ver"/site-packages/etc/* /etc/
+    cp -f /opt/ccw/lib/python3."$python_ver"/site-packages/etc/bash_completion.d/ccw_auto.rc /etc/bash_completion.d/ccw_auto.rc
+    rm -f /usr/local/bin/ccw
+    ln -s /opt/ccw/bin/ccw /usr/local/bin/
     deactivate
 }
 
-wo_upgrade_nginx() {
-    local wo_linux_distro
-    wo_linux_distro=$(lsb_release -is)
-    local wo_distro_version
-    wo_distro_version=$(lsb_release -sc)
+ccw_upgrade_nginx() {
+    local ccw_linux_distro
+    ccw_linux_distro=$(lsb_release -is)
+    local ccw_distro_version
+    ccw_distro_version=$(lsb_release -sc)
 
-    if [ -d /var/lib/wo-backup/nginx ]; then
-        /bin/tar -I zstd "$NGINX_BACKUP_FILE" /var/lib/wo-backup/nginx
-        rm -rf /var/lib/wo-backup/nginx
+    if [ -d /var/lib/ccw-backup/nginx ]; then
+        /bin/tar -I zstd "$NGINX_BACKUP_FILE" /var/lib/ccw-backup/nginx
+        rm -rf /var/lib/ccw-backup/nginx
     fi
     # backup nginx conf
     if [ -d /etc/nginx ]; then
-        /usr/bin/rsync -a --noatime /etc/nginx/ /var/lib/wo-backup/nginx/
+        /usr/bin/rsync -a --noatime /etc/nginx/ /var/lib/ccw-backup/nginx/
     fi
     if [ -d /etc/php ]; then
-        /usr/bin/rsync -a --noatime /etc/php/ /var/lib/wo-backup/php/
+        /usr/bin/rsync -a --noatime /etc/php/ /var/lib/ccw-backup/php/
     fi
     # chec if the package nginx-ee is installed
     CHECK_NGINX_EE=$(dpkg --list | grep nginx-ee)
@@ -650,8 +650,8 @@ wo_upgrade_nginx() {
     # install new nginx package
     if {
         if [ -n "$CHECK_NGINX_EE" ]; then
-            if [ -x /usr/local/bin/wo ]; then
-                [ -f /etc/apt/preferences.d/nginx-block ] && { mv /etc/apt/preferences.d/nginx-block /var/lib/wo/tmp/nginx-block; }
+            if [ -x /usr/local/bin/ccw ]; then
+                [ -f /etc/apt/preferences.d/nginx-block ] && { mv /etc/apt/preferences.d/nginx-block /var/lib/ccw/tmp/nginx-block; }
                 # stop nginx
                 service nginx stop
                 # remove previous package
@@ -665,21 +665,21 @@ wo_upgrade_nginx() {
                 if [ -d /etc/nginx ]; then
                     rm -rf /etc/nginx
                 fi
-                /usr/local/bin/wo stack install --nginx --php
-                rm -f /etc/nginx/common/acl.conf /etc/nginx/htpasswd-wo
-                /usr/bin/rsync -au --noatime /var/lib/wo-backup/nginx/ /etc/nginx/
-                /usr/local/bin/wo stack upgrade --nginx --force
+                /usr/local/bin/ccw stack install --nginx --php
+                rm -f /etc/nginx/common/acl.conf /etc/nginx/htpasswd-ccw
+                /usr/bin/rsync -au --noatime /var/lib/ccw-backup/nginx/ /etc/nginx/
+                /usr/local/bin/ccw stack upgrade --nginx --force
             fi
         fi
     }; then
         # restore sites and configuration
-        [ -f /etc/nginx/htpasswd-ee ] && { cp -f /etc/nginx/htpasswd-ee /etc/nginx/htpasswd-wo; }
-        sed -i "s/locations.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php7.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php71.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php72.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/locations-php73.conf/locations-wo.conf/" /etc/nginx/sites-available/*
-        sed -i "s/htpasswd-ee/htpasswd-wo/" /etc/nginx/common/acl.conf
+        [ -f /etc/nginx/htpasswd-ee ] && { cp -f /etc/nginx/htpasswd-ee /etc/nginx/htpasswd-ccw; }
+        sed -i "s/locations.conf/locations-ccw.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php7.conf/locations-ccw.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php71.conf/locations-ccw.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php72.conf/locations-ccw.conf/" /etc/nginx/sites-available/*
+        sed -i "s/locations-php73.conf/locations-ccw.conf/" /etc/nginx/sites-available/*
+        sed -i "s/htpasswd-ee/htpasswd-ccw/" /etc/nginx/common/acl.conf
         sed -i 's/ssl on;/#ssl on;/' /var/www/*/conf/nginx/ssl.conf
     fi
 
@@ -703,11 +703,11 @@ wo_upgrade_nginx() {
         systemctl stop nginx
         systemctl start nginx
     fi
-    [ -f /var/lib/wo/tmp/nginx-block ] && { mv /var/lib/wo/tmp/nginx-block /etc/apt/preferences.d/nginx-block; }
+    [ -f /var/lib/ccw/tmp/nginx-block ] && { mv /var/lib/ccw/tmp/nginx-block /etc/apt/preferences.d/nginx-block; }
     return 0
 }
 
-wo_update_latest() {
+ccw_update_latest() {
 
     # Move ~/.my.cnf to /etc/mysql/conf.d/my.cnf
     if [ -d /etc/mysql ]; then
@@ -728,7 +728,7 @@ wo_update_latest() {
     fi
 }
 
-wo_backup_ee() {
+ccw_backup_ee() {
     local BACKUP_EE=""
     [ -d /etc/nginx ] && { BACKUP_EE="$BACKUP_EE /etc/nginx"; }
     [ -d /etc/letsencrypt ] && { BACKUP_EE="$BACKUP_EE /etc/letsencrypt"; }
@@ -736,90 +736,90 @@ wo_backup_ee() {
     return 0
 }
 
-wo_backup_wo() {
-    if [ -d /etc/nginx ] && [ -d /etc/wo ] && [ -d /var/lib/wo ]; then
-        /bin/tar -I zstd -cf "$WO_BACKUP_FILE" /etc/nginx /etc/wo /var/lib/wo
+ccw_backup_ccw() {
+    if [ -d /etc/nginx ] && [ -d /etc/ccw ] && [ -d /var/lib/ccw ]; then
+        /bin/tar -I zstd -cf "$CCC_BACKUP_FILE" /etc/nginx /etc/ccw /var/lib/ccw
     fi
     return 0
 }
 
-wo_clean_ee() {
+ccw_clean_ee() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
     rm -rf /usr/local/bin/ee /etc/bash_completion.d/ee_auto.rc /usr/lib/ee/templates /usr/local/lib/python3."$python_ver"/dist-packages/ee-*.egg /etc/ee /var/lib/ee
     return 0
 }
 
-wo_remove_ee_cron() {
+ccw_remove_ee_cron() {
 
     crontab -l | sed '/ee site update --le=renew --all 2> \/dev\/null/d' | crontab -
 
 }
 
-wo_domain_suffix() {
-    _curl https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat | sed '/^\/\//d' | sed '/^$/d' | sed 's/^\s+//g' >/var/lib/wo/public_suffix_list.dat
+ccw_domain_suffix() {
+    _curl https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat | sed '/^\/\//d' | sed '/^$/d' | sed 's/^\s+//g' >/var/lib/ccw/public_suffix_list.dat
 }
 
-wo_clean() {
+ccw_clean() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{wo-*.egg,cement-*.egg,wordops-*.egg}
+    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{ccw-*.egg,cement-*.egg,ccw-code-*.egg}
 }
 
-wo_uninstall() {
+ccw_uninstall() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    if { /opt/wo/bin/pip list | grep -q "wordops" >/dev/null 2>&1; }; then
-        /opt/wo/bin/pip uninstall wordops -y
+    if { /opt/ccw/bin/pip list | grep -q "ccw-code" >/dev/null 2>&1; }; then
+        /opt/ccw/bin/pip uninstall ccw-code -y
     fi
-    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{pystache-*,cement-2.*,wo-*,wordops-*} /usr/local/bin/wo /etc/bash_completion.d/wo_auto.rc /var/lib/wo /etc/wo /usr/lib/wo/templates /opt/wo
+    rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{pystache-*,cement-2.*,ccw-*,ccw-code-*} /usr/local/bin/ccw /etc/bash_completion.d/ccw_auto.rc /var/lib/ccw /etc/ccw /usr/lib/ccw/templates /opt/ccw
 }
 
-wo_clean_repo() {
+ccw_clean_repo() {
     # remove old EasyEngine Nginx repository
     if [ -f /etc/apt/sources.list.d/ee-repo.list ]; then
         cp -f /etc/apt/sources.list.d/ee-repo.list /etc/apt/sources.list.d/ee-repo.list.save
         grep -v "/home:/rtCamp:/EasyEngine" /etc/apt/sources.list.d/ee-repo.list.save >/etc/apt/sources.list.d/ee-repo.list
     fi
-    if [ -f /etc/apt/sources.list.d/wo-repo.list ]; then
-        local wo_linux_distro
-        wo_linux_distro=$(lsb_release -is)
-        cp -f /etc/apt/sources.list.d/wo-repo.list /etc/apt/sources.list.d/wo-repo.list.save
-        if [ "$wo_linux_distro" = "Ubuntu" ]; then
-            grep -v "opensuse" /etc/apt/sources.list.d/wo-repo.list.save >/etc/apt/sources.list.d/wo-repo.list
+    if [ -f /etc/apt/sources.list.d/ccw-repo.list ]; then
+        local ccw_linux_distro
+        ccw_linux_distro=$(lsb_release -is)
+        cp -f /etc/apt/sources.list.d/ccw-repo.list /etc/apt/sources.list.d/ccw-repo.list.save
+        if [ "$ccw_linux_distro" = "Ubuntu" ]; then
+            grep -v "opensuse" /etc/apt/sources.list.d/ccw-repo.list.save >/etc/apt/sources.list.d/ccw-repo.list
         else
-            grep -v "/home:/rtCamp:/EasyEngine" /etc/apt/sources.list.d/wo-repo.list.save >/etc/apt/sources.list.d/wo-repo.list
+            grep -v "/home:/rtCamp:/EasyEngine" /etc/apt/sources.list.d/ccw-repo.list.save >/etc/apt/sources.list.d/ccw-repo.list
         fi
     fi
 }
 
-wo_woconf() {
-    if [ -f /etc/wo/wo.conf ]; then
-        if grep -q "log.logging" /etc/wo/wo.conf; then
-            sed -i "s/log.logging/log.colorlog/g" /etc/wo/wo.conf
+ccw_ccwconf() {
+    if [ -f /etc/ccw/ccw.conf ]; then
+        if grep -q "log.logging" /etc/ccw/ccw.conf; then
+            sed -i "s/log.logging/log.colorlog/g" /etc/ccw/ccw.conf
         fi
-        if ! grep -q "letsencrypt" /etc/wo/wo.conf; then
-            echo -e '\n[letsencrypt]\n\nkeylength = "ec-384"' >>/etc/wo/wo.conf
+        if ! grep -q "letsencrypt" /etc/ccw/ccw.conf; then
+            echo -e '\n[letsencrypt]\n\nkeylength = "ec-384"' >>/etc/ccw/ccw.conf
         fi
-        if ! grep -q "php" /etc/wo/wo.conf; then
-            echo -e '\n[php]\n\nversion = 8.2' >>/etc/wo/wo.conf
+        if ! grep -q "php" /etc/ccw/ccw.conf; then
+            echo -e '\n[php]\n\nversion = 8.2' >>/etc/ccw/ccw.conf
         fi
     fi
 }
 
-wo_fix_kernel() {
-    if [ -f /opt/wo-kernel.sh ]; then
-        chmod +x /opt/wo-kernel.sh
+ccw_fix_kernel() {
+    if [ -f /opt/ccw-kernel.sh ]; then
+        chmod +x /opt/ccw-kernel.sh
     fi
 }
 
-wo_init() {
+ccw_init() {
 
     ###
     # 1- Update the apt sewers with fresh info
     ###
 
-    if [ -z "$wo_travis" ]; then
+    if [ -z "$ccw_travis" ]; then
         if ! {
             apt-get update --allow-releaseinfo-change -qq >/dev/null 2>&1
         }; then
@@ -838,145 +838,145 @@ wo_init() {
             apt-get install gpg -qq >/dev/null 2>&1
         fi
     fi
-    if [ "$wo_force_install" = "y" ]; then
+    if [ "$ccw_force_install" = "y" ]; then
         # Check if USER is empty and assign to a variable
-        USER_OR_WORDOPS=${USER:-WordOps}
+        USER_OR_CCCCODE=${USER:-CCC-CODE}
 
         [ ! -f "$HOME/.gitconfig" ] && {
-            bash -c "echo -e \"[user]\n\tname = $USER_OR_WORDOPS\n\temail = root@$HOSTNAME.local\" > $HOME/.gitconfig"
+            bash -c "echo -e \"[user]\n\tname = $USER_OR_CCCCODE\n\temail = root@$HOSTNAME.local\" > $HOME/.gitconfig"
         }
     fi
     if [ -f ./setup.py ]; then
-        wo_version_new=$(grep "version='" setup.py | awk -F "'" '{print $2}' 2>&1)
+        ccw_version_new=$(grep "version='" setup.py | awk -F "'" '{print $2}' 2>&1)
     else
-        wo_version_new=$(curl -m 5 --retry 3 -sL https://api.github.com/repos/WordOps/WordOps/releases/latest 2>&1 | jq -r '.tag_name')
+        ccw_version_new=$(curl -m 5 --retry 3 -sL https://api.github.com/repos/collective-context/ccw-code/releases/latest 2>&1 | jq -r '.tag_name')
     fi
 
     echo ""
-    wo_lib_echo "Welcome to WordOps install/update script ${wo_version_new}"
+    ccw_lib_echo "Welcome to CCC CODE install/update script ${ccw_version_new}"
     echo ""
 
 }
 
-wo_php_fix() {
+ccw_php_fix() {
     if [ -f /lib/systemd/system/mariadb.service ]; then
         systemctl daemon-reload
         systemctl enable mariadb
     fi
 }
 
-wo_git_secure_path() {
+ccw_git_secure_path() {
     if ! grep -q "safe" ~/.gitconfig; then
         echo -e "\n[safe]\n  directory = *" >>~/.gitconfig
     fi
 }
 
 ###
-# 4 - WO MAIN SETUP
+# 4 - CCC MAIN SETUP
 ###
 
 # create required directories
-wo_dir_init
+ccw_dir_init
 # install lsb_release, curl, gpg and display header
-wo_init
+ccw_init
 # define main variables
-wo_init_variables
+ccw_init_variables
 # remove old repositories
-_run wo_clean_repo
-_run wo_download_gpg_keys
+_run ccw_clean_repo
+_run ccw_download_gpg_keys
 
-if [ -z "$wo_force_install" ]; then
+if [ -z "$ccw_force_install" ]; then
     # check distribution support
-    wo_check_distro
+    ccw_check_distro
 fi
 
-# wo uninstall script
-if [ "$wo_purge" = "y" ]; then
-    _run wo_backup_wo "Backing-up WO install"
-    _run wo_uninstall "Uninstalling WordOps"
-    wo_lib_echo "The WordOps backup files can be found in $WO_BACKUP_FILE"
+# ccw uninstall script
+if [ "$ccw_purge" = "y" ]; then
+    _run ccw_backup_ccw "Backing-up CCC install"
+    _run ccw_uninstall "Uninstalling CCC CODE"
+    ccw_lib_echo "The CCC CODE backup files can be found in $CCC_BACKUP_FILE"
     exit 0
 else
-    # 1 - WO already installed
-    if [ -x /usr/local/bin/wo ]; then
-        _run wo_clean
-        _run wo_woconf
-        _run wo_fix_kernel
-        _run wo_php_fix
-        _run wo_update_repo
+    # 1 - CCC already installed
+    if [ -x /usr/local/bin/ccw ]; then
+        _run ccw_clean
+        _run ccw_ccwconf
+        _run ccw_fix_kernel
+        _run ccw_php_fix
+        _run ccw_update_repo
         # 2 - Migration from EEv3
     else
         if [ -x /usr/local/bin/ee ]; then
-            if [ -z "$wo_force_install" ]; then
-                echo -e "Migrate from EasyEngine to WordOps (y/n): " && read -r WO_ANSWER
-                if [ "$WO_ANSWER" != "y" ] && [ "$WO_ANSWER" != "Y" ]; then
-                    wo_lib_error "Not installing WordOps" 1
+            if [ -z "$ccw_force_install" ]; then
+                echo -e "Migrate from EasyEngine to CCC CODE (y/n): " && read -r CCC_ANSWER
+                if [ "$CCC_ANSWER" != "y" ] && [ "$CCC_ANSWER" != "Y" ]; then
+                    ccw_lib_error "Not installing CCC CODE" 1
                 fi
             fi
-            _run wo_backup_ee "Backing-up EE install"
-            _run wo_remove_ee_cron "Removing EasyEngine cronjob"
+            _run ccw_backup_ee "Backing-up EE install"
+            _run ccw_remove_ee_cron "Removing EasyEngine cronjob"
         fi
 
     fi
-    _run wo_install_dep "Installing wo dependencies"
-    _run wo_timesync
+    _run ccw_install_dep "Installing ccw dependencies"
+    _run ccw_timesync
     # skip steps if travis
-    if [ -z "$wo_travis" ]; then
-        #_run wo_download "Downloading WordOps"
-        _run wo_sync_db
-        _run wo_install "Installing WordOps"
+    if [ -z "$ccw_travis" ]; then
+        #_run ccw_download "Downloading CCC CODE"
+        _run ccw_sync_db
+        _run ccw_install "Installing CCC CODE"
     else
-        _run wo_travis_install "Installing WordOps"
+        _run ccw_travis_install "Installing CCC CODE"
     fi
     if [ -x /usr/local/bin/ee ]; then
-        _run wo_upgrade_nginx "Upgrading Nginx"
-        _run wo_clean_ee "Cleaning previous EasyEngine install"
+        _run ccw_upgrade_nginx "Upgrading Nginx"
+        _run ccw_clean_ee "Cleaning previous EasyEngine install"
     fi
-    _run wo_install_acme_sh "Running post-install steps"
-    _run wo_domain_suffix
-    _run wo_update_wp_cli
-    _run wo_update_latest
-    _run secure_wo_db
+    _run ccw_install_acme_sh "Running post-install steps"
+    _run ccw_domain_suffix
+    _run ccw_update_wp_cli
+    _run ccw_update_latest
+    _run secure_ccw_db
 
-    wo sync
-    _run wo_git_secure_path
+    ccw sync
+    _run ccw_git_secure_path
 
     if [ "$ee_migration" = "1" ]; then
         echo
-        wo_lib_echo "The migration from EasyEngine to WordOps was successful!"
-        wo_lib_echo "The EasyEngine backup files can be found in /var/lib/wo-backup/ee-backup.tgz"
+        ccw_lib_echo "The migration from EasyEngine to CCC CODE was successful!"
+        ccw_lib_echo "The EasyEngine backup files can be found in /var/lib/ccw-backup/ee-backup.tgz"
         echo
-    elif [ "$wo_upgrade" = "1" ]; then
-        wo_lib_echo "WordOps (wo) upgrade to $wo_version_new was successful!"
-        wo_lib_echo "Changelog is available on https://github.com/WordOps/WordOps/releases/tag/$wo_version_new"
+    elif [ "$ccw_upgrade" = "1" ]; then
+        ccw_lib_echo "CCC CODE (ccw) upgrade to $ccw_version_new was successful!"
+        ccw_lib_echo "Changelog is available on https://github.com/collective-context/ccw-code/releases/tag/$ccw_version_new"
         echo
         version_to_check="v3.21"
-        if echo "$wo_version_new" | grep -q "$version_to_check"; then
-            wo_lib_echo "To upgrade Nginx package and configuration for HTTP/3 QUIC, use the following command"
-            wo_lib_echo_info "wo stack migrate --nginx"
+        if echo "$ccw_version_new" | grep -q "$version_to_check"; then
+            ccw_lib_echo "To upgrade Nginx package and configuration for HTTP/3 QUIC, use the following command"
+            ccw_lib_echo_info "ccw stack migrate --nginx"
         fi
         echo
-        wo_lib_echo "To upgrade WordOps web stacks, you can use the command:"
-        wo_lib_echo_info "wo stack upgrade"
+        ccw_lib_echo "To upgrade CCC CODE web stacks, you can use the command:"
+        ccw_lib_echo_info "ccw stack upgrade"
         echo
-        wo_lib_echo "To update all other packages, you can use the command:"
-        wo_lib_echo_info "wo maintenance"
+        ccw_lib_echo "To update all other packages, you can use the command:"
+        ccw_lib_echo_info "ccw maintenance"
     else
-        wo_lib_echo "WordOps (wo) installed successfully"
+        ccw_lib_echo "CCC CODE (ccw) installed successfully"
         echo
-        wo_lib_echo "To enable bash-completion, just use the command:"
-        wo_lib_echo_info "bash -l"
+        ccw_lib_echo "To enable bash-completion, just use the command:"
+        ccw_lib_echo_info "bash -l"
         echo
-        wo_lib_echo "To install WordOps recommended stacks, you can use the command:"
-        wo_lib_echo_info "wo stack install"
+        ccw_lib_echo "To install CCC CODE recommended stacks, you can use the command:"
+        ccw_lib_echo_info "ccw stack install"
         echo
-        wo_lib_echo "To create a first WordPress site, you can use the command:"
-        wo_lib_echo_info "wo site create site.tld --wp"
+        ccw_lib_echo "To create a first WordPress site, you can use the command:"
+        ccw_lib_echo_info "ccw site create site.tld --wp"
     fi
     echo
-    wo_lib_echo "WordOps Documentation : https://docs.wordops.net"
-    wo_lib_echo "WordOps Community Forum : https://community.wordops.net"
+    ccw_lib_echo "CCC CODE Documentation : https://collective-context.org/"
+    ccw_lib_echo "CCC CODE Community Forum : https://community.collective-context.org"
     echo
-    wo_lib_echo "Give WordOps a GitHub star : https://github.com/WordOps/WordOps/"
+    ccw_lib_echo "Give CCC CODE a GitHub star : https://github.com/collective-context/ccw-code/"
     echo
 fi

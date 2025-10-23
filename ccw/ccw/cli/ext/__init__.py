@@ -1,4 +1,0 @@
-"""
-CCC CODE extensions module
-"""
-

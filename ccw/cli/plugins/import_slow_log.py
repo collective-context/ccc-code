@@ -1,13 +1,13 @@
 from cement.core.controller import CementBaseController, expose
 
-from ccw.core.logging import Log
+from wo.core.logging import Log
 
 
 def ccw_import_slow_log_hook(app):
     pass
 
 
-class CCWImportslowlogController(CementBaseController):
+class CCCImportslowlogController(CementBaseController):
     class Meta:
         label = 'import_slow_log'
         stacked_on = 'base'
@@ -25,7 +25,7 @@ class CCWImportslowlogController(CementBaseController):
 
 def load(app):
     # register the plugin class.. this only happens if the plugin is enabled
-    app.handler.register(CCWImportslowlogController)
+    app.handler.register(CCCImportslowlogController)
 
     # register a hook (function) to run after arguments are parsed.
     app.hook.register('post_argument_parsing', ccw_import_slow_log_hook)

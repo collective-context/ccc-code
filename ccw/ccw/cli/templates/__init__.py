@@ -1,3 +1,0 @@
-"""
-CCC CODE templates module
-"""
