@@ -1,7 +1,7 @@
 [project]
 name = "ccb"
-version = "0.1.0"
-description = "Collective Context Commander - ccb module"
+version = "0.2.0"
+description = "Collective Context Commander - ccb module (Beta)"
 authors = [
     { name = "CCC Code Team", email = "info@collective-context.org" }
 ]
@@ -29,7 +29,7 @@ dev = [
 ]
 
 [project.scripts]
-ccb = "ccb.cli.main:main"
+ccb = "ccb.main:main"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
