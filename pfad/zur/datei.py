@@ -1,1 +1,0 @@
-# vollständiger Dateiinhalt
