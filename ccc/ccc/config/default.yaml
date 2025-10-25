@@ -1,0 +1,20 @@
+# CCC Default Configuration
+ccc:
+  version: "1.0.0"
+  debug: false
+  
+  # Logging
+  log:
+    level: INFO
+    file: /var/log/ccc/ccc.log
+  
+  # Orchestration
+  orchestration:
+    enabled: true
+    max_parallel_tasks: 5
+  
+  # AI Integration
+  ai:
+    enabled: true
+    provider: anthropic
+    model: claude-sonnet-4-5

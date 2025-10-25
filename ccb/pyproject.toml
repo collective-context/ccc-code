@@ -1,0 +1,43 @@
+[project]
+name = "ccb"
+version = "0.1.0"
+description = "Collective Context Commander - ccb module"
+authors = [
+    { name = "CCC Code Team", email = "info@collective-context.org" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+dependencies = [
+    "cement>=3.0",
+    "pyyaml",
+    "jinja2",
+    "distro",
+    "requests",
+    "psutil",
+    "sh",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "flake8",
+    "mypy",
+]
+
+[project.scripts]
+ccb = "ccb.cli.main:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+packages = ["ccb"]
+
+[tool.setuptools.package-data]
+ccb = ["templates/*", "config/*"]
