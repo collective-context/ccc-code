@@ -1,11 +1,9 @@
-"""WordOps download core classes."""
+"""CCC CODE download core classes."""
 import os
 import requests
 
-from wo.core.logging import Log
-
-
-class WODownload():
+from ccw.core.logging import Log
+class CCWDownload():
     """Method to download using urllib"""
     def __init__():
         pass
@@ -63,3 +61,5 @@ class WODownload():
             Log.debug(self, str(e))
             Log.error(self, "Unable to query phpmyadmin API")
         return pma_json["version"]
+
+# Zuletzt bearbeitet: 2025-10-27

@@ -1,19 +1,17 @@
-from wo.core.logging import Log
-from wo.core.shellexec import WOShellExec
-
-
+from ccw.core.logging import Log
+from ccw.core.shellexec import CCWShellExec
 """
 Set CRON on LINUX system.
 """
 
 
-class WOCron():
-    def setcron_weekly(self, cmd, comment='Cron set by WordOps', user='root',
+class CCWCron():
+    def setcron_weekly(self, cmd, comment='Cron set by CCC CODE', user='root',
                        min=0, hour=12):
-        if not WOShellExec.cmd_exec(self, "crontab -l "
+        if not CCWShellExec.cmd_exec(self, "crontab -l "
                                     "| grep -q \'{0}\'".format(cmd)):
 
-            WOShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
+            CCWShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
                                  "2> /dev/null | {{ cat; echo -e"
                                  " \\\""
                                  "\\n0 0 * * 0 "
@@ -22,14 +20,14 @@ class WOCron():
                                  "\\\"; } | crontab -\"")
             Log.debug(self, "Cron set")
 
-    def setcron_daily(self, cmd, comment='Cron set by WordOps', user='root',
+    def setcron_daily(self, cmd, comment='Cron set by CCC CODE', user='root',
                       min=0, hour=12):
-        if not WOShellExec.cmd_exec(self, "crontab -l "
+        if not CCWShellExec.cmd_exec(self, "crontab -l "
                                     "| grep -q \'{0}\'".format(cmd)):
 
-            WOShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
+            CCWShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
                                  "2> /dev/null | {{ cat; echo -e"
-                                 " \\\""
+                                 " \\\\""
                                  "\\n@daily"
                                  "{0}".format(cmd) +
                                  " # {0}".format(comment) +
@@ -37,9 +35,9 @@ class WOCron():
             Log.debug(self, "Cron set")
 
     def remove_cron(self, cmd):
-        if WOShellExec.cmd_exec(self, "crontab -l "
+        if CCWShellExec.cmd_exec(self, "crontab -l "
                                 "| grep -q \'{0}\'".format(cmd)):
-            if not WOShellExec.cmd_exec(self, "/bin/bash -c "
+            if not CCWShellExec.cmd_exec(self, "/bin/bash -c "
                                         "\"crontab "
                                         "-l | sed '/{0}/d'"
                                         "| crontab -\""
@@ -47,3 +45,5 @@ class WOCron():
                 Log.error(self, "Failed to remove crontab entry", False)
         else:
             Log.debug(self, "Cron not found")
+
+# Zuletzt bearbeitet: 2025-10-27

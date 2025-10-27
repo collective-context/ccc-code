@@ -2,8 +2,10 @@ import random
 import string
 
 
-class RANDOM:
+class CCWRandom:
     """Random strings generator"""
+
+# Zuletzt bearbeitet: 2025-10-27
 
     def long(self):
         long_random = ''.join([random.choice
