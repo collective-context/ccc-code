@@ -1,13 +1,13 @@
-"""WordOps MySQL core classes."""
+"""CCC CODE MySQL core classes."""
 import os
 from os.path import expanduser
 
 import pymysql
 from pymysql import DatabaseError, Error, connections
 
-from wo.core.logging import Log
-from wo.core.variables import WOVar
-from wo.core.shellexec import WOShellExec
+from ccw.core.logging import Log
+from ccw.core.variables import CCWVar
+from ccw.core.shellexec import CCWShellExec
 
 
 class MySQLConnectionError(Exception):
@@ -23,9 +23,7 @@ class StatementExcecutionError(Exception):
 class DatabaseNotExistsError(Exception):
     """Custom Exception when Database not Exist"""
     pass
-
-
-class WOMysql():
+class CCWMysql():
     """Method for MySQL connection"""
 
     def connect(self):
@@ -69,7 +67,7 @@ class WOMysql():
     def execute(self, statement, errormsg='', log=True):
         # Get login details from /etc/mysql/conf.d/my.cnf
         # & Execute MySQL query
-        connection = WOMysql.connect(self)
+        connection = CCWMysql.connect(self)
         log and Log.debug(self, "Executing MySQL Statement : {0}"
                           .format(statement))
         try:
@@ -93,12 +91,12 @@ class WOMysql():
         import subprocess
         try:
             Log.info(self, "Backing up database at location: "
-                     "/var/lib/wo-backup/mysql")
+                     "/var/lib/ccw-backup/mysql")
             # Setup Nginx common directory
-            if not os.path.exists('/var/lib/wo-backup/mysql'):
+            if not os.path.exists('/var/lib/ccw-backup/mysql'):
                 Log.debug(self, 'Creating directory'
-                          '/var/lib/wo-backup/mysql')
-                os.makedirs('/var/lib/wo-backup/mysql')
+                          '/var/lib/ccw-backup/mysql')
+                os.makedirs('/var/lib/ccw-backup/mysql')
             if not fulldump:
                 db = subprocess.check_output(
                     ["/usr/bin/mysql "
@@ -116,8 +114,8 @@ class WOMysql():
                         stderr=subprocess.PIPE, shell=True)
                     p2 = subprocess.Popen(
                         "/usr/bin/zstd -c > "
-                        "/var/lib/wo-backup/mysql/{0}{1}.sql.zst"
-                        .format(dbs, WOVar.wo_date),
+                        "/var/lib/ccw-backup/mysql/{0}{1}.sql.zst"
+                        .format(dbs, CCWVar.ccw_date),
                         stdin=p1.stdout, shell=True)
                     # Allow p1 to receive a SIGPIPE if p2 exits
                     p1.stdout.close()
@@ -137,8 +135,8 @@ class WOMysql():
                     stderr=subprocess.PIPE, shell=True)
                 p2 = subprocess.Popen(
                     "/usr/bin/zstd -c > "
-                    "/var/lib/wo-backup/mysql/fulldump-{0}.sql.zst"
-                    .format(WOVar.wo_date),
+                    "/var/lib/ccw-backup/mysql/fulldump-{0}.sql.zst"
+                    .format(CCWVar.ccw_date),
                     stdin=p1.stdout, shell=True)
                 p1.stdout.close()
                 output = p1.stderr.read()
@@ -154,7 +152,7 @@ class WOMysql():
 
     def check_db_exists(self, db_name):
         try:
-            if WOMysql.dbConnection(self, db_name):
+            if CCWMysql.dbConnection(self, db_name):
                 return True
         except DatabaseNotExistsError as e:
             Log.debug(self, str(e))
@@ -170,8 +168,10 @@ class WOMysql():
             mariadb_admin = "/usr/bin/mysqladmin"
         else:
             return False
-        if WOShellExec.cmd_exec(self, f"{mariadb_admin} ping"):
+        if CCWShellExec.cmd_exec(self, f"{mariadb_admin} ping"):
             return True
         else:
             Log.info(self, "Unable to connect to MariaDB server")
             return False
+
+# Zuletzt bearbeitet: 2025-10-27

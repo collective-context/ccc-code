@@ -1,7 +1,7 @@
-"""WordOps Nginx Manager"""
+"""CCC CODE Nginx Manager"""
 import subprocess
 
-from wo.core.logging import Log
+from ccw.core.logging import Log
 
 
 def check_config(self):
@@ -17,3 +17,5 @@ def check_config(self):
     else:
         Log.debug(self, "Nginx configuration check was successful")
         return True
+
+# Zuletzt bearbeitet: 2025-10-27

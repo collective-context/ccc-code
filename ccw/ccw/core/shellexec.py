@@ -1,17 +1,15 @@
-"""WordOps Shell Functions"""
+"""CCC CODE Shell Functions"""
 import subprocess
 
-from wo.core.logging import Log
+from ccw.core.logging import Log
 
 
 class CommandExecutionError(Exception):
     """custom Exception for command execution"""
     pass
-
-
-class WOShellExec():
+class CCWShellExec():
     """Method to run shell commands"""
-    def __init__():
+    def __init__(self):
         pass
 
     def cmd_exec(self, command, errormsg='', log=True):
@@ -73,3 +71,5 @@ class WOShellExec():
         except Exception as e:
             Log.debug(self, str(e))
             raise CommandExecutionError
+
+# Zuletzt bearbeitet: 2025-10-27

@@ -1,16 +1,14 @@
-"""WordOps file utils core classes."""
+"""CCC CODE file utils core classes."""
 import fileinput
 import os
 import pwd
 import shutil
 import codecs
 
-from wo.core.logging import Log
-
-
-class WOFileUtils():
+from ccw.core.logging import Log
+class CCWFileUtils():
     """Utilities to operate on files"""
-    def __init__():
+    def __init__(self):
         pass
 
     def remove(self, filelist):
@@ -297,7 +295,7 @@ class WOFileUtils():
             Remove files
         """
         Log.debug(self, "Removing {0}".format(path))
-        if WOFileUtils.isexist(self, path):
+        if CCWFileUtils.isexist(self, path):
             try:
                 if os.path.isdir(path):
                     shutil.rmtree(path)
@@ -311,6 +309,8 @@ class WOFileUtils():
                 Log.debug(self, "{0}".format(e))
                 Log.error(self, "Unable to remove file  : {0} "
                           .format(path))
+
+# Zuletzt bearbeitet: 2025-10-27
 
     def findBrokenSymlink(self, sympath):
         """

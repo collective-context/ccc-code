@@ -1,4 +1,3 @@
-
 """
 Real time log files watcher supporting log rotation.
 """
@@ -8,7 +7,9 @@ import os
 import stat
 import time
 
-from wo.core.logging import Log
+from ccw.core.logging import Log
+
+# Zuletzt bearbeitet: 2025-10-27
 
 
 class LogWatcher(object):
