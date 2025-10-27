@@ -1,5 +1,5 @@
-# WPSC NGINX CONFIGURATION - WordOps {{release}}
-# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN WordOps (wo) UPDATE
+# WPSC NGINX CONFIGURATION - CCC CODE {{release}}
+# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN CCC CODE (ccw) UPDATE
 # $cache_uri variable set in /etc/nginx/conf.d/map-wp.conf
 
 # Use cached or actual file if they exists, Otherwise pass request to WordPress
@@ -15,3 +15,5 @@ location ~ \.php$ {
   # Following line is needed by WP Super Cache plugin
   fastcgi_param SERVER_NAME $http_host;
 }
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

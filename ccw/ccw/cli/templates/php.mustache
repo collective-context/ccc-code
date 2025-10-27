@@ -1,5 +1,5 @@
-# PHP NGINX CONFIGURATION - WordOps {{release}}
-# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN WordOps (wo) UPDATE
+# PHP NGINX CONFIGURATION - CCC CODE {{release}}
+# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN CCC CODE (ccw) UPDATE
 location / {
   try_files $uri $uri/ /index.php$is_args$args;
 }
@@ -8,3 +8,5 @@ location ~ \.php$ {
   include fastcgi_params;
   fastcgi_pass {{upstream}};
 }
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

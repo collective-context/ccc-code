@@ -1,5 +1,5 @@
-# Redis NGINX CONFIGURATION - WordOps {{release}}
-# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN WordOps (wo) UPDATE
+# Redis NGINX CONFIGURATION - CCC CODE {{release}}
+# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN CCC CODE (ccw) UPDATE
 # $skip_cache variable set in /etc/nginx/conf.d/map-wp.conf
 
 # Use cached or actual file if they exists, Otherwise pass request to WordPress
@@ -41,3 +41,5 @@ location ~ \.php$ {
   include fastcgi_params;
   fastcgi_pass {{upstream}};
 }
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

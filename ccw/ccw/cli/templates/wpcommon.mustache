@@ -1,5 +1,5 @@
-# WordPress COMMON SETTINGS - WordOps {{release}}
-# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN WordOps (wo) UPDATE
+# WordPress COMMON SETTINGS - CCC CODE {{release}}
+# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN CCC CODE (ccw) UPDATE
 # Limit access to avoid brute force attack
 location = /wp-login.php {
     limit_req zone=one burst=1 nodelay;
@@ -117,3 +117,5 @@ location ~ \/wp-admin\/load-(scripts|styles).php {
 location ~ ^/wp-content/uploads/edd/(.*?)\.zip$ {
     rewrite / permanent;
 }
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}
