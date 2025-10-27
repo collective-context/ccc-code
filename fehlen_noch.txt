@@ -118,7 +118,6 @@
     │   │   ├── template.py
     │   │   ├── variables.py
     │   │   └── wpcli.py
-    │   ├── __init__.py
     │   └── utils
     │       ├── __init__.py
     │       └── test.py
@@ -146,14 +145,12 @@
     │   │   └── summary.md
     │   └── wo.8
     ├── favicon.ico
-    ├── install
     ├── LICENSE
     ├── logo.png
     ├── MANIFEST.in
     ├── README.md
     ├── requirements.txt
     ├── setup.cfg
-    ├── setup.py
     ├── tests
     │   ├── cli
     │   │   ├── 13_test_stack_install.py
@@ -194,4 +191,4 @@
         ├── SOURCES.txt
         └── top_level.txt
 
-21 directories, 174 files
+21 directories, 171 files

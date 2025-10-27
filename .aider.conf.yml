@@ -6,13 +6,15 @@
 # Model Configuration
 # Lösche die Environment Variablen, damit die Config hier greift
 # unset AIDER_MODEL && unset AIDER_WEAK_MODEL
-model: xai/grok-4-latest
+#odel: xai/grok-4-latest
 #odel: anthropic/claude-sonnet-4-5-20250929
 #eak-model: openrouter/deepseek/deepseek-r1-0528
 #eak-model: openrouter/deepseek/deepseek-coder
+#eak-model: xai/grok-4-latest
+model: xai/grok-4-fast-reasoning
 weak-model: openrouter/qwen/qwen3-coder
+#eak-model: xai/grok-4-fast-reasoning
 #eak-model: anthropic/claude-3-5-haiku-20241022
-
 # Read-only Dateien (werden bei jedem LLM-Request geladen)
 read:
   - ../context-aider.md      # Context: Aider-Rollen-Info
@@ -23,10 +25,12 @@ read:
 # - .init-work.md             # Arbeitsauftrag-spezifische Infos
 # - ../checkit.txt            # Temorär für einen Auftrag
 
-# Git Repository Einstellungen
-subtree-only: true        # Nur Dateien im aktuellen Subtree berücksichtigen
-auto-commits: true        # Automatische Commits von LLM-Änderungen
-dirty-commits: true       # Commits auch wenn Repo dirty ist
+# Git Repository Einstellungen	  | subtree-only Nur Dateien im aktuellen Subtree berücksichtigen
+# auto-commits von LLM-Änderungen | dirty-commits auch wenn Repo dirty ist
+edit-format: diff
+subtree-only: true
+auto-commits: true
+dirty-commits: true
 
 # Model & Performance
 map-tokens: 8192          # Tokens für Repository Map 2048 | 4096 | 8192
