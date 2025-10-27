@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# WordOps bash script to update cloudflare IP
+# CCC CODE bash script to update cloudflare IP
 
 string::isIPv4Block(){
     local -r ip="${1}"
@@ -52,7 +52,7 @@ if [ -d /etc/nginx/conf.d ]; then
     done
 
     if [[ 'true' == "${allOK}" ]]; then
-        echo '# WordOps (wo) set visitors real ip with Cloudflare' > "${cfConf}"
+        echo '# CCC CODE (ccw) set visitors real ip with Cloudflare' > "${cfConf}"
 
         for ip in ${ips4}; do
             echo "set_real_ip_from ${ip};" >> "${cfConf}"
@@ -74,3 +74,5 @@ else
 fi
 echo "Cloudflare IPs updated"
 echo ""
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}
