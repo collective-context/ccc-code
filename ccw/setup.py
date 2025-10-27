@@ -89,3 +89,5 @@ setup(name='wordops',
       """,
       namespace_packages=[],
       )
+
+# Zuletzt bearbeitet: 2025-10-27
