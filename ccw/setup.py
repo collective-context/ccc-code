@@ -16,19 +16,19 @@ templates = []
 for name in glob.glob('config/plugins.d/*.conf'):
     conf.insert(1, name)
 
-for name in glob.glob('wo/cli/templates/*.mustache'):
+for name in glob.glob('ccw/cli/templates/*.mustache'):
     templates.insert(1, name)
 
 if os.geteuid() == 0:
-    if not os.path.exists('/var/log/wo/'):
-        os.makedirs('/var/log/wo/')
+    if not os.path.exists('/var/log/ccw/'):
+        os.makedirs('/var/log/ccw/')
 
-    if not os.path.exists('/var/lib/wo/tmp/'):
-        os.makedirs('/var/lib/wo/tmp/')
+    if not os.path.exists('/var/lib/ccw/tmp/'):
+        os.makedirs('/var/lib/ccw/tmp/')
 
-setup(name='wordops',
+setup(name='ccw',
       version='3.22.0',
-      description='An essential toolset that eases server administration',
+      description='An essential toolset that eases CCC CODE site and server administration with Nginx',
       long_description=LONG,
       long_description_content_type='text/markdown',
       classifiers=[
@@ -41,15 +41,15 @@ setup(name='wordops',
           "Topic :: System :: Systems Administration",
       ],
       keywords='nginx automation wordpress deployment CLI',
-      author='WordOps',
-      author_email='contact@wordops.io',
-      url='https://github.com/WordOps/WordOps',
+      author='CCC CODE',
+      author_email='contact@collective-context.org',
+      url='https://github.com/collective-context/ccc-code',
       license='MIT',
       project_urls={
-          'Documentation': 'https://docs.wordops.net',
-          'Forum': 'https://community.wordops.net',
-          'Source': 'https://github.com/WordOps/WordOps',
-          'Tracker': 'https://github.com/WordOps/WordOps/issues',
+          'Documentation': 'https://collective-context.org/docs',
+          'Forum': 'https://community.collective-context.org',
+          'Source': 'https://github.com/collective-context/ccc-code',
+          'Tracker': 'https://github.com/collective-context/ccc-code/issues',
       },
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests',
                                       'templates']),
@@ -76,16 +76,18 @@ setup(name='wordops',
       extras_require={  # Optional
           'testing': ['nose', 'coverage'],
       },
-      data_files=[('/etc/wo', ['config/wo.conf']),
-                  ('/etc/wo/plugins.d', conf),
-                  ('/usr/lib/wo/templates', templates),
+      data_files=[('/etc/ccw', ['config/ccw.conf']),
+                  ('/etc/ccw/plugins.d', conf),
+                  ('/usr/lib/ccw/templates', templates),
                   ('/etc/bash_completion.d/',
-                   ['config/bash_completion.d/wo_auto.rc']),
-                  ('/usr/share/man/man8/', ['docs/wo.8'])],
+                   ['config/bash_completion.d/ccw_auto.rc']),
+                  ('/usr/share/man/man8/', ['docs/ccw.8'])],
       setup_requires=[],
       entry_points="""
           [console_scripts]
-          wo = wo.cli.main:main
+          ccw = ccw.cli.main:main
       """,
       namespace_packages=[],
       )
+
+# Zuletzt bearbeitet: 2025-10-27
