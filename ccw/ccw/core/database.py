@@ -1,12 +1,12 @@
-"""WordOps generic database creation module"""
+"""CCC CODE generic database creation module"""
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from wo.core.variables import WOVar
+from ccw.core.variables import CCWVar
 
 # db_path = self.app.config.get('site', 'db_path')
-engine = create_engine(WOVar.wo_db_uri, convert_unicode=True)
+engine = create_engine(CCWVar.ccw_db_uri, convert_unicode=True)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
@@ -21,9 +21,11 @@ def init_db(app):
     # import all modules here that might define models so that
     # they will be registered properly on the metadata.  Otherwise
     # # you will have to import them first before calling init_db()
-    # import wo.core.models
+    # import ccw.core.models
     try:
-        app.log.info("Initializing WordOps Database")
+        app.log.info("Initializing CCC CODE Database")
         Base.metadata.create_all(bind=engine)
     except Exception as e:
         app.log.debug("{0}".format(e))
+
+# Zuletzt bearbeitet: 2025-10-27

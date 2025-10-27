@@ -1,4 +1,4 @@
-"""WordOps package installation using apt-get module."""
+"""CCC CODE package installation using apt-get module."""
 import subprocess
 import sys
 import os
@@ -6,11 +6,9 @@ import os
 from sh import ErrorReturnCode, apt_get
 
 import apt
-from wo.core.apt_repo import WORepo
-from wo.core.logging import Log
-
-
-class WOAptGet():
+from ccw.core.apt_repo import CCWRepo
+from ccw.core.logging import Log
+class CCWAptGet():
     """Generic apt-get intialisation"""
 
     def update(self):
@@ -18,7 +16,7 @@ class WOAptGet():
         Similar to `apt-get update`
         """
         try:
-            with open('/var/log/wo/wordops.log', 'a') as f:
+            with open('/var/log/ccw/ccc-code.log', 'a') as f:
                 proc = subprocess.Popen(
                     'DEBIAN_FRONTEND=noninteractive apt-get update -qq '
                     '--allow-releaseinfo-change',
@@ -45,7 +43,7 @@ class WOAptGet():
                     for single_error in error_list:
                         if "NO_PUBKEY" in single_error:
                             key = single_error.rsplit(None, 1)[-1]
-                            WORepo.add_key(
+                            CCWRepo.add_key(
                                 self, key,
                                 keyserver="hkp://keyserver.ubuntu.com")
 
@@ -61,8 +59,8 @@ class WOAptGet():
                 else:
                     Log.info(self, Log.FAIL +
                              "Whoops, something went wrong...")
-                    Log.error(self, "Check the WordOps log for more details "
-                              "`tail /var/log/wo/wordops.log` "
+                    Log.error(self, "Check the CCC CODE log for more details "
+                              "`tail /var/log/ccw/ccc-code.log` "
                               "and please try again...")
 
         except Exception:
@@ -93,7 +91,7 @@ class WOAptGet():
         Similar to `apt-get upgrade`
         """
         try:
-            with open('/var/log/wo/wordops.log', 'a') as f:
+            with open('/var/log/ccw/ccc-code.log', 'a') as f:
                 proc = subprocess.Popen(
                     "DEBIAN_FRONTEND=noninteractive "
                     "apt-get "
@@ -112,8 +110,8 @@ class WOAptGet():
             else:
                 Log.info(self, Log.FAIL + "Oops Something went "
                          "wrong!!")
-                Log.error(self, "Check the WordOps log for more details "
-                          "`tail /var/log/wo/wordops.log` "
+                Log.error(self, "Check the CCC CODE log for more details "
+                          "`tail /var/log/ccw/ccc-code.log` "
                           "and please try again...")
         except Exception as e:
             Log.debug(self, "{0}".format(e))
@@ -123,7 +121,7 @@ class WOAptGet():
     def install(self, packages):
         all_packages = ' '.join(packages)
         try:
-            with open('/var/log/wo/wordops.log', 'a') as f:
+            with open('/var/log/ccw/ccc-code.log', 'a') as f:
                 proc = subprocess.Popen(
                     "DEBIAN_FRONTEND=noninteractive "
                     "apt-get install "
@@ -140,22 +138,22 @@ class WOAptGet():
             else:
                 Log.info(self, Log.FAIL + "Oops Something went "
                          "wrong!!")
-                Log.error(self, "Check the WordOps log for more details "
-                          "`tail /var/log/wo/wordops.log` "
+                Log.error(self, "Check the CCC CODE log for more details "
+                          "`tail /var/log/ccw/ccc-code.log` "
                           "and please try again...")
 
         except Exception as e:
             Log.debug(self, "{0}".format(e))
             Log.info(self, Log.FAIL + "Oops Something went "
                      "wrong!!")
-            Log.error(self, "Check the WordOps log for more details "
-                      "`tail /var/log/wo/wordops.log` "
+            Log.error(self, "Check the CCC CODE log for more details "
+                      "`tail /var/log/ccw/ccc-code.log` "
                       "and please try again...")
 
     def remove(self, packages, auto=False, purge=False):
         all_packages = ' '.join(packages)
         try:
-            with open('/var/log/wo/wordops.log', 'a') as f:
+            with open('/var/log/ccw/ccc-code.log', 'a') as f:
                 if purge:
                     proc = subprocess.Popen(
                         'DEBIAN_FRONTEND=noninteractive '
@@ -176,8 +174,8 @@ class WOAptGet():
             else:
                 Log.info(self, Log.FAIL + "Oops Something went "
                          "wrong!!")
-                Log.error(self, "Check the WordOps log for more details "
-                          "`tail /var/log/wo/wordops.log` "
+                Log.error(self, "Check the CCC CODE log for more details "
+                          "`tail /var/log/ccw/ccc-code.log` "
                           "and please try again...")
 
         except Exception as e:
@@ -254,11 +252,11 @@ class WOAptGet():
         """
         packages = ' '.join(package_name)
         try:
-            with open('/var/log/wo/wordops.log', 'a') as f:
+            with open('/var/log/ccw/ccc-code.log', 'a') as f:
                 if repo_url is not None:
-                    WORepo.add(self, repo_url=repo_url)
+                    CCWRepo.add(self, repo_url=repo_url)
                 if repo_key is not None:
-                    WORepo.add_key(self, repo_key)
+                    CCWRepo.add_key(self, repo_key)
                 proc = subprocess.Popen(
                     "DEBIAN_FRONTEND=noninteractive apt-get update "
                     "-qq && "
@@ -280,9 +278,11 @@ class WOAptGet():
                     self, "Error in fetching dpkg package.\n"
                     "Reverting changes ..", False)
                 if repo_url is not None:
-                    WORepo.remove(self, repo_url=repo_url)
+                    CCWRepo.remove(self, repo_url=repo_url)
                 return False
         except Exception as e:
             Log.debug(self, "{0}".format(e))
             Log.error(self, "Error while downloading packages, "
                       "apt-get exited with error")
+
+# Zuletzt bearbeitet: 2025-10-27
