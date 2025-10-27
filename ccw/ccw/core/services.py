@@ -1,12 +1,12 @@
-"""WordOps Service Manager"""
+"""CCC CODE Service Manager"""
 import subprocess
 
-from wo.core.logging import Log
+from ccw.core.logging import Log
 
 
-class WOService():
+class CCWService():
     """Intialization for service"""
-    def ___init__():
+    def __init__(self):
         pass
 
     def start_service(self, service_name):
@@ -187,3 +187,5 @@ class WOService():
             Log.error(self, "Unable to get services status of {0}"
                       .format(service_name))
             return False
+
+# Zuletzt bearbeitet: 2025-10-27

@@ -1,13 +1,13 @@
-"""WordOps GIT module"""
+"""CCC CODE GIT module"""
 import os
 
 from sh import ErrorReturnCode, git
-from wo.core.logging import Log
+from ccw.core.logging import Log
 
 
-class WOGit:
+class CCWGit:
     """Intialization of core variables"""
-    def ___init__():
+    def __init__(self):
         # TODO method for core variables
         pass
 
@@ -18,39 +18,39 @@ class WOGit:
         """
         for path in paths:
             global git
-            wogit = git.bake("-C", "{0}".format(path))
+            ccwgit = git.bake("-C", "{0}".format(path))
             if os.path.isdir(path):
                 if not os.path.isdir(path + "/.git"):
                     try:
-                        Log.debug(self, "WOGit: git init at {0}"
+                        Log.debug(self, "CCWGit: git init at {0}"
                                   .format(path))
-                        wogit.init(path)
+                        ccwgit.init(path)
                     except ErrorReturnCode as e:
                         Log.debug(self, "{0}".format(e))
                         Log.error(self, "Unable to git init at {0}"
                                   .format(path))
 
-                status = wogit.status("-s")
+                status = ccwgit.status("-s")
                 if len(status.splitlines()) > 0:
                     try:
-                        Log.debug(self, "WOGit: git commit at {0}"
+                        Log.debug(self, "CCWGit: git commit at {0}"
                                   .format(path))
-                        wogit.add("--all")
-                        wogit.commit("-am {0}".format(msg))
+                        ccwgit.add("--all")
+                        ccwgit.commit("-am {0}".format(msg))
                     except ErrorReturnCode as e:
                         Log.debug(self, "{0}".format(e))
                         Log.error(self, "Unable to git commit at {0} "
                                   .format(path))
             else:
-                Log.debug(self, "WOGit: Path {0} not present".format(path))
+                Log.debug(self, "CCWGit: Path {0} not present".format(path))
 
     def checkfilestatus(self, repo, filepath):
         """
             Checks status of file, If its tracked or untracked.
         """
         global git
-        wogit = git.bake("-C", "{0}".format(repo))
-        status = wogit.status("-s", "{0}".format(filepath))
+        ccwgit = git.bake("-C", "{0}".format(repo))
+        status = ccwgit.status("-s", "{0}".format(filepath))
         if len(status.splitlines()) > 0:
             return True
         else:
@@ -63,7 +63,7 @@ class WOGit:
         """
         for path in paths:
             global git
-            wogit = git.bake("-C", "{0}".format(path))
+            ccwgit = git.bake("-C", "{0}".format(path))
             if os.path.isdir(path):
                 if not os.path.isdir(path + "/.git"):
                     Log.error(
@@ -71,16 +71,16 @@ class WOGit:
                               .format(path))
                 try:
                     Log.debug(
-                        self, "WOGit: git stash --include-untracked at {0}"
+                        self, "CCWGit: git stash --include-untracked at {0}"
                               .format(path))
-                    wogit.stash("push", "--include-untracked", "-m {0}"
+                    ccwgit.stash("push", "--include-untracked", "-m {0}"
                                 .format(msg))
                 except ErrorReturnCode as e:
                     Log.debug(self, "{0}".format(e))
                     Log.error(self, "Unable to git reset at {0} "
                               .format(path))
             else:
-                Log.debug(self, "WOGit: Path {0} not present".format(path))
+                Log.debug(self, "CCWGit: Path {0} not present".format(path))
 
     def clone(self, repo, path, branch='master'):
         """Equivalent to git clone """
@@ -97,4 +97,6 @@ class WOGit:
                 Log.error(self, "Unable to git clone at {0} "
                           .format(path))
         else:
-            Log.debug(self, "WOGit: Path {0} already exist".format(path))
+            Log.debug(self, "CCWGit: Path {0} already exist".format(path))
+
+# Zuletzt bearbeitet: 2025-10-27

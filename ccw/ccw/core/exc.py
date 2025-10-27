@@ -1,7 +1,7 @@
-"""WordOps exception classes."""
+"""CCC CODE exception classes."""
 
 
-class WOError(Exception):
+class CCWError(Exception):
     """Generic errors."""
 
     def __init__(self, msg):
@@ -12,16 +12,18 @@ class WOError(Exception):
         return self.msg
 
 
-class WOConfigError(WOError):
+class CCWConfigError(CCWError):
     """Config related errors."""
     pass
 
 
-class WORuntimeError(WOError):
+class CCRuntimeError(CCWError):
     """Generic runtime errors."""
     pass
 
 
-class WOArgumentError(WOError):
+class CCWArgumentError(CCWError):
     """Argument related errors."""
     pass
+
+# Zuletzt bearbeitet: 2025-10-27

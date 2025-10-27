@@ -1,9 +1,9 @@
-"""WordOps domain validation module."""
+"""CCC CODE domain validation module."""
 import os
 
 
-class WODomain:
-    """WordOps domain validation utilities"""
+class CCWDomain:
+    """CCC CODE domain validation utilities"""
 
     def validate(self, url):
         """
@@ -32,10 +32,10 @@ class WODomain:
         if domain_name[0] == 'www':
             domain_name = domain_name[1:]
         domain_type = ''
-        if os.path.isfile("/var/lib/wo/public_suffix_list.dat"):
+        if os.path.isfile("/var/lib/ccw/public_suffix_list.dat"):
             # Read mode opens a file for reading only.
             suffix_file = open(
-                "/var/lib/wo/public_suffix_list.dat", encoding='utf-8')
+                "/var/lib/ccw/public_suffix_list.dat", encoding='utf-8')
             # Read all the lines into a list.
             for domain_suffix in suffix_file:
                 if (str(domain_suffix).strip()) == ('.'.join(domain_name[1:])):
@@ -49,3 +49,5 @@ class WODomain:
         else:
             root_domain = ('.'.join(domain_name[1:]))
         return (domain_type, root_domain)
+
+# Zuletzt bearbeitet: 2025-10-27

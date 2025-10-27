@@ -1,10 +1,10 @@
-"""WordOps Hash Bucket Calculator"""
+"""CCC CODE Hash Bucket Calculator"""
 import fileinput
 import math
 import os
 import subprocess
 
-from wo.core.fileutils import WOFileUtils
+from ccw.core.fileutils import CCWFileUtils
 
 
 def hashbucket(self):
@@ -28,13 +28,13 @@ def hashbucket(self):
     ngx_hash = math.trunc(math.pow(2, ngx_calc))
 
     # Replace hashbucket in Nginx.conf file
-    if WOFileUtils.grepcheck(self, "/etc/nginx/nginx.conf",
+    if CCWFileUtils.grepcheck(self, "/etc/nginx/nginx.conf",
                              "# server_names_hash_bucket_size 64;"):
         ngxconf = open("/etc/nginx/conf.d/hashbucket.conf",
                        encoding='utf-8', mode='w')
         ngxconf.write("\tserver_names_hash_bucket_size {0};".format(ngx_hash))
         ngxconf.close()
-    elif WOFileUtils.grepcheck(self, "/etc/nginx/nginx/conf",
+    elif CCWFileUtils.grepcheck(self, "/etc/nginx/nginx/conf",
                                "server_names_hash_bucket_size"):
         for line in fileinput.FileInput("/etc/nginx/nginx.conf", inplace=1):
             if "server_names_hash_bucket_size" in line:
@@ -47,3 +47,5 @@ def hashbucket(self):
                        encoding='utf-8', mode='w')
         ngxconf.write("\tserver_names_hash_bucket_size {0};".format(ngx_hash))
         ngxconf.close()
+
+# Zuletzt bearbeitet: 2025-10-27

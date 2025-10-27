@@ -1,11 +1,11 @@
-"""WordOps Extract Core """
+"""CCC CODE Extract Core """
 import os
 import tarfile
 
-from wo.core.logging import Log
+from ccw.core.logging import Log
 
 
-class WOExtract():
+class CCWExtract():
     """Method to extract from tar.gz file"""
 
     def extract(self, file, path):
@@ -20,3 +20,5 @@ class WOExtract():
             Log.debug(self, "{0}".format(e))
             Log.error(self, 'Unable to extract file {0}'.format(file))
             return False
+
+# Zuletzt bearbeitet: 2025-10-27
