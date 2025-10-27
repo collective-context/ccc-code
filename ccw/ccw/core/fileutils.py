@@ -203,14 +203,14 @@ class CCWFileUtils():
 
     def wpperm(self, path, harden=False):
         """
-            Fix WordPress site permissions
-            path : WordPress site path
+            Fix site permissions
+            path : site path
             harden : set 750/640 instead of 755/644
         """
         userid = pwd.getpwnam('www-data')[2]
         groupid = pwd.getpwnam('www-data')[3]
         try:
-            Log.debug(self, "Fixing WordPress permissions of {0}"
+            Log.debug(self, "Fixing site permissions of {0}"
                       .format(path))
             if harden:
                 dperm = '0o750'
@@ -225,7 +225,7 @@ class CCWFileUtils():
                              groupid)
                     os.chmod(os.path.join(root, d), dperm)
                 for f in files:
-                    os.chown(os.path.join(root, d), userid,
+                    os.chown(os.path.join(root, f), userid,
                              groupid)
                     os.chmod(os.path.join(root, f), fperm)
         except OSError as e:
