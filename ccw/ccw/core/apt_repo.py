@@ -1,12 +1,10 @@
-"""WordOps packages repository operations"""
+"""CCC CODE packages repository operations"""
 import os
 
-from wo.core.logging import Log
-from wo.core.shellexec import WOShellExec
-from wo.core.variables import WOVar
-
-
-class WORepo():
+from ccw.core.logging import Log
+from ccw.core.shellexec import CCWShellExec
+from ccw.core.variables import CCWVar
+class CCWRepo():
     """Manage Repositories"""
 
     def __init__(self):
@@ -50,10 +48,10 @@ class WORepo():
             if os.path.exists(
                 '/etc/apt/sources.list.d/{0}-ubuntu-{1}-{2}.list'
                     .format(ppa_author,
-                            ppa_package, WOVar.wo_platform_codename)):
+                            ppa_package, CCWVar.ccw_platform_codename)):
                 Log.debug(self, "ppa already added")
                 return True
-            if WOShellExec.cmd_exec(
+            if CCWShellExec.cmd_exec(
                     self, "LC_ALL=C.UTF-8 add-apt-repository -y '{ppa_name}'"
                     .format(ppa_name=ppa)):
                 Log.debug(self, "Added PPA {0}".format(ppa))
@@ -68,12 +66,12 @@ class WORepo():
         command.
         """
         if ppa:
-            WOShellExec.cmd_exec(self, "add-apt-repository -y "
+            CCWShellExec.cmd_exec(self, "add-apt-repository -y "
                                  "--remove '{ppa_name}'"
                                  .format(ppa_name=ppa))
         elif repo_url:
             repo_file_path = ("/etc/apt/sources.list.d/" +
-                              WOVar().wo_repo_file)
+                              CCWVar().ccw_repo_file)
 
             try:
                 repofile = open(repo_file_path, "w+", encoding='utf-8')
@@ -93,7 +91,7 @@ class WORepo():
         user can provide other keyserver with keyserver="hkp://xyz"
         """
         try:
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self, "apt-key adv --keyserver {serv}"
                 .format(serv=(keyserver or
                               "hkp://keyserver.ubuntu.com")) +
@@ -107,9 +105,11 @@ class WORepo():
         This function download gpg keys and add import them with apt-key add"
         """
         try:
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self, "curl -sL {0} ".format(key_url) +
                 "| apt-key add -")
         except Exception as e:
             Log.debug(self, "{0}".format(e))
             Log.error(self, "Unable to import repo keys")
+
+# Zuletzt bearbeitet: 2025-10-27
