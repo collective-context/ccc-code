@@ -51,6 +51,8 @@ class SSL:
             # return "Certificate Already Expired ! Please Renew soon."
             return -1
 
+# Zuletzt bearbeitet: 2025-10-27
+
     def getexpirationdate(self, domain):
         # check if exist
         if not os.path.isfile('/etc/letsencrypt/live/{0}/cert.pem'
