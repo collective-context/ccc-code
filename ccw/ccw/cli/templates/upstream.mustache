@@ -1,5 +1,5 @@
-# NGINX UPSTREAM CONFIGURATION - WordOps {{release}}
-# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN WordOps (wo) UPDATE
+# NGINX UPSTREAM CONFIGURATION - CCC CODE {{release}}
+# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN CCC CODE (ccw) UPDATE
 #-------------------------------
 # PHP 5.6
 #-------------------------------
@@ -209,7 +209,7 @@ upstream redis {
 # Multi PHP
 #-------------------------------
 
-# Multi PHP upstream for WordOps backend
+# Multi PHP upstream for CCC CODE backend
 upstream multiphp {
     server unix:/var/run/php/php73-fpm.sock;
     server unix:/var/run/php/php74-fpm.sock;
@@ -220,3 +220,5 @@ upstream multiphp {
     server unix:/var/run/php/php83-fpm.sock;
     server unix:/var/run/php/php84-fpm.sock;
 }
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

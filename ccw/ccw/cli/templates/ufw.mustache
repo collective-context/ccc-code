@@ -1,6 +1,6 @@
 #!/bin/bash
 
-wo_ufw_setup() {
+ccw_ufw_setup() {
     # get custom ssh port
     if [ -f /etc/ssh/sshd_config ]; then
         CURRENT_SSH_PORT=$(grep "Port" /etc/ssh/sshd_config | awk -F " " '{print $2}')
@@ -43,7 +43,7 @@ wo_ufw_setup() {
     fi
 
     if ! grep -q "\-\-dport 22222 -j" /etc/ufw/user.rules; then
-        # wordops backend
+        # ccc code backend
         ufw limit 22222
     fi
 
@@ -65,4 +65,6 @@ wo_ufw_setup() {
     fi
 }
 
-wo_ufw_setup
+ccw_ufw_setup
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

@@ -62,10 +62,12 @@ server {
     }
     {{/static}}
 
-    {{^static}}include {{#basic}}common/{{wo_php}}.conf;{{/basic}}{{#wpfc}}common/wpfc-{{wo_php}}.conf;{{/wpfc}}{{#wpsc}}common/wpsc-{{wo_php}}.conf;{{/wpsc}}{{#wpredis}}common/redis-{{wo_php}}.conf;{{/wpredis}}{{#wprocket}}common/wprocket-{{wo_php}}.conf;{{/wprocket}}{{#wpce}}common/wpce-{{wo_php}}.conf;{{/wpce}}
+    {{^static}}include {{#basic}}common/{{ccw_php}}.conf;{{/basic}}{{#wpfc}}common/wpfc-{{ccw_php}}.conf;{{/wpfc}}{{#wpsc}}common/wpsc-{{ccw_php}}.conf;{{/wpsc}}{{#wpredis}}common/redis-{{ccw_php}}.conf;{{/wpredis}}{{#wprocket}}common/wprocket-{{ccw_php}}.conf;{{/wprocket}}{{#wpce}}common/wpce-{{ccw_php}}.conf;{{/wpce}}
     {{#wpsubdir}}include common/wpsubdir.conf;{{/wpsubdir}}{{/static}}
-    {{#wp}}include common/wpcommon-{{wo_php}}.conf;{{/wp}}
-    include common/locations-wo.conf;{{/alias}}{{/proxy}}
+    {{#wp}}include common/wpcommon-{{ccw_php}}.conf;{{/wp}}
+    include common/locations-ccw.conf;{{/alias}}{{/proxy}}
     include {{webroot}}/conf/nginx/*.conf;
 
 }
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

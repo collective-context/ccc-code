@@ -1,14 +1,16 @@
 [Unit]
-Description=WordOps kernel tweaks
+Description=CCC CODE kernel tweaks
 # append here other services you want netdata to wait for them to start
 After=syslog.target network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=simple
 User=root
-ExecStart=/opt/wo-kernel.sh
+ExecStart=/opt/ccw-kernel.sh
 StandardOutput=null
 
 [Install]
 WantedBy=multi-user.target
-Alias=wo-kernel.service
+Alias=ccw-kernel.service
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}
