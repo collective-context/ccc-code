@@ -11,13 +11,7 @@ class CCWCron():
         if not CCWShellExec.cmd_exec(self, "crontab -l "
                                     "| grep -q \'{0}\'".format(cmd)):
 
-            CCWShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
-                                 "2> /dev/null | {{ cat; echo -e"
-                                 " \\\""
-                                 "\\n0 0 * * 0 "
-                                 "{0}".format(cmd) +
-                                 " # {0}".format(comment) +
-                                 "\\\"; } | crontab -\"")
+            CCWShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l 2> /dev/null | {{ cat; echo -e \\\"\\n0 0 * * 0 {0} # {1}\\\"; }} | crontab -\"".format(cmd, comment))
             Log.debug(self, "Cron set")
 
     def setcron_daily(self, cmd, comment='Cron set by CCC CODE', user='root',
@@ -25,13 +19,7 @@ class CCWCron():
         if not CCWShellExec.cmd_exec(self, "crontab -l "
                                     "| grep -q \'{0}\'".format(cmd)):
 
-            CCWShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
-                                 "2> /dev/null | {{ cat; echo -e"
-                                 " \\\\""
-                                 "\\n@daily"
-                                 "{0}".format(cmd) +
-                                 " # {0}".format(comment) +
-                                 "\\\"; } | crontab -\"")
+            CCWShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l 2> /dev/null | {{ cat; echo -e \\\"\\n@daily {0} # {1}\\\"; }} | crontab -\"".format(cmd, comment))
             Log.debug(self, "Cron set")
 
     def remove_cron(self, cmd):
