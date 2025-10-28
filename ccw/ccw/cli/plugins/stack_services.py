@@ -1,8 +1,8 @@
 import os
 
 from cement.core.controller import CementBaseController, expose
-from wo.core.logging import Log
-from wo.core.services import WOService
+from ccw.core.logging import Log
+from ccw.core.services import CCWService
 from wo.core.variables import WOVar
 from wo.core.fileutils import WOFileUtils
 

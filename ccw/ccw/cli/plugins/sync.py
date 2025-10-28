@@ -5,7 +5,7 @@ from cement.core.controller import CementBaseController, expose
 
 from wo.cli.plugins.sitedb import getAllsites, updateSiteInfo
 from wo.core.fileutils import WOFileUtils
-from wo.core.logging import Log
+from ccw.core.logging import Log
 from wo.core.mysql import StatementExcecutionError, WOMysql
 
 
@@ -13,7 +13,7 @@ def wo_sync_hook(app):
     pass
 
 
-class WOSyncController(CementBaseController):
+class CCWSyncController(CementBaseController):
     class Meta:
         label = 'sync'
         stacked_on = 'base'

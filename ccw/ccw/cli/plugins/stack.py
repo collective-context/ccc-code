@@ -11,20 +11,20 @@ from wo.cli.plugins.stack_upgrade import WOStackUpgradeController
 from wo.core.aptget import WOAptGet
 from wo.core.download import WODownload
 from wo.core.fileutils import WOFileUtils
-from wo.core.logging import Log
+from ccw.core.logging import Log
 from wo.core.mysql import WOMysql
-from wo.core.services import WOService
+from ccw.core.services import CCWService
 from wo.core.shellexec import WOShellExec
 from wo.core.variables import WOVar
 from wo.core.nginx import check_config
 from wo.core.git import WOGit
 
 
-def wo_stack_hook(app):
+def ccw_stack_hook(app):
     pass
 
 
-class WOStackController(CementBaseController):
+class CCWStackController(CementBaseController):
     class Meta:
         label = 'stack'
         stacked_on = 'base'

@@ -4,7 +4,7 @@ import time
 
 from cement.core.controller import CementBaseController, expose
 from wo.core.download import WODownload
-from wo.core.logging import Log
+from ccw.core.logging import Log
 from wo.core.variables import WOVar
 
 
@@ -12,7 +12,7 @@ def wo_update_hook(app):
     pass
 
 
-class WOUpdateController(CementBaseController):
+class CCWUpdateController(CementBaseController):
     class Meta:
         label = 'wo_update'
         stacked_on = 'base'

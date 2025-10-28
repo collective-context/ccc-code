@@ -8,10 +8,10 @@ from wo.core.aptget import WOAptGet
 from wo.core.download import WODownload
 from wo.core.extract import WOExtract
 from wo.core.fileutils import WOFileUtils
-from wo.core.logging import Log
+from ccw.core.logging import Log
 from wo.core.shellexec import WOShellExec
 from wo.core.variables import WOVar
-from wo.core.services import WOService
+from ccw.core.services import CCWService
 from wo.core.mysql import WOMysql
 
 

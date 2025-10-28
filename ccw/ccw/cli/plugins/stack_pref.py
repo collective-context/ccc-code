@@ -11,10 +11,10 @@ from wo.core.cron import WOCron
 from wo.core.extract import WOExtract
 from wo.core.fileutils import WOFileUtils
 from wo.core.git import WOGit
-from wo.core.logging import Log
+from ccw.core.logging import Log
 from wo.core.mysql import WOMysql
 from wo.core.nginxhashbucket import hashbucket
-from wo.core.services import WOService
+from ccw.core.services import CCWService
 from wo.core.shellexec import CommandExecutionError, WOShellExec
 from wo.core.sslutils import SSL
 from wo.core.template import WOTemplate
