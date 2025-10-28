@@ -167,12 +167,12 @@ class CCWSiteCreateController(CementBaseController):
 
         ccw_site_webroot = CCWVar.ccw_webroot + ccw_domain
 
-        if check_domain_exists(self, wo_domain):
-            Log.error(self, "site {0} already exists".format(wo_domain))
+        if check_domain_exists(self, ccw_domain):
+            Log.error(self, "site {0} already exists".format(ccw_domain))
         elif os.path.isfile('/etc/nginx/sites-available/{0}'
-                            .format(wo_domain)):
+                            .format(ccw_domain)):
             Log.error(self, "Nginx configuration /etc/nginx/sites-available/"
-                      "{0} already exists".format(wo_domain))
+                      "{0} already exists".format(ccw_domain))
 
         if stype == 'proxy':
             data = dict(
