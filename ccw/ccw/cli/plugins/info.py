@@ -1,4 +1,4 @@
-"""WOInfo Plugin for WordOps"""
+"""Info Plugin for CCC CODE"""
 
 import configparser
 import os
@@ -6,17 +6,17 @@ import os
 from cement.core.controller import CementBaseController, expose
 from pynginxconfig import NginxConfig
 
-from wo.core.aptget import WOAptGet
-from wo.core.logging import Log
-from wo.core.variables import WOVar
-from wo.core.mysql import WOMysql
+from ccw.core.aptget import CCWAptGet
+from ccw.core.logging import Log
+from ccw.core.variables import CCWVar
+from ccw.core.mysql import CCWMysql
 
 
-def wo_info_hook(app):
+def ccw_info_hook(app):
     pass
 
 
-class WOInfoController(CementBaseController):
+class CCWInfoController(CementBaseController):
     class Meta:
         label = 'info'
         stacked_on = 'base'
@@ -34,8 +34,8 @@ class WOInfoController(CementBaseController):
                 dict(help='Get Nginx configuration information',
                      action='store_true')),
         ]
-        usage = "wo info [options]"
-        for php_version, php_number in WOVar.wo_php_versions.items():
+        usage = "ccw info [options]"
+        for php_version, php_number in CCWVar.ccw_php_versions.items():
             arguments.append(([f'--{php_version}'],
                               dict(help=f'Get PHP {php_number} configuration information',
                                    action='store_true')))
@@ -70,27 +70,27 @@ class WOInfoController(CementBaseController):
     def info_php(self):
         """Display PHP information"""
         pargs = self.app.pargs
-        if WOAptGet.is_installed(self, 'php7.4-fpm'):
+        if CCWAptGet.is_installed(self, 'php7.4-fpm'):
             pargs.php74 = True
         else:
             Log.info(self, "PHP 7.4 is not installed")
-        if WOAptGet.is_installed(self, 'php8.0-fpm'):
+        if CCWAptGet.is_installed(self, 'php8.0-fpm'):
             pargs.php80 = True
         else:
             Log.info(self, "PHP 8.0 is not installed")
-        if WOAptGet.is_installed(self, 'php8.1-fpm'):
+        if CCWAptGet.is_installed(self, 'php8.1-fpm'):
             pargs.php81 = True
         else:
             Log.info(self, "PHP 8.1 is not installed")
-        if WOAptGet.is_installed(self, 'php8.2-fpm'):
+        if CCWAptGet.is_installed(self, 'php8.2-fpm'):
             pargs.php82 = True
         else:
             Log.info(self, "PHP 8.2 is not installed")
-        if WOAptGet.is_installed(self, 'php8.3-fpm'):
+        if CCWAptGet.is_installed(self, 'php8.3-fpm'):
             pargs.php83 = True
         else:
             Log.info(self, "PHP 8.3 is not installed")
-        if WOAptGet.is_installed(self, 'php8.4-fpm'):
+        if CCWAptGet.is_installed(self, 'php8.4-fpm'):
             pargs.php84 = True
         else:
             Log.info(self, "PHP 8.4 is not installed")
@@ -681,7 +681,7 @@ class WOInfoController(CementBaseController):
             pargs.php = True
 
         if pargs.nginx:
-            if ((not WOAptGet.is_installed(self, 'nginx-custom')) and
+            if ((not CCWAptGet.is_installed(self, 'nginx-custom')) and
                     (not os.path.exists('/usr/bin/nginx'))):
                 Log.info(self, "Nginx is not installed")
             else:
@@ -691,7 +691,7 @@ class WOInfoController(CementBaseController):
             self.info_php()
 
         if pargs.mysql:
-            if WOMysql.mariadb_ping(self):
+            if CCWMysql.mariadb_ping(self):
                 self.info_mysql()
             else:
                 Log.info(self, "MySQL is not installed")
@@ -699,7 +699,9 @@ class WOInfoController(CementBaseController):
 
 def load(app):
     # register the plugin class.. this only happens if the plugin is enabled
-    app.handler.register(WOInfoController)
+    app.handler.register(CCWInfoController)
 
     # register a hook (function) to run after arguments are parsed.
-    app.hook.register('post_argument_parsing', wo_info_hook)
+    app.hook.register('post_argument_parsing', ccw_info_hook)
+
+# Zuletzt bearbeitet: 2025-10-27
