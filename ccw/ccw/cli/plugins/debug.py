@@ -1,4 +1,4 @@
-"""Debug Plugin for WordOps"""
+"""Debug Plugin for CCC CODE"""
 
 import configparser
 import glob
@@ -8,21 +8,21 @@ import signal
 from cement.core.controller import CementBaseController, expose
 from pynginxconfig import NginxConfig
 
-from wo.cli.plugins.site_functions import logwatch
-from wo.core.aptget import WOAptGet
-from wo.core.fileutils import WOFileUtils
-from wo.core.logging import Log
-from wo.core.mysql import WOMysql
-from wo.core.services import WOService
-from wo.core.shellexec import WOShellExec, CommandExecutionError
-from wo.core.variables import WOVar
+from ccw.cli.plugins.site_functions import logwatch
+from ccw.core.aptget import CCWAptGet
+from ccw.core.fileutils import CCWFileUtils
+from ccw.core.logging import Log
+from ccw.core.mysql import CCWMysql
+from ccw.core.services import CCWService
+from ccw.core.shellexec import CCWShellExec, CommandExecutionError
+from ccw.core.variables import CCWVar
 
 
-def wo_debug_hook(app):
+def ccw_debug_hook(app):
     pass
 
 
-class WODebugController(CementBaseController):
+class CCWDebugController(CementBaseController):
     class Meta:
         label = 'debug'
         description = 'Used for server level debugging'
@@ -81,7 +81,7 @@ class WODebugController(CementBaseController):
             (['site_name'],
                 dict(help='Website Name', nargs='?', default=None))
         ]
-        usage = "wo debug [<site_name>] [options] "
+        usage = "ccw debug [<site_name>] [options] "
 
     @expose(hide=True)
     def debug_nginx(self):
@@ -105,7 +105,7 @@ class WODebugController(CementBaseController):
                                                             encoding='utf-8').read()):
                     Log.info(self, "Setting up Nginx debug connection"
                              " for "+ip_addr)
-                    WOShellExec.cmd_exec(self, "sed -i \"/events {{/a\\ \\ \\ "
+                    CCWShellExec.cmd_exec(self, "sed -i \"/events {{/a\\ \\ \\ "
                                                "\\ $(echo debug_connection "
                                                "{ip}\;)\" /etc/nginx/"
                                                "nginx.conf".format(ip=ip_addr))
@@ -121,7 +121,7 @@ class WODebugController(CementBaseController):
             if "debug_connection " in open('/etc/nginx/nginx.conf',
                                            encoding='utf-8').read():
                 Log.info(self, "Disabling Nginx debug connections")
-                WOShellExec.cmd_exec(self, "sed -i \"/debug_connection.*/d\""
+                CCWShellExec.cmd_exec(self, "sed -i \"/debug_connection.*/d\""
                                      " /etc/nginx/nginx.conf")
                 self.trigger_nginx = True
             else:
@@ -132,11 +132,11 @@ class WODebugController(CementBaseController):
             config_path = ("/etc/nginx/sites-available/{0}"
                            .format(self.app.pargs.site_name))
             if os.path.isfile(config_path):
-                if not WOShellExec.cmd_exec(self, "grep \"error.log debug\" "
+                if not CCWShellExec.cmd_exec(self, "grep \"error.log debug\" "
                                             "{0}".format(config_path)):
                     Log.info(self, "Starting NGINX debug connection for "
                              "{0}".format(self.app.pargs.site_name))
-                    WOShellExec.cmd_exec(self, "sed -i \"s/error.log;/"
+                    CCWShellExec.cmd_exec(self, "sed -i \"s/error.log;/"
                                          "error.log "
                                          "debug;/\" {0}".format(config_path))
                     self.trigger_nginx = True
@@ -145,7 +145,7 @@ class WODebugController(CementBaseController):
                     Log.info(self, "Nginx debug for site already enabled")
 
                 self.msg = self.msg + ['{0}{1}/logs/error.log'
-                                       .format(WOVar.wo_webroot,
+                                       .format(CCWVar.ccw_webroot,
                                                self.app.pargs.site_name)]
 
             else:
@@ -157,11 +157,11 @@ class WODebugController(CementBaseController):
             config_path = ("/etc/nginx/sites-available/{0}"
                            .format(self.app.pargs.site_name))
             if os.path.isfile(config_path):
-                if WOShellExec.cmd_exec(self, "grep \"error.log debug\" {0}"
+                if CCWShellExec.cmd_exec(self, "grep \"error.log debug\" {0}"
                                         .format(config_path)):
                     Log.info(self, "Stoping NGINX debug connection for {0}"
                              .format(self.app.pargs.site_name))
-                    WOShellExec.cmd_exec(self, "sed -i \"s/error.log debug;/"
+                    CCWShellExec.cmd_exec(self, "sed -i \"s/error.log debug;/"
                                          "error.log;/\" {0}"
                                          .format(config_path))
                     self.trigger_nginx = True
@@ -179,7 +179,7 @@ class WODebugController(CementBaseController):
         # PHP global debug start
 
         if (self.app.pargs.php == 'on' and not self.app.pargs.site_name):
-            if not (WOShellExec.cmd_exec(self, "sed -n \"/upstream php"
+            if not (CCWShellExec.cmd_exec(self, "sed -n \"/upstream php"
                                                "{/,/}/p \" /etc/nginx/"
                                                "conf.d/upstream.conf "
                                                "| grep 9001")):
@@ -193,7 +193,7 @@ class WODebugController(CementBaseController):
                 nc.savef('/etc/nginx/conf.d/upstream.conf')
 
                 # Enable xdebug
-                WOFileUtils.searchreplace(self, "/etc/{0}/"
+                CCWFileUtils.searchreplace(self, "/etc/{0}/"
                                           "mods-available/".format("php/7.2") +
                                           "xdebug.ini",
                                           ";zend_extension",
@@ -220,7 +220,7 @@ class WODebugController(CementBaseController):
 
         # PHP global debug stop
         elif (self.app.pargs.php == 'off' and not self.app.pargs.site_name):
-            if WOShellExec.cmd_exec(self, " sed -n \"/upstream php {/,/}/p\" "
+            if CCWShellExec.cmd_exec(self, " sed -n \"/upstream php {/,/}/p\" "
                                           "/etc/nginx/conf.d/upstream.conf "
                                           "| grep 9001"):
                 Log.info(self, "Disabling PHP debug")
@@ -232,7 +232,7 @@ class WODebugController(CementBaseController):
                 nc.savef('/etc/nginx/conf.d/upstream.conf')
 
                 # Disable xdebug
-                WOFileUtils.searchreplace(self, "/etc/{0}/"
+                CCWFileUtils.searchreplace(self, "/etc/{0}/"
                                           "mods-available/".format("php/7.2") +
                                           "xdebug.ini",
                                           "zend_extension",
@@ -248,7 +248,7 @@ class WODebugController(CementBaseController):
         """Start/Stop PHP5-FPM debug"""
         # PHP5-FPM start global debug
         if (self.app.pargs.fpm == 'on' and not self.app.pargs.site_name):
-            if not WOShellExec.cmd_exec(self, "grep \"log_level = debug\" "
+            if not CCWShellExec.cmd_exec(self, "grep \"log_level = debug\" "
                                               "/etc/{0}/"
                                               "fpm/php-fpm.conf".format("php/7.2")):
                 Log.info(self, "Setting up PHP5-FPM log_level = debug")
@@ -271,7 +271,7 @@ class WODebugController(CementBaseController):
 
         # PHP5-FPM stop global debug
         elif (self.app.pargs.fpm == 'off' and not self.app.pargs.site_name):
-            if WOShellExec.cmd_exec(self, "grep \"log_level = debug\" "
+            if CCWShellExec.cmd_exec(self, "grep \"log_level = debug\" "
                                           "/etc/{0}/fpm/php-fpm.conf".format("php/7.2")):
                 Log.info(self, "Disabling PHP5-FPM log_level = debug")
                 config = configparser.ConfigParser()
@@ -296,7 +296,7 @@ class WODebugController(CementBaseController):
         # PHP global debug start
 
         if (self.app.pargs.php73 == 'on' and not self.app.pargs.site_name):
-            if not (WOShellExec.cmd_exec(self, "sed -n \"/upstream php73"
+            if not (CCWShellExec.cmd_exec(self, "sed -n \"/upstream php73"
                                                "{/,/}/p \" /etc/nginx/"
                                                "conf.d/upstream.conf "
                                                "| grep 9173")):
@@ -310,7 +310,7 @@ class WODebugController(CementBaseController):
                 nc.savef('/etc/nginx/conf.d/upstream.conf')
 
                 # Enable xdebug
-                WOFileUtils.searchreplace(self, "/etc/php/7.3/mods-available/"
+                CCWFileUtils.searchreplace(self, "/etc/php/7.3/mods-available/"
                                           "xdebug.ini",
                                           ";zend_extension",
                                           "zend_extension")
@@ -335,7 +335,7 @@ class WODebugController(CementBaseController):
 
         # PHP global debug stop
         elif (self.app.pargs.php73 == 'off' and not self.app.pargs.site_name):
-            if WOShellExec.cmd_exec(self, " sed -n \"/upstream "
+            if CCWShellExec.cmd_exec(self, " sed -n \"/upstream "
                                     "php73 {/,/}/p\" "
                                           "/etc/nginx/conf.d/upstream.conf "
                                           "| grep 9173"):
@@ -349,7 +349,7 @@ class WODebugController(CementBaseController):
                 nc.savef('/etc/nginx/conf.d/upstream.conf')
 
                 # Disable xdebug
-                WOFileUtils.searchreplace(self, "/etc/php/7.3/mods-available/"
+                CCWFileUtils.searchreplace(self, "/etc/php/7.3/mods-available/"
                                           "xdebug.ini",
                                           "zend_extension",
                                           ";zend_extension")
@@ -364,7 +364,7 @@ class WODebugController(CementBaseController):
         """Start/Stop PHP5-FPM debug"""
         # PHP5-FPM start global debug
         if (self.app.pargs.fpm73 == 'on' and not self.app.pargs.site_name):
-            if not WOShellExec.cmd_exec(self, "grep \"log_level = debug\" "
+            if not CCWShellExec.cmd_exec(self, "grep \"log_level = debug\" "
                                               "/etc/php/7.3/fpm/php-fpm.conf"):
                 Log.info(self, "Setting up PHP7.3-FPM log_level = debug")
                 config = configparser.ConfigParser()
@@ -385,7 +385,7 @@ class WODebugController(CementBaseController):
 
         # PHP5-FPM stop global debug
         elif (self.app.pargs.fpm73 == 'off' and not self.app.pargs.site_name):
-            if WOShellExec.cmd_exec(self, "grep \"log_level = debug\" "
+            if CCWShellExec.cmd_exec(self, "grep \"log_level = debug\" "
                                           "/etc/php/7.3/fpm/php-fpm.conf"):
                 Log.info(self, "Disabling PHP7.3-FPM log_level = debug")
                 config = configparser.ConfigParser()
@@ -408,16 +408,16 @@ class WODebugController(CementBaseController):
         """Start/Stop MySQL debug"""
         # MySQL start global debug
         if (self.app.pargs.mysql == 'on' and not self.app.pargs.site_name):
-            if not WOShellExec.cmd_exec(self, "mysql -e \"show variables like"
+            if not CCWShellExec.cmd_exec(self, "mysql -e \"show variables like"
                                               " \'slow_query_log\';\" | "
                                               "grep ON"):
                 Log.info(self, "Setting up MySQL slow log")
-                WOMysql.execute(self, "set global slow_query_log = "
+                CCWMysql.execute(self, "set global slow_query_log = "
                                       "\'ON\';")
-                WOMysql.execute(self, "set global slow_query_log_file = "
+                CCWMysql.execute(self, "set global slow_query_log_file = "
                                       "\'/var/log/mysql/mysql-slow.log\';")
-                WOMysql.execute(self, "set global long_query_time = 2;")
-                WOMysql.execute(self, "set global log_queries_not_using"
+                CCWMysql.execute(self, "set global long_query_time = 2;")
+                CCWMysql.execute(self, "set global log_queries_not_using"
                                       "_indexes = \'ON\';")
             else:
                 Log.info(self, "MySQL slow log is already enabled")
@@ -426,17 +426,17 @@ class WODebugController(CementBaseController):
 
         # MySQL stop global debug
         elif (self.app.pargs.mysql == 'off' and not self.app.pargs.site_name):
-            if WOShellExec.cmd_exec(self, "mysql -e \"show variables like \'"
+            if CCWShellExec.cmd_exec(self, "mysql -e \"show variables like \'"
                                     "slow_query_log\';\" | grep ON"):
                 Log.info(self, "Disabling MySQL slow log")
-                WOMysql.execute(self, "set global slow_query_log = \'OFF\';")
-                WOMysql.execute(self, "set global slow_query_log_file = \'"
+                CCWMysql.execute(self, "set global slow_query_log = \'OFF\';")
+                CCWMysql.execute(self, "set global slow_query_log_file = \'"
                                 "/var/log/mysql/mysql-slow.log\';")
-                WOMysql.execute(self, "set global long_query_time = 10;")
-                WOMysql.execute(self, "set global log_queries_not_using_index"
+                CCWMysql.execute(self, "set global long_query_time = 10;")
+                CCWMysql.execute(self, "set global log_queries_not_using_index"
                                 "es = \'OFF\';")
-                WOShellExec.cmd_exec(self, "crontab -l | sed \'/#WordOps "
-                                     "start/,/#WordOps end/d\' | crontab -")
+                CCWShellExec.cmd_exec(self, "crontab -l | sed \'/#CCC CODE "
+                                     "start/,/#CCC CODE end/d\' | crontab -")
             else:
                 Log.info(self, "MySQL slow log already disabled")
 
@@ -445,43 +445,43 @@ class WODebugController(CementBaseController):
         """Start/Stop WordPress debug"""
         if (self.app.pargs.wp == 'on' and self.app.pargs.site_name):
             wp_config = ("{0}/{1}/wp-config.php"
-                         .format(WOVar.wo_webroot,
+                         .format(CCWVar.ccw_webroot,
                                  self.app.pargs.site_name))
-            webroot = "{0}{1}".format(WOVar.wo_webroot,
+            webroot = "{0}{1}".format(CCWVar.ccw_webroot,
                                       self.app.pargs.site_name)
             # Check wp-config.php file into htdocs folder
             if not os.path.isfile(wp_config):
                 wp_config = ("{0}/{1}/htdocs/wp-config.php"
-                             .format(WOVar.wo_webroot,
+                             .format(CCWVar.ccw_webroot,
                                      self.app.pargs.site_name))
             if os.path.isfile(wp_config):
-                if not WOShellExec.cmd_exec(self, "grep \"\'WP_DEBUG\'\" {0} |"
+                if not CCWShellExec.cmd_exec(self, "grep \"\'WP_DEBUG\'\" {0} |"
                                             " grep true".format(wp_config)):
                     Log.info(self, "Starting WordPress debug")
                     open("{0}/htdocs/wp-content/debug.log".format(webroot),
                          encoding='utf-8', mode='a').close()
-                    WOShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/wp-"
+                    CCWShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/wp-"
                                          "content/debug.log"
                                          "".format(webroot,
-                                                   WOVar.wo_php_user))
-                    WOShellExec.cmd_exec(self, "sed -i \"s/define(\'WP_DEBUG\'"
+                                                   CCWVar.ccw_php_user))
+                    CCWShellExec.cmd_exec(self, "sed -i \"s/define(\'WP_DEBUG\'"
                                          ".*/define(\'WP_DEBUG\', true);\\n"
                                          "define(\'WP_DEBUG_DISPLAY\', false);"
                                          "\\ndefine(\'WP_DEBUG_LOG\', true);"
                                          "\\ndefine(\'SAVEQUERIES\', true);/\""
                                          " {0}".format(wp_config))
-                    WOShellExec.cmd_exec(self, "cd {0}/htdocs/ && wp"
+                    CCWShellExec.cmd_exec(self, "cd {0}/htdocs/ && wp"
                                          " plugin --allow-root install "
                                          "developer query-monitor"
                                          .format(webroot))
-                    WOShellExec.cmd_exec(self, "chown -R {1}: {0}/htdocs/"
+                    CCWShellExec.cmd_exec(self, "chown -R {1}: {0}/htdocs/"
                                          "wp-content/plugins"
                                          .format(webroot,
-                                                 WOVar.wo_php_user))
+                                                 CCWVar.ccw_php_user))
 
                 self.msg = self.msg + ['{0}{1}/htdocs/wp-content'
                                        '/debug.log'
-                                       .format(WOVar.wo_webroot,
+                                       .format(CCWVar.ccw_webroot,
                                                self.app.pargs.site_name)]
 
             else:
@@ -490,29 +490,29 @@ class WODebugController(CementBaseController):
 
         elif (self.app.pargs.wp == 'off' and self.app.pargs.site_name):
             wp_config = ("{0}{1}/wp-config.php"
-                         .format(WOVar.wo_webroot,
+                         .format(CCWVar.ccw_webroot,
                                  self.app.pargs.site_name))
-            webroot = "{0}{1}".format(WOVar.wo_webroot,
+            webroot = "{0}{1}".format(CCWVar.ccw_webroot,
                                       self.app.pargs.site_name)
             # Check wp-config.php file into htdocs folder
             if not os.path.isfile(wp_config):
                 wp_config = ("{0}/{1}/htdocs/wp-config.php"
-                             .format(WOVar.wo_webroot,
+                             .format(CCWVar.ccw_webroot,
                                      self.app.pargs.site_name))
             if os.path.isfile(wp_config):
-                if WOShellExec.cmd_exec(self, "grep \"\'WP_DEBUG\'\" {0} | "
+                if CCWShellExec.cmd_exec(self, "grep \"\'WP_DEBUG\'\" {0} | "
                                         "grep true".format(wp_config)):
                     Log.info(self, "Disabling WordPress debug")
-                    WOShellExec.cmd_exec(self, "sed -i \"s/define(\'WP_DEBUG\'"
+                    CCWShellExec.cmd_exec(self, "sed -i \"s/define(\'WP_DEBUG\'"
                                          ", true);/define(\'WP_DEBUG\', "
                                          "false);/\" {0}".format(wp_config))
-                    WOShellExec.cmd_exec(self, "sed -i \"/define(\'"
+                    CCWShellExec.cmd_exec(self, "sed -i \"/define(\'"
                                          "WP_DEBUG_DISPLAY\', false);/d\" {0}"
                                          .format(wp_config))
-                    WOShellExec.cmd_exec(self, "sed -i \"/define(\'"
+                    CCWShellExec.cmd_exec(self, "sed -i \"/define(\'"
                                          "WP_DEBUG_LOG\', true);/d\" {0}"
                                          .format(wp_config))
-                    WOShellExec.cmd_exec(self, "sed -i \"/define(\'"
+                    CCWShellExec.cmd_exec(self, "sed -i \"/define(\'"
                                          "SAVEQUERIES\', "
                                          "true);/d\" {0}".format(wp_config))
                 else:
@@ -525,10 +525,10 @@ class WODebugController(CementBaseController):
         """Start/Stop Nginx rewrite rules debug"""
         # Start Nginx rewrite debug globally
         if (self.app.pargs.rewrite == 'on' and not self.app.pargs.site_name):
-            if not WOShellExec.cmd_exec(self, "grep \"rewrite_log on;\" "
+            if not CCWShellExec.cmd_exec(self, "grep \"rewrite_log on;\" "
                                         "/etc/nginx/nginx.conf"):
                 Log.info(self, "Setting up Nginx rewrite logs")
-                WOShellExec.cmd_exec(self, "sed -i \'/http {/a \\\\t"
+                CCWShellExec.cmd_exec(self, "sed -i \'/http {/a \\\\t"
                                      "rewrite_log on;\' /etc/nginx/nginx.conf")
                 self.trigger_nginx = True
             else:
@@ -540,10 +540,10 @@ class WODebugController(CementBaseController):
         # Stop Nginx rewrite debug globally
         elif (self.app.pargs.rewrite == 'off' and
               not self.app.pargs.site_name):
-            if WOShellExec.cmd_exec(self, "grep \"rewrite_log on;\" "
+            if CCWShellExec.cmd_exec(self, "grep \"rewrite_log on;\" "
                                     "/etc/nginx/nginx.conf"):
                 Log.info(self, "Disabling Nginx rewrite logs")
-                WOShellExec.cmd_exec(self, "sed -i \"/rewrite_log.*/d\""
+                CCWShellExec.cmd_exec(self, "sed -i \"/rewrite_log.*/d\""
                                      " /etc/nginx/nginx.conf")
                 self.trigger_nginx = True
             else:
@@ -552,11 +552,11 @@ class WODebugController(CementBaseController):
         elif (self.app.pargs.rewrite == 'on' and self.app.pargs.site_name):
             config_path = ("/etc/nginx/sites-available/{0}"
                            .format(self.app.pargs.site_name))
-            if not WOShellExec.cmd_exec(self, "grep \"rewrite_log on;\" {0}"
+            if not CCWShellExec.cmd_exec(self, "grep \"rewrite_log on;\" {0}"
                                         .format(config_path)):
                 Log.info(self, "Setting up Nginx rewrite logs for {0}"
                          .format(self.app.pargs.site_name))
-                WOShellExec.cmd_exec(self, "sed -i \"/access_log/i \\\\\\t"
+                CCWShellExec.cmd_exec(self, "sed -i \"/access_log/i \\\\\\t"
                                      "rewrite_log on;\" {0}"
                                      .format(config_path))
                 self.trigger_nginx = True
@@ -564,22 +564,22 @@ class WODebugController(CementBaseController):
                 Log.info(self, "Nginx rewrite logs for {0} already setup"
                          .format(self.app.pargs.site_name))
 
-            if ('{0}{1}/logs/error.log'.format(WOVar.wo_webroot,
+            if ('{0}{1}/logs/error.log'.format(CCWVar.ccw_webroot,
                                                self.app.pargs.site_name)
                     not in self.msg):
                 self.msg = self.msg + ['{0}{1}/logs/error.log'
-                                       .format(WOVar.wo_webroot,
+                                       .format(CCWVar.ccw_webroot,
                                                self.app.pargs.site_name)]
 
         # Stop Nginx rewrite for site
         elif (self.app.pargs.rewrite == 'off' and self.app.pargs.site_name):
             config_path = ("/etc/nginx/sites-available/{0}"
                            .format(self.app.pargs.site_name))
-            if WOShellExec.cmd_exec(self, "grep \"rewrite_log on;\" {0}"
+            if CCWShellExec.cmd_exec(self, "grep \"rewrite_log on;\" {0}"
                                     .format(config_path)):
                 Log.info(self, "Disabling Nginx rewrite logs for {0}"
                          .format(self.app.pargs.site_name))
-                WOShellExec.cmd_exec(self, "sed -i \"/rewrite_log.*/d\" {0}"
+                CCWShellExec.cmd_exec(self, "sed -i \"/rewrite_log.*/d\" {0}"
                                      .format(config_path))
                 self.trigger_nginx = True
             else:
@@ -607,11 +607,11 @@ class WODebugController(CementBaseController):
             self.debug_fpm73()
         if self.app.pargs.mysql:
             # MySQL debug will not work for remote MySQL
-            if WOVar.wo_mysql_host == "localhost":
+            if CCWVar.ccw_mysql_host == "localhost":
                 self.app.pargs.mysql = 'off'
                 self.debug_mysql()
             else:
-                Log.warn(self, "Remote MySQL found, WordOps does not support "
+                Log.warn(self, "Remote MySQL found, CCC CODE does not support "
                          "debugging remote servers")
         if self.app.pargs.wp:
             self.app.pargs.wp = 'off'
@@ -622,14 +622,14 @@ class WODebugController(CementBaseController):
 
         # Reload Nginx
         if self.trigger_nginx:
-            WOService.reload_service(self, 'nginx')
+            CCWService.reload_service(self, 'nginx')
 
         # Reload PHP
         if self.trigger_php:
-            if WOAptGet.is_installed(self, 'php7.2-fpm'):
-                WOService.reload_service(self, 'php7.2-fpm')
-            if WOAptGet.is_installed(self, 'php7.3-fpm'):
-                WOService.reload_service(self, 'php7.3-fpm')
+            if CCWAptGet.is_installed(self, 'php7.2-fpm'):
+                CCWService.reload_service(self, 'php7.2-fpm')
+            if CCWAptGet.is_installed(self, 'php7.3-fpm'):
+                CCWService.reload_service(self, 'php7.3-fpm')
         self.app.close(0)
 
     @expose(hide=True)
@@ -665,32 +665,32 @@ class WODebugController(CementBaseController):
                 cron_time = 5
 
             try:
-                if not WOShellExec.cmd_exec(self, "crontab -l | grep "
-                                            "'wo debug --import-slow-log'"):
+                if not CCWShellExec.cmd_exec(self, "crontab -l | grep "
+                                            "'ccw debug --import-slow-log'"):
                     if not cron_time == 0:
                         Log.info(self, "setting up crontab entry,"
                                  " please wait...")
-                        WOShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
+                        CCWShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
                                              "2> /dev/null | {{ cat; echo -e"
-                                             " \\\"#WordOps start MySQL "
+                                             " \\\"#CCC CODE start MySQL "
                                              "slow log \\n*/{0} * * * * "
-                                             "/usr/local/bin/wo debug"
+                                             "/usr/local/bin/ccw debug"
                                              " --import-slow-log\\n"
-                                             "#WordOps end MySQL slow log"
+                                             "#CCC CODE end MySQL slow log"
                                              "\\\"; }} | crontab -\""
                                              .format(cron_time))
                 else:
                     if not cron_time == 0:
                         Log.info(self, "updating crontab entry,"
                                  " please wait...")
-                        if not WOShellExec.cmd_exec(self, "/bin/bash -c "
+                        if not CCWShellExec.cmd_exec(self, "/bin/bash -c "
                                                     "\"crontab "
-                                                    "-l | sed '/WordOps "
+                                                    "-l | sed '/CCC CODE "
                                                     "start MySQL slow "
                                                     "log/!b;n;c\*\/{0} "
                                                     "\* \* \* "
                                                     "\* \/usr"
-                                                    "\/local\/bin\/wo debug "
+                                                    "\/local\/bin\/ccw debug "
                                                     "--import\-slow\-log' "
                                                     "| crontab -\""
                                                     .format(cron_time)):
@@ -698,9 +698,9 @@ class WODebugController(CementBaseController):
                     else:
                         Log.info(self, "removing crontab entry,"
                                  " please wait...")
-                        if not WOShellExec.cmd_exec(self, "/bin/bash -c "
+                        if not CCWShellExec.cmd_exec(self, "/bin/bash -c "
                                                     "\"crontab "
-                                                    "-l | sed '/WordOps "
+                                                    "-l | sed '/CCC CODE "
                                                     "start MySQL slow "
                                                     "log/,+2d'"
                                                     "| crontab -\""):
@@ -714,7 +714,7 @@ class WODebugController(CementBaseController):
             self.app.pargs.nginx = 'on'
             self.app.pargs.php = 'on'
             self.app.pargs.fpm = 'on'
-            if WOAptGet.is_installed(self, 'php7.2-fpm'):
+            if CCWAptGet.is_installed(self, 'php7.2-fpm'):
                 self.app.pargs.php73 = 'on'
                 self.app.pargs.fpm73 = 'on'
             self.app.pargs.mysql = 'on'
@@ -726,7 +726,7 @@ class WODebugController(CementBaseController):
             self.app.pargs.nginx = 'off'
             self.app.pargs.php = 'off'
             self.app.pargs.fpm = 'off'
-            if WOAptGet.is_installed(self, 'php7.2-fpm'):
+            if CCWAptGet.is_installed(self, 'php7.2-fpm'):
                 self.app.pargs.php73 = 'off'
                 self.app.pargs.fpm73 = 'off'
             self.app.pargs.mysql = 'off'
@@ -754,10 +754,10 @@ class WODebugController(CementBaseController):
             self.debug_fpm73()
         if self.app.pargs.mysql:
             # MySQL debug will not work for remote MySQL
-            if WOVar.wo_mysql_host == "localhost":
+            if CCWVar.ccw_mysql_host == "localhost":
                 self.debug_mysql()
             else:
-                Log.warn(self, "Remote MySQL found, WordOps does not support "
+                Log.warn(self, "Remote MySQL found, CCC CODE does not support "
                          "debugging remote servers")
         if self.app.pargs.wp:
             self.debug_wp()
@@ -769,13 +769,13 @@ class WODebugController(CementBaseController):
 
         # Reload Nginx
         if self.trigger_nginx:
-            WOService.reload_service(self, 'nginx')
+            CCWService.reload_service(self, 'nginx')
         # Reload PHP
         if self.trigger_php:
-            if WOAptGet.is_installed(self, 'php7.2-fpm'):
-                WOService.restart_service(self, 'php7.2-fpm')
-            if WOAptGet.is_installed(self, 'php7.3-fpm'):
-                WOService.restart_service(self, 'php7.3-fpm')
+            if CCWAptGet.is_installed(self, 'php7.2-fpm'):
+                CCWService.restart_service(self, 'php7.2-fpm')
+            if CCWAptGet.is_installed(self, 'php7.3-fpm'):
+                CCWService.restart_service(self, 'php7.3-fpm')
 
         if len(self.msg) > 0:
             if not self.app.pargs.interactive:
@@ -794,22 +794,22 @@ class WODebugController(CementBaseController):
     def import_slow_log(self):
         """Default function for import slow log"""
         if os.path.isdir("{0}22222/htdocs/db/anemometer"
-                         .format(WOVar.wo_webroot)):
+                         .format(CCWVar.ccw_webroot)):
             if os.path.isfile("/var/log/mysql/mysql-slow.log"):
                 # Get Anemometer user name and password
                 Log.info(self, "Importing MySQL slow log to Anemometer")
                 host = os.popen("grep -e \"\'host\'\" {0}22222/htdocs/"
-                                .format(WOVar.wo_webroot) +
+                                .format(CCWVar.ccw_webroot) +
                                 "db/anemometer/conf/config.inc.php  "
                                 "| head -1 | cut -d\\\' -f4 | "
                                 "tr -d '\n'").read()
                 user = os.popen("grep -e \"\'user\'\" {0}22222/htdocs/"
-                                .format(WOVar.wo_webroot) +
+                                .format(CCWVar.ccw_webroot) +
                                 "db/anemometer/conf/config.inc.php  "
                                 "| head -1 | cut -d\\\' -f4 | "
                                 "tr -d '\n'").read()
                 password = os.popen("grep -e \"\'password\'\" {0}22222/"
-                                    .format(WOVar.wo_webroot) +
+                                    .format(CCWVar.ccw_webroot) +
                                     "htdocs/db/anemometer/conf"
                                     "/config.inc.php "
                                     "| head -1 | cut -d\\\' -f4 | "
@@ -817,7 +817,7 @@ class WODebugController(CementBaseController):
 
                 # Import slow log Anemometer using pt-query-digest
                 try:
-                    WOShellExec.cmd_exec(self, "pt-query-digest --user={0} "
+                    CCWShellExec.cmd_exec(self, "pt-query-digest --user={0} "
                                          "--password={1} "
                                          "--review D=slow_query_log,"
                                          "t=global_query_review "
@@ -839,12 +839,14 @@ class WODebugController(CementBaseController):
         else:
             Log.error(self, "Anemometer is not installed." +
                       Log.ENDC + "\n Install Anemometer with:" +
-                      Log.BOLD + "\n `wo stack install --utils`" +
+                      Log.BOLD + "\n `ccw stack install --utils`" +
                       Log.ENDC)
 
 
 def load(app):
     # register the plugin class.. this only happens if the plugin is enabled
-    app.handler.register(WODebugController)
+    app.handler.register(CCWDebugController)
     # register a hook (function) to run after arguments are parsed.
-    app.hook.register('post_argument_parsing', wo_debug_hook)
+    app.hook.register('post_argument_parsing', ccw_debug_hook)
+
+# Zuletzt bearbeitet: 2025-10-27
