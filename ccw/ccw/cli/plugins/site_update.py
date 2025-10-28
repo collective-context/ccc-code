@@ -134,7 +134,7 @@ class WOSiteUpdateController(CementBaseController):
     def doupdatesite(self, pargs):
         pargs = self.app.pargs
         letsencrypt = False
-        for pargs_version in WOVar.wo_php_versions:
+        for pargs_version in CCWVar.ccw_php_versions:
             globals()[pargs_version] = False
 
         data = dict()
@@ -179,15 +179,15 @@ class WOSiteUpdateController(CementBaseController):
                 Log.error(self, 'Unable to input site name, Please try again!')
 
         pargs.site_name = pargs.site_name.strip()
-        wo_domain = WODomain.validate(self, pargs.site_name)
-        wo_www_domain = "www.{0}".format(wo_domain)
-        (wo_domain_type, wo_root_domain) = WODomain.getlevel(
-            self, wo_domain)
-        wo_site_webroot = WOVar.wo_webroot + wo_domain
-        check_site = getSiteInfo(self, wo_domain)
+        ccw_domain = CCWDomain.validate(self, pargs.site_name)
+        ccw_www_domain = "www.{0}".format(ccw_domain)
+        (ccw_domain_type, ccw_root_domain) = CCWDomain.getlevel(
+            self, ccw_domain)
+        ccw_site_webroot = CCWVar.ccw_webroot + ccw_domain
+        check_site = getSiteInfo(self, ccw_domain)
 
         if check_site is None:
-            Log.error(self, " Site {0} does not exist.".format(wo_domain))
+            Log.error(self, " Site {0} does not exist.".format(ccw_domain))
         else:
             oldsitetype = check_site.site_type
             oldcachetype = check_site.cache_type
@@ -368,11 +368,11 @@ class WOSiteUpdateController(CementBaseController):
                 self, "pargs php74, "
                 "or php80, or php81 or php82 or php83 or php84 enabled")
             data = dict(
-                site_name=wo_domain,
-                www_domain=wo_www_domain,
+                site_name=ccw_domain,
+                www_domain=ccw_www_domain,
                 currsitetype=oldsitetype,
                 currcachetype=oldcachetype,
-                webroot=wo_site_webroot)
+                webroot=ccw_site_webroot)
             stype = oldsitetype
             cache = oldcachetype
             if oldsitetype == 'html' or oldsitetype == 'proxy' or oldsitetype == 'alias':
@@ -417,7 +417,7 @@ class WOSiteUpdateController(CementBaseController):
             if oldcachetype in data:
                 data[oldcachetype] = True
 
-        for pargs_version in WOVar.wo_php_versions:
+        for pargs_version in CCWVar.ccw_php_versions:
             if getattr(pargs, pargs_version):
                 Log.debug(self, f"pargs.{pargs_version} detected")
                 data[pargs_version] = True
@@ -695,42 +695,42 @@ class WOSiteUpdateController(CementBaseController):
             elif data['letsencrypt'] is False:
                 if pargs.letsencrypt == "off":
                     if os.path.islink("{0}/conf/nginx/ssl.conf"
-                                      .format(wo_site_webroot)):
-                        WOFileUtils.remove_symlink(self,
+                                      .format(ccw_site_webroot)):
+                        CCWFileUtils.remove_symlink(self,
                                                    "{0}/conf/nginx/ssl.conf"
-                                                   .format(wo_site_webroot))
+                                                   .format(ccw_site_webroot))
                     elif os.path.isfile("{0}/conf/nginx/ssl.conf"
-                                        .format(wo_site_webroot)):
+                                        .format(ccw_site_webroot)):
                         Log.info(self, 'Setting Nginx configuration')
-                        WOFileUtils.mvfile(self, "{0}/conf/nginx/ssl.conf"
-                                           .format(wo_site_webroot),
+                        CCWFileUtils.mvfile(self, "{0}/conf/nginx/ssl.conf"
+                                           .format(ccw_site_webroot),
                                            '{0}/conf/nginx/ssl.conf.disabled'
-                                           .format(wo_site_webroot))
+                                           .format(ccw_site_webroot))
                         SSL.httpsredirect(
-                            self, wo_domain, acmedata, redirect=False)
+                            self, ccw_domain, acmedata, redirect=False)
                         if os.path.isfile("{0}/conf/nginx/hsts.conf"
-                                          .format(wo_site_webroot)):
-                            WOFileUtils.mvfile(self, "{0}/conf/nginx/hsts.conf"
-                                               .format(wo_site_webroot),
+                                          .format(ccw_site_webroot)):
+                            CCWFileUtils.mvfile(self, "{0}/conf/nginx/hsts.conf"
+                                               .format(ccw_site_webroot),
                                                '{0}/conf/nginx/'
                                                'hsts.conf.disabled'
-                                               .format(wo_site_webroot))
+                                               .format(ccw_site_webroot))
                         # find all broken symlinks
-                        sympath = (f'{wo_site_webroot}/conf')
-                        WOFileUtils.findBrokenSymlink(self, sympath)
+                        sympath = (f'{ccw_site_webroot}/conf')
+                        CCWFileUtils.findBrokenSymlink(self, sympath)
 
                 elif (pargs.letsencrypt == "clean" or
                       pargs.letsencrypt == "purge"):
-                    WOAcme.removeconf(self, wo_domain)
+                    CCWAcme.removeconf(self, ccw_domain)
                     # find all broken symlinks
                     allsites = getAllsites(self)
                     for site in allsites:
                         if not site:
                             pass
                         sympath = "{0}/conf".format(site.site_path)
-                        WOFileUtils.findBrokenSymlink(self, sympath)
+                        CCWFileUtils.findBrokenSymlink(self, sympath)
 
-                if not WOService.reload_service(self, 'nginx'):
+                if not CCWService.reload_service(self, 'nginx'):
                     Log.error(self, "service nginx reload failed. "
                               "check issues with `nginx -t` command")
                     # Log.info(self,"Removing Cron Job set for cert
@@ -738,59 +738,59 @@ class WOSiteUpdateController(CementBaseController):
                     # update {0} --le=renew --min_expiry_limit 30
                     # 2> \/dev\/null'.format(wo_domain))
                 Log.info(self, "Successfully Disabled SSl for Site "
-                         " http://{0}".format(wo_domain))
+                         " http://{0}".format(ccw_domain))
                 letsencrypt = False
 
             # Add nginx conf folder into GIT
-            WOGit.add(self, ["{0}/conf/nginx".format(wo_site_webroot)],
+            CCWGit.add(self, ["{0}/conf/nginx".format(ccw_site_webroot)],
                       msg="Adding letsencrypts config of site: {0}"
-                      .format(wo_domain))
-            updateSiteInfo(self, wo_domain, ssl=letsencrypt)
+                      .format(ccw_domain))
+            updateSiteInfo(self, ccw_domain, ssl=letsencrypt)
             return 0
 
         if stype == oldsitetype and cache == oldcachetype:
 
             # Service Nginx Reload
-            if not WOService.reload_service(self, 'nginx'):
+            if not CCWService.reload_service(self, 'nginx'):
                 Log.error(self, "service nginx reload failed. "
                           "check issues with `nginx -t` command")
 
-            updateSiteInfo(self, wo_domain, stype=stype, cache=cache,
+            updateSiteInfo(self, ccw_domain, stype=stype, cache=cache,
                            ssl=(bool(check_site.is_ssl)),
                            php_version=check_php_version)
 
             Log.info(self, "Successfully updated site"
-                     " http://{0}".format(wo_domain))
+                     " http://{0}".format(ccw_domain))
             return 0
 
-        # if data['wo_db_name'] and not data['wp']:
-        if 'wo_db_name' in data.keys() and not data['wp']:
+        # if data['ccw_db_name'] and not data['wp']:
+        if 'ccw_db_name' in data.keys() and not data['wp']:
             try:
                 data = setupdatabase(self, data)
             except SiteError as e:
                 Log.debug(self, str(e))
                 Log.info(self, Log.FAIL + "Update site failed."
                          "Check the log for details:"
-                         "`tail /var/log/wo/wordops.log` and please try again")
+                         "`tail /var/log/ccw/ccc-code.log` and please try again")
                 return 1
             try:
-                wodbconfig = open("{0}/wo-config.php".format(wo_site_webroot),
+                ccwdbconfig = open("{0}/ccw-config.php".format(ccw_site_webroot),
                                   encoding='utf-8', mode='w')
-                wodbconfig.write("<?php \ndefine('DB_NAME', '{0}');"
+                ccwdbconfig.write("<?php \ndefine('DB_NAME', '{0}');"
                                  "\ndefine('DB_USER', '{1}'); "
                                  "\ndefine('DB_PASSWORD', '{2}');"
                                  "\ndefine('DB_HOST', '{3}');\n?>"
-                                 .format(data['wo_db_name'],
-                                         data['wo_db_user'],
-                                         data['wo_db_pass'],
-                                         data['wo_db_host']))
-                wodbconfig.close()
+                                 .format(data['ccw_db_name'],
+                                         data['ccw_db_user'],
+                                         data['ccw_db_pass'],
+                                         data['ccw_db_host']))
+                ccwdbconfig.close()
             except IOError as e:
                 Log.debug(self, str(e))
-                Log.debug(self, "creating wo-config.php failed.")
+                Log.debug(self, "creating ccw-config.php failed.")
                 Log.info(self, Log.FAIL + "Update site failed. "
                          "Check the log for details: "
-                         "`tail /var/log/wo/wordops.log` and please try again")
+                         "`tail /var/log/ccw/ccc-code.log` and please try again")
                 return 1
 
         # Setup WordPress if old sites are html/php/mysql sites
