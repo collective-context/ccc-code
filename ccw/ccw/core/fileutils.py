@@ -310,8 +310,6 @@ class CCWFileUtils():
                 Log.error(self, "Unable to remove file  : {0} "
                           .format(path))
 
-# Zuletzt bearbeitet: 2025-10-27
-
     def findBrokenSymlink(self, sympath):
         """
             Find symlinks
@@ -386,3 +384,5 @@ class CCWFileUtils():
                 return True
             else:
                 return False
+
+# Zuletzt bearbeitet: 2025-10-27
