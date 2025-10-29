@@ -10,7 +10,7 @@ from ccw.core.shellexec import CCWShellExec
 class CCWSwap():
     """Manage Swap"""
 
-    def __init__():
+    def __init__(self):
         """Initialize """
         pass
 

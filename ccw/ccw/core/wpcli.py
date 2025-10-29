@@ -1,17 +1,19 @@
-"""WordPress utilities for WordOps"""
-from wo.core.logging import Log
-from wo.core.shellexec import WOShellExec
-from wo.core.variables import WOVar
+"""WordPress utilities for CCC CODE"""
+from ccw.core.logging import Log
+from ccw.core.shellexec import CCWShellExec
+from ccw.core.variables import CCWVar
 
 
-class WOWp:
-    """WordPress utilities for WordOps"""
+class CCWWp:
+    """WordPress utilities for CCC CODE"""
 
     def wpcli(self, command):
         """WP-CLI wrapper"""
         try:
-            WOShellExec.cmd_exec(
-                self, '{0} --allow-root '.format(WOVar.wo_wpcli_path) +
+            CCWShellExec.cmd_exec(
+                self, '{0} --allow-root '.format(CCWVar.ccw_wpcli_path) +
                 '{0}'.format(command))
         except Exception:
             Log.error(self, "WP-CLI command failed")
+
+# Zuletzt bearbeitet: 2025-10-27
