@@ -1070,4 +1070,4 @@ class CCWSiteUpdateController(CementBaseController):
                  " http://{0}".format(ccw_domain))
         return 0
 
-# Zuletzt bearbeitet: 2025-10-27
+# Zuletzt bearbeitet: 2025-10-30
