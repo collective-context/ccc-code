@@ -15,7 +15,7 @@ Copyright (c) 2024 CCC CODE.
 class CCWBaseController(CementBaseController):
     class Meta:
         label = 'base'
-        description = ("An essential toolset that eases WordPress "
+        description = ("An essential toolset that eases CCC CODE "
                        "site and server administration with Nginx")
         arguments = [
             (['-v', '--version'], dict(action='version', version=BANNER)),
