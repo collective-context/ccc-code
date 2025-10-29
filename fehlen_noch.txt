@@ -2,30 +2,12 @@
 └── ccw
     ├── ccw
     │   ├── cli
-    │   │   ├── bootstrap.py
-    │   │   ├── controllers
-    │   │   │   ├── base.py
-    │   │   │   └── __init__.py
-    │   │   ├── ext
-    │   │   │   └── __init__.py
-    │   │   ├── __init__.py
-    │   │   ├── main.py
     │   │   ├── plugins
-    │   │   │   ├── clean.py
-    │   │   │   ├── debug.py
-    │   │   │   ├── import_slow_log.py
-    │   │   │   ├── info.py
-    │   │   │   ├── __init__.py
-    │   │   │   ├── log.py
     │   │   │   ├── maintenance.py
     │   │   │   ├── models.py
     │   │   │   ├── secure.py
-    │   │   │   ├── site_backup.py
-    │   │   │   ├── site_clone.py
-    │   │   │   ├── site_create.py
     │   │   │   ├── sitedb.py
     │   │   │   ├── site_functions.py
-    │   │   │   ├── site.py
     │   │   │   ├── site_update.py
     │   │   │   ├── stack_migrate.py
     │   │   │   ├── stack_pref.py
@@ -35,160 +17,59 @@
     │   │   │   ├── sync.py
     │   │   │   └── update.py
     │   │   └── templates
-    │   │       ├── 22222.mustache
-    │   │       ├── acl.mustache
-    │   │       ├── anemometer.mustache
-    │   │       ├── avif.mustache
-    │   │       ├── blockips.mustache
-    │   │       ├── brotli.mustache
-    │   │       ├── cf-update.mustache
-    │   │       ├── cloudflare.mustache
-    │   │       ├── fail2ban-forbidden.mustache
     │   │       ├── fail2ban.mustache
-    │   │       ├── fail2ban-wp.mustache
     │   │       ├── fastcgi.mustache
-    │   │       ├── force-ssl.mustache
     │   │       ├── freshclam.mustache
     │   │       ├── gzip.mustache
     │   │       ├── info_mysql.mustache
     │   │       ├── info_nginx.mustache
     │   │       ├── info_php.mustache
-    │   │       ├── __init__.py
     │   │       ├── locations.mustache
-    │   │       ├── map-wp.mustache
-    │   │       ├── mime.mustache
-    │   │       ├── my.mustache
-    │   │       ├── nextcloud.mustache
-    │   │       ├── nginx-core.mustache
-    │   │       ├── php-fpm.mustache
-    │   │       ├── php.mustache
-    │   │       ├── php-pool.mustache
-    │   │       ├── proftpd.mustache
-    │   │       ├── proftpd-tls.mustache
-    │   │       ├── publicsuffix.mustache
-    │   │       ├── redis.mustache
-    │   │       ├── siteinfo.mustache
-    │   │       ├── sshd.mustache
-    │   │       ├── ssl.mustache
-    │   │       ├── stub_status.mustache
-    │   │       ├── sysctl.mustache
-    │   │       ├── traffic-advice.mustache
-    │   │       ├── tweaks.mustache
-    │   │       ├── ufw.mustache
-    │   │       ├── upstream.mustache
-    │   │       ├── virtualconf.mustache
-    │   │       ├── webp.mustache
-    │   │       ├── wo-kernel-script.mustache
-    │   │       ├── wo-kernel-service.mustache
-    │   │       ├── wo-plus.mustache
-    │   │       ├── wo-ufw.mustache
-    │   │       ├── wo-update.mustache
-    │   │       ├── wpce.mustache
-    │   │       ├── wpcommon.mustache
-    │   │       ├── wpfc.mustache
-    │   │       ├── wprocket.mustache
-    │   │       ├── wpsc.mustache
-    │   │       └── wpsubdir.mustache
+    │   │       └── proftpd-tls.mustache
     │   ├── core
-    │   │   ├── acme.py
-    │   │   ├── addswap.py
-    │   │   ├── aptget.py
-    │   │   ├── apt_repo.py
-    │   │   ├── checkfqdn.py
-    │   │   ├── cron.py
-    │   │   ├── database.py
-    │   │   ├── domainvalidate.py
-    │   │   ├── download.py
-    │   │   ├── exc.py
-    │   │   ├── extract.py
-    │   │   ├── fileutils.py
-    │   │   ├── git.py
-    │   │   ├── __init__.py
-    │   │   ├── logging.py
-    │   │   ├── logwatch.py
-    │   │   ├── mysql.py
-    │   │   ├── nginxhashbucket.py
-    │   │   ├── nginx.py
-    │   │   ├── random.py
-    │   │   ├── sendmail.py
-    │   │   ├── services.py
-    │   │   ├── shellexec.py
-    │   │   ├── sslutils.py
-    │   │   ├── stackconf.py
-    │   │   ├── template.py
-    │   │   ├── variables.py
     │   │   └── wpcli.py
     │   └── utils
-    │       ├── __init__.py
     │       └── test.py
-    ├── CHANGELOG.md
     ├── CODE_OF_CONDUCT.md
     ├── config
     │   ├── bash_completion.d
     │   │   └── wo_auto.rc
-    │   ├── plugins.d
-    │   │   ├── clean.conf
-    │   │   ├── debug.conf
-    │   │   ├── import_slow_log.conf
-    │   │   ├── info.conf
-    │   │   ├── log.conf
-    │   │   ├── maintenance.conf
-    │   │   ├── secure.conf
-    │   │   ├── site.conf
-    │   │   ├── stack.conf
-    │   │   └── update.conf
-    │   └── wo.conf
+    │   └── plugins.d
+    │       ├── site.conf
+    │       ├── stack.conf
+    │       └── update.conf
     ├── CONTRIBUTING.md
     ├── docs
     │   ├── install
     │   │   ├── complete.md
     │   │   └── summary.md
     │   └── wo.8
-    ├── favicon.ico
     ├── LICENSE
-    ├── logo.png
     ├── MANIFEST.in
     ├── README.md
     ├── requirements.txt
     ├── setup.cfg
-    ├── tests
-    │   ├── cli
-    │   │   ├── 13_test_stack_install.py
-    │   │   ├── 14_test_stack_services_stop.py
-    │   │   ├── 15_test_stack_services_start.py
-    │   │   ├── 16_test_stack_services_restart.py
-    │   │   ├── 17_test_stack_services_status.py
-    │   │   ├── 18_test_site_create.py
-    │   │   ├── 19_test_site_disable.py
-    │   │   ├── 20_test_site_enable.py
-    │   │   ├── 21_test_site_info.py
-    │   │   ├── 22_test_site_list.py
-    │   │   ├── 23_test_site_show.py
-    │   │   ├── 24_test_site_update.py
-    │   │   ├── 25_test_clean.py
-    │   │   ├── 27_test_info.py
-    │   │   ├── 28_test_secure.py
-    │   │   ├── 29_test_site_delete.py
-    │   │   ├── 30_test_stack_remove.py
-    │   │   ├── 31_test_stack_purge.py
-    │   │   ├── ext
-    │   │   │   └── __init__.py
-    │   │   ├── __init__.py
-    │   │   └── plugins
-    │   │       └── __init__.py
-    │   ├── core
-    │   │   └── __init__.py
-    │   ├── __init__.py
-    │   ├── issue.sh
-    │   └── travis.sh
-    └── wordops.egg-info
-        ├── dependency_links.txt
-        ├── entry_points.txt
-        ├── namespace_packages.txt
-        ├── not-zip-safe
-        ├── PKG-INFO
-        ├── requires.txt
-        ├── SOURCES.txt
-        └── top_level.txt
+    └── tests
+        ├── cli
+        │   ├── 13_test_stack_install.py
+        │   ├── 14_test_stack_services_stop.py
+        │   ├── 15_test_stack_services_start.py
+        │   ├── 16_test_stack_services_restart.py
+        │   ├── 17_test_stack_services_status.py
+        │   ├── 18_test_site_create.py
+        │   ├── 19_test_site_disable.py
+        │   ├── 20_test_site_enable.py
+        │   ├── 21_test_site_info.py
+        │   ├── 22_test_site_list.py
+        │   ├── 23_test_site_show.py
+        │   ├── 24_test_site_update.py
+        │   ├── 25_test_clean.py
+        │   ├── 27_test_info.py
+        │   ├── 28_test_secure.py
+        │   ├── 29_test_site_delete.py
+        │   ├── 30_test_stack_remove.py
+        │   └── 31_test_stack_purge.py
+        ├── issue.sh
+        └── travis.sh
 
-21 directories, 171 files
+15 directories, 58 files

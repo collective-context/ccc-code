@@ -7,7 +7,7 @@ from wo.core.fileutils import WOFileUtils
 from wo.core.git import WOGit
 from wo.core.logging import Log
 from wo.core.random import RANDOM
-from wo.core.services import WOService
+from ccw.core.services import CCWService
 from wo.core.shellexec import WOShellExec
 from wo.core.template import WOTemplate
 from wo.core.variables import WOVar

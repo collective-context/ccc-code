@@ -19,7 +19,7 @@ from wo.core.git import WOGit
 from wo.core.logging import Log
 from wo.core.mysql import (MySQLConnectionError, StatementExcecutionError,
                            WOMysql)
-from wo.core.services import WOService
+from ccw.core.services import CCWService
 from wo.core.shellexec import CommandExecutionError, WOShellExec
 from wo.core.sslutils import SSL
 from wo.core.variables import WOVar

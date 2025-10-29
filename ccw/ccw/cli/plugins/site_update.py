@@ -18,7 +18,7 @@ from wo.core.domainvalidate import WODomain
 from wo.core.fileutils import WOFileUtils
 from wo.core.git import WOGit
 from wo.core.logging import Log
-from wo.core.services import WOService
+from ccw.core.services import CCWService
 from wo.core.sslutils import SSL
 from wo.core.variables import WOVar
 
