@@ -285,4 +285,4 @@ class CCWAptGet():
             Log.error(self, "Error while downloading packages, "
                       "apt-get exited with error")
 
-# Zuletzt bearbeitet: 2025-10-27
+# Zuletzt bearbeitet: 2025-10-30

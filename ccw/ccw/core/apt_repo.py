@@ -112,4 +112,4 @@ class CCWRepo():
             Log.debug(self, "{0}".format(e))
             Log.error(self, "Unable to import repo keys")
 
-# Zuletzt bearbeitet: 2025-10-27
+# Zuletzt bearbeitet: 2025-10-30
