@@ -3,9 +3,9 @@ from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 
-from wo.cli.plugins.models import SiteDB
-from wo.core.database import db_session
-from wo.core.logging import Log
+from ccw.cli.plugins.models import SiteDB
+from ccw.core.database import db_session
+from ccw.core.logging import Log
 
 
 def addNewSite(self, site, stype, cache, path,
@@ -13,7 +13,7 @@ def addNewSite(self, site, stype, cache, path,
                db_name=None, db_user=None, db_password=None,
                db_host='localhost', hhvm=0, php_version='8.1'):
     """
-    Add New Site record information into the wo database.
+    Add New Site record information into the ccw database.
     """
     try:
         newRec = SiteDB(site, stype, cache, path, enabled, ssl, fs, db,
@@ -28,7 +28,7 @@ def addNewSite(self, site, stype, cache, path,
 
 def getSiteInfo(self, site):
     """
-        Retrieves site record from ee databse
+        Retrieves site record from ccw database
     """
     try:
         q = SiteDB.query.filter(SiteDB.sitename == site).first()
@@ -42,7 +42,7 @@ def updateSiteInfo(self, site, stype='', cache='', webroot='',
                    enabled=True, ssl=False, fs='', db='', db_name=None,
                    db_user=None, db_password=None, db_host=None, hhvm=None,
                    php_version=''):
-    """updates site record in database"""
+    """updates site record in ccw database"""
     try:
         q = SiteDB.query.filter(SiteDB.sitename == site).first()
     except Exception as e:
@@ -50,7 +50,7 @@ def updateSiteInfo(self, site, stype='', cache='', webroot='',
         Log.error(self, "Unable to query database for site info")
 
     if not q:
-        Log.error(self, "{0} does not exist in database".format(site))
+        Log.error(self, "{0} does not exist in ccw database".format(site))
 
     # Check if new record matches old if not then only update database
     if stype and q.site_type != stype:
@@ -91,35 +91,37 @@ def updateSiteInfo(self, site, stype='', cache='', webroot='',
         db_session.commit()
     except Exception as e:
         Log.debug(self, "{0}".format(e))
-        Log.error(self, "Unable to update site info in application database.")
+        Log.error(self, "Unable to update site info in ccw application database.")
 
 
 def deleteSiteInfo(self, site):
-    """Delete site record in database"""
+    """Delete site record in ccw database"""
     try:
         q = SiteDB.query.filter(SiteDB.sitename == site).first()
     except Exception as e:
         Log.debug(self, "{0}".format(e))
-        Log.error(self, "Unable to query database")
+        Log.error(self, "Unable to query ccw database")
 
     if not q:
-        Log.error(self, "{0} does not exist in database".format(site))
+        Log.error(self, "{0} does not exist in ccw database".format(site))
 
     try:
         db_session.delete(q)
         db_session.commit()
     except Exception as e:
         Log.debug(self, "{0}".format(e))
-        Log.error(self, "Unable to delete site from application database.")
+        Log.error(self, "Unable to delete site from ccw application database.")
 
 
 def getAllsites(self):
     """
-        1. returns all records from ee database
+        1. returns all records from ccw database
     """
     try:
         q = SiteDB.query.all()
         return q
     except Exception as e:
         Log.debug(self, "{0}".format(e))
-        Log.error(self, "Unable to query database")
+        Log.error(self, "Unable to query ccw database")
+
+# Zuletzt bearbeitet: 2025-10-27
