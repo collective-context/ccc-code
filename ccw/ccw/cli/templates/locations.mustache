@@ -1,5 +1,5 @@
-# NGINX CONFIGURATION FOR COMMON LOCATION - WordOps {{release}}
-# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN WordOps (wo) UPDATE
+# NGINX CONFIGURATION FOR COMMON LOCATION - CCC CODE {{release}}
+# DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN CCC CODE (ccw) UPDATE
 # Basic locations files
 location = /favicon.ico {
     try_files /wp-content/uploads/fbrfg/favicon.ico $uri $uri/ /index.php?$args @empty_gif;
@@ -107,3 +107,5 @@ location ~ "(\{0\}|\(/\(|\.\.\.|\+\+\+|\\\"\\\")" {
 location ~ "(~|`|<|>|:|;|%|\\|\s|\{|\}|\[|\]|\|)" {
     deny all;
 }
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

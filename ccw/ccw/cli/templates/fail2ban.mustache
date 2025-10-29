@@ -12,10 +12,10 @@ logpath = /var/log/nginx/*error*.log
 enabled   = true
 logpath = /var/log/nginx/*access*.log
 
-[wo-wordpress]
+[ccw-wordpress]
 enabled = true
-filter = wo-wordpress
-action = iptables-multiport[name="wo-wordpress", port="http,https"]
+filter = ccw-wordpress
+action = iptables-multiport[name="ccw-wordpress", port="http,https"]
 logpath = /var/log/nginx/*access*.log
 maxretry = 5
 
@@ -24,3 +24,5 @@ enabled = true
 filter = nginx-forbidden
 action = iptables-multiport[name="nginx-forbidden", port="http,https"]
 logpath = /var/log/nginx/*error*.log{{/nginx}}
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}

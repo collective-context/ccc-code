@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# WordOps ClamAV freshclam script
-# script path after installation /opt/freshcham.sh
+# CCC CODE ClamAV freshclam script
+# script path after installation /opt/ccw/bin/freshclam.sh
 
 if [ -x /etc/init.d/clamav-freshclam ]; then
 {
     /etc/init.d/clamav-freshclam stop
     freshclam
     /etc/init.d/clamav-freshclam start
-} >> /var/log/wo/clamav.log 2>&1
+} >> /var/log/ccw/clamav.log 2>&1
 fi
+
+{{! Zuletzt bearbeitet: 2025-10-27 }}
