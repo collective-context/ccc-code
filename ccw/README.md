@@ -214,3 +214,5 @@ CCC CODE Cache Plugins supported by CCC CODE :
 ## License
 
 -   [MIT](http://opensource.org/licenses/MIT) © [CCC CODE](https://collective-context.org)
+
+<!-- Zuletzt bearbeitet: 2025-10-27 -->
