@@ -34,11 +34,11 @@ class CCWInfoController(CementBaseController):
                 dict(help='Get Nginx configuration information',
                      action='store_true')),
         ]
-        usage = "ccw info [options]"
         for php_version, php_number in CCWVar.ccw_php_versions.items():
             arguments.append(([f'--{php_version}'],
                               dict(help=f'Get PHP {php_number} configuration information',
                                    action='store_true')))
+        usage = "ccw info [options]"
 
     @expose(hide=True)
     def info_nginx(self):
