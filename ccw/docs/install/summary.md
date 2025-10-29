@@ -1,20 +1,20 @@
-# WordOps Install-Handbuch - Recherche und Analyse
+# CCC CODE Install-Handbuch - Recherche und Analyse
 
 ## Executive Summary
 
-Das WordOps Install-Handbuch dokumentiert einen komplexen Installationsprozess für ein WordPress-Management-System basierend auf Nginx, PHP und MariaDB. Die Analyse zeigt eine hybride Architektur aus Bash-Skripten für die Installation und Python-Modulen für die Verwaltung, mit starkem Fokus auf Automatisierung und Best Practices.
+Das CCC CODE Install-Handbuch dokumentiert einen komplexen Installationsprozess für ein WordPress-Management-System basierend auf Nginx, PHP und MariaDB. Die Analyse zeigt eine hybride Architektur aus Bash-Skripten für die Installation und Python-Modulen für die Verwaltung, mit starkem Fokus auf Automatisierung und Best Practices.
 
 ## 1. Projektübersicht
 
 ### 1.1 Grundlegende Informationen
-- **Projekt**: WordOps (Fork von EasyEngine)
-- **Repository**: https://github.com/recode-booktype/WordOps/
+- **Projekt**: CCC CODE (Fork von EasyEngine)
+- **Repository**: https://github.com/collective-context/ccc-code
 - **Dokumentation**: https://collective-context.org/
 - **Vision**: https://recode.at/collective-context-cc-whitepaper/
 - **Mission**: https://recode.at/cc-multi-agent-ki-orchestrierung/
 
 ### 1.2 Hauptfunktionen
-WordOps ist ein essentielles Toolset zur Vereinfachung der WordPress-Site- und Server-Verwaltung mit folgenden Kernfunktionen:
+CCC CODE ist ein essentielles Toolset zur Vereinfachung der WordPress-Site- und Server-Verwaltung mit folgenden Kernfunktionen:
 - **Einfache Installation**: Ein-Schritt automatisierter Installer mit Migration von EasyEngine v3
 - **Schnelle Bereitstellung**: Automatisierte Installation von WordPress, Nginx, PHP, MySQL & Redis
 - **Custom Nginx Build**: Nginx 1.28.0 mit TLS v1.3, HTTP/3 QUIC & Brotli Support
@@ -43,10 +43,10 @@ Das Bash-Installationsskript (`install`) folgt einer klaren Struktur:
 ```
 
 ### 2.2 Python-Framework
-WordOps nutzt das Cement-Framework für die CLI-Implementierung:
-- **Haupteinstiegspunkt**: `wo/cli/main.py` mit `WOApp` als Cement-App
-- **Plugin-System**: Modular aufgebaut in `wo/cli/plugins/`
-- **Core-Module**: Hilfsfunktionen in `wo/core/` für APT, SSL, Services etc.
+CCC CODE nutzt das Cement-Framework für die CLI-Implementierung:
+- **Haupteinstiegspunkt**: `ccw/cli/main.py` mit `CCWApp` als Cement-App
+- **Plugin-System**: Modular aufgebaut in `ccw/cli/plugins/`
+- **Core-Module**: Hilfsfunktionen in `ccw/core/` für APT, SSL, Services etc.
 
 ## 3. Installationsprozess-Analyse
 
@@ -90,9 +90,9 @@ done
 
 #### Phase 2: Abhängigkeiten-Installation
 ```bash
-wo_install_dep() {
+ccw_install_dep() {
     # Ubuntu-spezifische Pakete
-    if [ "$wo_linux_distro" == "Ubuntu" ]; then
+    if [ "$ccw_linux_distro" == "Ubuntu" ]; then
         add-apt-repository ppa:git-core/ppa -y
         apt-get install build-essential curl python3-pip \
             python3-apt python3-venv gcc python3-dev sqlite3 \
@@ -114,32 +114,32 @@ wo_install_dep() {
 
 #### Phase 3: Python Virtual Environment Setup
 ```bash
-wo_install() {
+ccw_install() {
     # Virtual Environment erstellen
-    python3 -m venv --system-site-packages /opt/wo
-    source /opt/wo/bin/activate
+    python3 -m venv --system-site-packages /opt/ccw
+    source /opt/ccw/bin/activate
     
     # Pip-Pakete installieren
-    /opt/wo/bin/pip install setuptools==80.0.1
-    /opt/wo/bin/pip install -U pip wheel distro
+    /opt/ccw/bin/pip install setuptools==80.0.1
+    /opt/ccw/bin/pip install -U pip wheel distro
     
-    # WordOps installieren
-    if [ "$wo_branch" = "master" ]; then
-        /opt/wo/bin/pip install -U wordops --upgrade-strategy=eager
+    # CCC CODE installieren
+    if [ "$ccw_branch" = "master" ]; then
+        /opt/ccw/bin/pip install -U ccc-code --upgrade-strategy=eager
     else
-        /opt/wo/bin/pip install -I \
-            "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops"
+        /opt/ccw/bin/pip install -I \
+            "git+https://github.com/collective-context/ccc-code.git@$ccw_branch#egg=ccc-code"
     fi
     
     # Symlinks erstellen
-    ln -s /opt/wo/bin/wo /usr/local/bin/wo
+    ln -s /opt/ccw/bin/ccw /usr/local/bin/ccw
 }
 ```
 
 ## 4. Python-Module und Funktionalität
 
 ### 4.1 Core-Module
-- **aptget.py**: APT-Paketverwaltung mit `WOAptGet` Klasse
+- **aptget.py**: APT-Paketverwaltung mit `CCWAptGet` Klasse
 - **apt_repo.py**: Repository-Management mit PPA-Support
 - **database.py**: SQLAlchemy-Engine für DB-Verbindungen
 - **checkfqdn.py**: FQDN und IP-Validierung
@@ -150,13 +150,13 @@ wo_install() {
 
 ### 4.2 Stack-Management
 ```python
-# wo/cli/plugins/stack.py
-class WOStackController:
+# ccw/cli/plugins/stack.py
+class CCWStackController:
     def install(self):
         # Paket-Installation mit Versions-Check
         for package in packages:
-            if not WOAptGet.is_installed(package):
-                WOAptGet.install(package)
+            if not CCWAptGet.is_installed(package):
+                CCWAptGet.install(package)
                 
     def upgrade(self):
         # Stack-Upgrades mit Rollback-Unterstützung
@@ -169,16 +169,16 @@ class WOStackController:
 
 ### 4.3 Site-Management
 ```python
-# wo/cli/plugins/site_functions.py
+# ccw/cli/plugins/site_functions.py
 def setupdatabase():
     # MySQL-Datenbank für WordPress erstellen
-    WOMysql.execute("CREATE DATABASE IF NOT EXISTS...")
+    CCWMysql.execute("CREATE DATABASE IF NOT EXISTS...")
     
 def setupwordpress():
     # WordPress mit WP-CLI installieren
-    WOShellExec.cmd_exec("wp core download...")
-    WOShellExec.cmd_exec("wp core config...")
-    WOShellExec.cmd_exec("wp core install...")
+    CCWShellExec.cmd_exec("wp core download...")
+    CCWShellExec.cmd_exec("wp core config...")
+    CCWShellExec.cmd_exec("wp core install...")
 ```
 
 ## 5. Best Practices und Sicherheitsfeatures
@@ -199,18 +199,18 @@ _run() {
         echo -ne "${TPUT_ECHO}${2}${TPUT_RESET}\t"
     fi
     if ! $1; then
-        wo_lib_error "Fehler bei: $1"
+        ccw_lib_error "Fehler bei: $1"
     fi
 }
 
 # Rollback-Mechanismus
-wo_backup_ee() {
-    tar -czf "$BACKUP_FILE" /etc/ee /var/lib/ee || wo_lib_error "Backup failed"
+ccw_backup_ee() {
+    tar -czf "$BACKUP_FILE" /etc/ee /var/lib/ee || ccw_lib_error "Backup failed"
 }
 ```
 
 ### 5.3 Logging und Debugging
-- **Zentrale Logs**: `/var/log/wo/wordops.log` und `/var/log/wo/install.log`
+- **Zentrale Logs**: `/var/log/ccw/ccc-code.log` und `/var/log/ccw/install.log`
 - **Debug-Modi**: Verschiedene Debugging-Level für Nginx, PHP, MySQL
 - **Colorlog**: Farbcodierte Ausgaben für bessere Lesbarkeit
 
@@ -219,29 +219,29 @@ wo_backup_ee() {
 ### 6.1 WordPress-Installationstypen
 ```bash
 # Standard WordPress
-wo site create example.com --wp
+ccw site create example.com --wp
 
 # WordPress mit Cache-Plugins
-wo site create example.com --wp --wpsc     # WP Super Cache
-wo site create example.com --wp --wpfc     # FastCGI Cache
-wo site create example.com --wp --wpredis  # Redis Cache
-wo site create example.com --wp --wprocket # WP Rocket
-wo site create example.com --wp --wpce     # Cache Enabler
+ccw site create example.com --wp --wpsc     # WP Super Cache
+ccw site create example.com --wp --wpfc     # FastCGI Cache
+ccw site create example.com --wp --wpredis  # Redis Cache
+ccw site create example.com --wp --wprocket # WP Rocket
+ccw site create example.com --wp --wpce     # Cache Enabler
 
 # WordPress Multisite
-wo site create example.com --wpsubdir      # Unterverzeichnis-Struktur
-wo site create example.com --wpsubdomain   # Subdomain-Struktur
+ccw site create example.com --wpsubdir      # Unterverzeichnis-Struktur
+ccw site create example.com --wpsubdomain   # Subdomain-Struktur
 ```
 
 ### 6.2 PHP-Versionen-Management
 ```bash
 # PHP-Version wechseln
-wo site update example.com --php74
-wo site update example.com --php80
-wo site update example.com --php81
-wo site update example.com --php82
-wo site update example.com --php83
-wo site update example.com --php84
+ccw site update example.com --php74
+ccw site update example.com --php80
+ccw site update example.com --php81
+ccw site update example.com --php82
+ccw site update example.com --php83
+ccw site update example.com --php84
 ```
 
 ## 7. Monitoring und Wartung
@@ -254,19 +254,19 @@ wo site update example.com --php84
 ### 7.2 Wartungsfunktionen
 ```bash
 # Cache leeren
-wo clean --fastcgi
-wo clean --opcache
-wo clean --redis
-wo clean --all
+ccw clean --fastcgi
+ccw clean --opcache
+ccw clean --redis
+ccw clean --all
 
 # Services verwalten
-wo stack status --all
-wo stack restart --nginx
-wo stack reload --php
+ccw stack status --all
+ccw stack restart --nginx
+ccw stack reload --php
 
 # Updates
-wo update  # WordOps aktualisieren
-wo maintenance  # Wartungsmodus
+ccw update  # CCC CODE aktualisieren
+ccw maintenance  # Wartungsmodus
 ```
 
 ## 8. Migration und Upgrades
@@ -274,15 +274,15 @@ wo maintenance  # Wartungsmodus
 ### 8.1 EasyEngine v3 Migration
 ```bash
 # Automatische Migration von EasyEngine
-wo_upgrade_ee() {
+ccw_upgrade_ee() {
     # Backup erstellen
-    wo_backup_ee
+    ccw_backup_ee
     
     # Konfiguration migrieren
-    wo_sync_db
+    ccw_sync_db
     
     # Sites konvertieren
-    wo_upgrade_nginx
+    ccw_upgrade_nginx
 }
 ```
 
@@ -299,7 +299,7 @@ wo_upgrade_ee() {
 script:
   - sudo -E bash install --travis -b "$TRAVIS_BRANCH"
   - sudo -E time bash tests/travis.sh
-  - sudo -E wo update --travis
+  - sudo -E ccw update --travis
 ```
 
 ### 9.2 Testing-Framework
@@ -310,7 +310,7 @@ script:
 ## 10. Collective Context Commander Integration
 
 ### 10.1 Kontext zum CC-Projekt
-Das WordOps-Projekt ist Teil der Collective Context (CC) Commander Initiative:
+Das CCC CODE-Projekt ist Teil der Collective Context (CC) Commander Initiative:
 - **Multi-Agent KI-Orchestrierung**: Integration mit KI-Agenten
 - **Automatisierte Dokumentation**: Code-basierte Handbuch-Generierung
 - **Chat-Feedback-Integration**: Einbindung von Benutzer-Feedback
@@ -322,4 +322,6 @@ Das WordOps-Projekt ist Teil der Collective Context (CC) Commander Initiative:
 
 ## Fazit
 
-Das WordOps Install-Handbuch zeigt eine durchdachte Architektur mit klarer Trennung zwischen Installation (Bash) und Verwaltung (Python). Die modulare Struktur, umfassende Fehlerbehandlung und Fokus auf Automatisierung machen es zu einem robusten Tool für WordPress-Server-Management. Die Integration mit dem Collective Context Commander Projekt verspricht weitere Innovationen in Richtung KI-gestützter Systemverwaltung und automatisierter Dokumentation.
+Das CCC CODE Install-Handbuch zeigt eine durchdachte Architektur mit klarer Trennung zwischen Installation (Bash) und Verwaltung (Python). Die modulare Struktur, umfassende Fehlerbehandlung und Fokus auf Automatisierung machen es zu einem robusten Tool für WordPress-Server-Management. Die Integration mit dem Collective Context Commander Projekt verspricht weitere Innovationen in Richtung KI-gestützter Systemverwaltung und automatisierter Dokumentation.
+
+<!-- Zuletzt bearbeitet: 2025-10-30 -->
