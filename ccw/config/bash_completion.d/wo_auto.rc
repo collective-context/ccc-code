@@ -1,4 +1,4 @@
-_wo_complete()
+_ccw_complete()
 {
     local cur prev BASE_LEVEL
 
@@ -8,14 +8,14 @@ _wo_complete()
     mprev=${COMP_WORDS[COMP_CWORD-2]}
 
 
-    # SETUP THE BASE LEVEL (everything after "wo")
+    # SETUP THE BASE LEVEL (everything after "ccw")
     if [ $COMP_CWORD -eq 1 ]; then
         COMPREPLY=( $(compgen \
                       -W "stack site debug clean secure import-slow-log log update sync info maintenance --version --help --quiet" \
                       -- $cur) )
 
 
-    # SETUP THE SECOND LEVEL (EVERYTHING AFTER "wo second")
+    # SETUP THE SECOND LEVEL (EVERYTHING AFTER "ccw second")
     elif [ $COMP_CWORD -eq 2 ]; then
         case "$prev" in
 
@@ -68,7 +68,7 @@ _wo_complete()
                 ;;
         esac
 
-    # SETUP THE THIRD LEVEL (EVERYTHING AFTER "wo second third")
+    # SETUP THE THIRD LEVEL (EVERYTHING AFTER "ccw second third")
     elif [ $COMP_CWORD -eq 3 ]; then
         case "$prev" in
             # HANDLE EVERYTHING AFTER THE THIRD LEVEL NAMESPACE
@@ -375,4 +375,6 @@ _wo_complete()
     return 0
 
 } &&
-complete -F _wo_complete wo
+complete -F _ccw_complete ccw
+
+# Zuletzt bearbeitet: 2025-10-27
