@@ -5,17 +5,7 @@
     │   │   ├── plugins
     │   │   │   ├── maintenance.py
     │   │   │   ├── models.py
-    │   │   │   ├── secure.py
-    │   │   │   ├── sitedb.py
-    │   │   │   ├── site_functions.py
-    │   │   │   ├── site_update.py
-    │   │   │   ├── stack_migrate.py
-    │   │   │   ├── stack_pref.py
-    │   │   │   ├── stack.py
-    │   │   │   ├── stack_services.py
-    │   │   │   ├── stack_upgrade.py
-    │   │   │   ├── sync.py
-    │   │   │   └── update.py
+    │   │   │   └── sitedb.py
     │   │   └── templates
     │   │       ├── fail2ban.mustache
     │   │       ├── fastcgi.mustache
@@ -72,4 +62,4 @@
         ├── issue.sh
         └── travis.sh
 
-15 directories, 58 files
+15 directories, 48 files
