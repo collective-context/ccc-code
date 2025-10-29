@@ -3,11 +3,11 @@ import os
 from cement.core.controller import CementBaseController, expose
 from ccw.core.logging import Log
 from ccw.core.services import CCWService
-from wo.core.variables import WOVar
-from wo.core.fileutils import WOFileUtils
+from ccw.core.variables import CCWVar
+from ccw.core.fileutils import CCWFileUtils
 
 
-class WOStackStatusController(CementBaseController):
+class CCWStackStatusController(CementBaseController):
     class Meta:
         label = 'stack_services'
         stacked_on = 'stack'
@@ -18,7 +18,7 @@ class WOStackStatusController(CementBaseController):
     def start(self):
         """Start services"""
         services = []
-        wo_system = "/lib/systemd/system/"
+        ccw_system = "/lib/systemd/system/"
         pargs = self.app.pargs
         if all(value is None or value is False for value in vars(pargs).values()):
             pargs.nginx = True
@@ -36,26 +36,26 @@ class WOStackStatusController(CementBaseController):
                 setattr(self.app.pargs, 'php{0}'.format(current_php), True)
 
         if pargs.nginx:
-            if os.path.exists('{0}'.format(wo_system) + 'nginx.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'nginx.service'):
                 services = services + ['nginx']
             else:
                 Log.info(self, "Nginx is not installed")
 
         if pargs.php:
-            for parg_version, version in WOVar.wo_php_versions.items():
-                if os.path.exists(f'{wo_system}' + f'php{version}-fpm.service'):
+            for parg_version, version in CCWVar.ccw_php_versions.items():
+                if os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service'):
                     services = services + [f'php{version}-fpm']
 
-        for parg_version, version in WOVar.wo_php_versions.items():
+        for parg_version, version in CCWVar.ccw_php_versions.items():
             if (getattr(pargs, parg_version, False) and
-                    os.path.exists(f'{wo_system}' + f'php{version}-fpm.service')):
+                    os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service')):
                 services = services + [f'php{version}-fpm']
             else:
                 Log.info(self, f"PHP{version}-FPM is not installed")
 
         if pargs.mysql:
-            if ((WOVar.wo_mysql_host == "localhost") or
-                    (WOVar.wo_mysql_host == "127.0.0.1")):
+            if ((CCWVar.ccw_mysql_host == "localhost") or
+                    (CCWVar.ccw_mysql_host == "127.0.0.1")):
                 if os.path.exists('/lib/systemd/system/mariadb.service'):
                     services = services + ['mariadb']
                 else:
@@ -65,14 +65,14 @@ class WOStackStatusController(CementBaseController):
                          "Unable to check MySQL service status")
 
         if pargs.redis:
-            if os.path.exists('{0}'.format(wo_system) +
+            if os.path.exists('{0}'.format(ccw_system) +
                               'redis-server.service'):
                 services = services + ['redis-server']
             else:
                 Log.info(self, "Redis server is not installed")
 
         if pargs.fail2ban:
-            if os.path.exists('{0}'.format(wo_system) + 'fail2ban.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'fail2ban.service'):
                 services = services + ['fail2ban']
             else:
                 Log.info(self, "fail2ban is not installed")
@@ -86,20 +86,20 @@ class WOStackStatusController(CementBaseController):
 
         # netdata
         if pargs.netdata:
-            if os.path.exists('{0}'.format(wo_system) + 'netdata.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'netdata.service'):
                 services = services + ['netdata']
             else:
                 Log.info(self, "Netdata is not installed")
 
         for service in services:
             Log.debug(self, "Starting service: {0}".format(service))
-            WOService.start_service(self, service)
+            CCWService.start_service(self, service)
 
     @expose(help="Stop stack services")
     def stop(self):
         """Stop services"""
         services = []
-        wo_system = "/lib/systemd/system/"
+        ccw_system = "/lib/systemd/system/"
         pargs = self.app.pargs
         if all(value is None or value is False for value in vars(pargs).values()):
             pargs.nginx = True
@@ -114,26 +114,26 @@ class WOStackStatusController(CementBaseController):
                 setattr(self.app.pargs, 'php{0}'.format(current_php), True)
 
         if pargs.nginx:
-            if os.path.exists('{0}'.format(wo_system) + 'nginx.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'nginx.service'):
                 services = services + ['nginx']
             else:
                 Log.info(self, "Nginx is not installed")
 
         if pargs.php:
-            for parg_version, version in WOVar.wo_php_versions.items():
-                if os.path.exists(f'{wo_system}' + f'php{version}-fpm.service'):
+            for parg_version, version in CCWVar.ccw_php_versions.items():
+                if os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service'):
                     services = services + [f'php{version}-fpm']
 
-        for parg_version, version in WOVar.wo_php_versions.items():
+        for parg_version, version in CCWVar.ccw_php_versions.items():
             if (getattr(pargs, parg_version, False) and
-                    os.path.exists(f'{wo_system}' + f'php{version}-fpm.service')):
+                    os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service')):
                 services = services + [f'php{version}-fpm']
             else:
                 Log.info(self, f"PHP{version}-FPM is not installed")
 
         if pargs.mysql:
-            if ((WOVar.wo_mysql_host == "localhost") or
-                    (WOVar.wo_mysql_host == "127.0.0.1")):
+            if ((CCWVar.ccw_mysql_host == "localhost") or
+                    (CCWVar.ccw_mysql_host == "127.0.0.1")):
                 if os.path.exists('/lib/systemd/system/mariadb.service'):
                     services = services + ['mariadb']
                 else:
@@ -143,14 +143,14 @@ class WOStackStatusController(CementBaseController):
                          "Unable to check MySQL service status")
 
         if pargs.redis:
-            if os.path.exists('{0}'.format(wo_system) +
+            if os.path.exists('{0}'.format(ccw_system) +
                               'redis-server.service'):
                 services = services + ['redis-server']
             else:
                 Log.info(self, "Redis server is not installed")
 
         if pargs.fail2ban:
-            if os.path.exists('{0}'.format(wo_system) + 'fail2ban.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'fail2ban.service'):
                 services = services + ['fail2ban']
             else:
                 Log.info(self, "fail2ban is not installed")
@@ -164,20 +164,20 @@ class WOStackStatusController(CementBaseController):
 
         # netdata
         if pargs.netdata:
-            if os.path.exists('{0}'.format(wo_system) + 'netdata.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'netdata.service'):
                 services = services + ['netdata']
             else:
                 Log.info(self, "Netdata is not installed")
 
         for service in services:
             Log.debug(self, "Stopping service: {0}".format(service))
-            WOService.stop_service(self, service)
+            CCWService.stop_service(self, service)
 
     @expose(help="Restart stack services")
     def restart(self):
         """Restart services"""
         services = []
-        wo_system = "/lib/systemd/system/"
+        ccw_system = "/lib/systemd/system/"
         pargs = self.app.pargs
         if all(value is None or value is False for value in vars(pargs).values()):
             pargs.nginx = True
@@ -193,26 +193,26 @@ class WOStackStatusController(CementBaseController):
                 setattr(self.app.pargs, 'php{0}'.format(current_php), True)
 
         if pargs.nginx:
-            if os.path.exists('{0}'.format(wo_system) + 'nginx.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'nginx.service'):
                 services = services + ['nginx']
             else:
                 Log.info(self, "Nginx is not installed")
 
         if pargs.php:
-            for parg_version, version in WOVar.wo_php_versions.items():
-                if os.path.exists(f'{wo_system}' + f'php{version}-fpm.service'):
+            for parg_version, version in CCWVar.ccw_php_versions.items():
+                if os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service'):
                     services = services + [f'php{version}-fpm']
 
-        for parg_version, version in WOVar.wo_php_versions.items():
+        for parg_version, version in CCWVar.ccw_php_versions.items():
             if (getattr(pargs, parg_version, False) and
-                    os.path.exists(f'{wo_system}' + f'php{version}-fpm.service')):
+                    os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service')):
                 services = services + [f'php{version}-fpm']
             else:
                 Log.info(self, f"PHP{version}-FPM is not installed")
 
         if pargs.mysql:
-            if ((WOVar.wo_mysql_host == "localhost") or
-                    (WOVar.wo_mysql_host == "127.0.0.1")):
+            if ((CCWVar.ccw_mysql_host == "localhost") or
+                    (CCWVar.ccw_mysql_host == "127.0.0.1")):
                 if os.path.exists('/lib/systemd/system/mariadb.service'):
                     services = services + ['mariadb']
                 else:
@@ -222,14 +222,14 @@ class WOStackStatusController(CementBaseController):
                          "Unable to check MySQL service status")
 
         if pargs.redis:
-            if os.path.exists('{0}'.format(wo_system) +
+            if os.path.exists('{0}'.format(ccw_system) +
                               'redis-server.service'):
                 services = services + ['redis-server']
             else:
                 Log.info(self, "Redis server is not installed")
 
         if pargs.fail2ban:
-            if os.path.exists('{0}'.format(wo_system) + 'fail2ban.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'fail2ban.service'):
                 services = services + ['fail2ban']
             else:
                 Log.info(self, "fail2ban is not installed")
@@ -243,20 +243,20 @@ class WOStackStatusController(CementBaseController):
 
         # netdata
         if pargs.netdata:
-            if os.path.exists('{0}'.format(wo_system) + 'netdata.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'netdata.service'):
                 services = services + ['netdata']
             else:
                 Log.info(self, "Netdata is not installed")
 
         for service in services:
             Log.debug(self, "Restarting service: {0}".format(service))
-            WOService.restart_service(self, service)
+            CCWService.restart_service(self, service)
 
     @expose(help="Get stack status")
     def status(self):
         """Status of services"""
         services = []
-        wo_system = "/lib/systemd/system/"
+        ccw_system = "/lib/systemd/system/"
         pargs = self.app.pargs
         if all(value is None or value is False for value in vars(pargs).values()):
             pargs.nginx = True
@@ -267,19 +267,19 @@ class WOStackStatusController(CementBaseController):
             pargs.ufw = True
 
         if pargs.nginx:
-            if os.path.exists('{0}'.format(wo_system) + 'nginx.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'nginx.service'):
                 services = services + ['nginx']
             else:
                 Log.info(self, "Nginx is not installed")
 
         if pargs.php:
-            for parg_version, version in WOVar.wo_php_versions.items():
-                if os.path.exists(f'{wo_system}' + f'php{version}-fpm.service'):
+            for parg_version, version in CCWVar.ccw_php_versions.items():
+                if os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service'):
                     services = services + [f'php{version}-fpm']
 
         if pargs.mysql:
-            if ((WOVar.wo_mysql_host == "localhost") or
-                    (WOVar.wo_mysql_host == "127.0.0.1")):
+            if ((CCWVar.ccw_mysql_host == "localhost") or
+                    (CCWVar.ccw_mysql_host == "127.0.0.1")):
                 if os.path.exists('/lib/systemd/system/mariadb.service'):
                     services = services + ['mariadb']
                 else:
@@ -289,14 +289,14 @@ class WOStackStatusController(CementBaseController):
                          "Unable to check MySQL service status")
 
         if pargs.redis:
-            if os.path.exists('{0}'.format(wo_system) +
+            if os.path.exists('{0}'.format(ccw_system) +
                               'redis-server.service'):
                 services = services + ['redis-server']
             else:
                 Log.info(self, "Redis server is not installed")
 
         if pargs.fail2ban:
-            if os.path.exists('{0}'.format(wo_system) + 'fail2ban.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'fail2ban.service'):
                 services = services + ['fail2ban']
             else:
                 Log.info(self, "fail2ban is not installed")
@@ -310,7 +310,7 @@ class WOStackStatusController(CementBaseController):
 
         # netdata
         if pargs.netdata:
-            if os.path.exists('{0}'.format(wo_system) + 'netdata.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'netdata.service'):
                 services = services + ['netdata']
             else:
                 Log.info(self, "Netdata is not installed")
@@ -318,7 +318,7 @@ class WOStackStatusController(CementBaseController):
         # UFW
         if pargs.ufw:
             if os.path.exists('/usr/sbin/ufw'):
-                if WOFileUtils.grepcheck(
+                if CCWFileUtils.grepcheck(
                         self, '/etc/ufw/ufw.conf', 'ENABLED=yes'):
                     Log.info(self, "UFW Firewall is enabled")
                 else:
@@ -327,14 +327,14 @@ class WOStackStatusController(CementBaseController):
                 Log.info(self, "UFW is not installed")
 
         for service in services:
-            if WOService.get_service_status(self, service):
+            if CCWService.get_service_status(self, service):
                 Log.info(self, "{0:10}:  {1}".format(service, "Running"))
 
     @expose(help="Reload stack services")
     def reload(self):
         """Reload service"""
         services = []
-        wo_system = "/lib/systemd/system/"
+        ccw_system = "/lib/systemd/system/"
         pargs = self.app.pargs
         if all(value is None or value is False for value in vars(pargs).values()):
             pargs.nginx = True
@@ -350,28 +350,28 @@ class WOStackStatusController(CementBaseController):
                 setattr(self.app.pargs, 'php{0}'.format(current_php), True)
 
         if pargs.nginx:
-            if os.path.exists('{0}'.format(wo_system) + 'nginx.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'nginx.service'):
                 services = services + ['nginx']
             else:
                 Log.info(self, "Nginx is not installed")
 
         if pargs.php:
-            for parg_version, version in WOVar.wo_php_versions.items():
-                if os.path.exists(f'{wo_system}' + f'php{version}-fpm.service'):
+            for parg_version, version in CCWVar.ccw_php_versions.items():
+                if os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service'):
                     services = services + [f'php{version}-fpm']
 
-        for parg_version, version in WOVar.wo_php_versions.items():
+        for parg_version, version in CCWVar.ccw_php_versions.items():
             if (getattr(pargs, parg_version, False) and
-                    os.path.exists(f'{wo_system}' + f'php{version}-fpm.service')):
+                    os.path.exists(f'{ccw_system}' + f'php{version}-fpm.service')):
                 services = services + [f'php{version}-fpm']
             else:
                 Log.info(self, f"PHP{version}-FPM is not installed")
 
         if pargs.mysql:
-            if ((WOVar.wo_mysql_host == "localhost") or
-                    (WOVar.wo_mysql_host == "127.0.0.1")):
+            if ((CCWVar.ccw_mysql_host == "localhost") or
+                    (CCWVar.ccw_mysql_host == "127.0.0.1")):
                 if os.path.exists('/lib/systemd/system/mariadb.service'):
-                    services = services + ['mysql']
+                    services = services + ['mariadb']
                 else:
                     Log.info(self, "MySQL is not installed")
             else:
@@ -379,14 +379,14 @@ class WOStackStatusController(CementBaseController):
                          "Unable to check MySQL service status")
 
         if pargs.redis:
-            if os.path.exists('{0}'.format(wo_system) +
+            if os.path.exists('{0}'.format(ccw_system) +
                               'redis-server.service'):
                 services = services + ['redis-server']
             else:
                 Log.info(self, "Redis server is not installed")
 
         if pargs.fail2ban:
-            if os.path.exists('{0}'.format(wo_system) + 'fail2ban.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'fail2ban.service'):
                 services = services + ['fail2ban']
             else:
                 Log.info(self, "fail2ban is not installed")
@@ -400,11 +400,13 @@ class WOStackStatusController(CementBaseController):
 
         # netdata
         if pargs.netdata:
-            if os.path.exists('{0}'.format(wo_system) + 'netdata.service'):
+            if os.path.exists('{0}'.format(ccw_system) + 'netdata.service'):
                 services = services + ['netdata']
             else:
                 Log.info(self, "Netdata is not installed")
 
         for service in services:
             Log.debug(self, "Reloading service: {0}".format(service))
-            WOService.reload_service(self, service)
+            CCWService.reload_service(self, service)
+
+# Zuletzt bearbeitet: 2025-10-27

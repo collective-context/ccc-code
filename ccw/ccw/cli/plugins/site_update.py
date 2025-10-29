@@ -1,29 +1,29 @@
-""" wo site update """
+""" ccw site update """
 import json
 import os
 
 from cement.core.controller import CementBaseController, expose
 
-from wo.cli.plugins.site_functions import (
+from ccw.cli.plugins.site_functions import (
     detSitePar, site_package_check,
     pre_run_checks, setupdomain, SiteError,
     setupdatabase, setupwordpress, setwebrootpermissions,
     display_cache_settings, copyWildcardCert,
     updatewpuserpassword, setupngxblocker, setupwp_plugin,
     setupwordpressnetwork, installwp_plugin, sitebackup, uninstallwp_plugin)
-from wo.cli.plugins.sitedb import (getAllsites,
+from ccw.cli.plugins.sitedb import (getAllsites,
                                    getSiteInfo, updateSiteInfo)
-from wo.core.acme import WOAcme
-from wo.core.domainvalidate import WODomain
-from wo.core.fileutils import WOFileUtils
-from wo.core.git import WOGit
-from wo.core.logging import Log
+from ccw.core.acme import CCWAcme
+from ccw.core.domainvalidate import CCWDomain
+from ccw.core.fileutils import CCWFileUtils
+from ccw.core.git import CCWGit
+from ccw.core.logging import Log
 from ccw.core.services import CCWService
-from wo.core.sslutils import SSL
-from wo.core.variables import WOVar
+from ccw.core.sslutils import SSL
+from ccw.core.variables import CCWVar
 
 
-class WOSiteUpdateController(CementBaseController):
+class CCWSiteUpdateController(CementBaseController):
     class Meta:
         label = 'update'
         stacked_on = 'site'
@@ -98,7 +98,7 @@ class WOSiteUpdateController(CementBaseController):
             (['--all'],
                 dict(help="update all sites", action='store_true')),
         ]
-        for php_version, php_number in WOVar.wo_php_versions.items():
+        for php_version, php_number in CCWVar.ccw_php_versions.items():
             arguments.append(([f'--{php_version}'],
                               dict(help=f'Update site to PHP {php_number}',
                                    action='store_true')))
@@ -205,7 +205,7 @@ class WOSiteUpdateController(CementBaseController):
             # update wordpress password
             if (pargs.password):
                 try:
-                    updatewpuserpassword(self, wo_domain, wo_site_webroot)
+                    updatewpuserpassword(self, ccw_domain, ccw_site_webroot)
                 except SiteError as e:
                     Log.debug(self, str(e))
                     Log.info(self, "\nPassword Unchanged.")
@@ -214,11 +214,11 @@ class WOSiteUpdateController(CementBaseController):
             # setup hsts
             if (pargs.hsts):
                 if pargs.hsts == "on":
-                    SSL.setuphsts(self, wo_domain, enable=True)
+                    SSL.setuphsts(self, ccw_domain, enable=True)
                 elif pargs.hsts == "off":
-                    SSL.setuphsts(self, wo_domain, enable=False)
+                    SSL.setuphsts(self, ccw_domain, enable=False)
                     # Service Nginx Reload
-                if not WOService.reload_service(self, 'nginx'):
+                if not CCWService.reload_service(self, 'nginx'):
                     Log.error(
                         self, "service nginx reload failed. "
                         "check issues with `nginx -t` command")
@@ -229,7 +229,7 @@ class WOSiteUpdateController(CementBaseController):
                 if pargs.ngxblocker == "on":
                     if os.path.isdir('/etc/nginx/bots.d'):
                         try:
-                            setupngxblocker(self, wo_domain)
+                            setupngxblocker(self, ccw_domain)
                         except SiteError as e:
                             Log.debug(self, str(e))
                             Log.info(self, "\nngxblocker not enabled.")
@@ -237,13 +237,13 @@ class WOSiteUpdateController(CementBaseController):
                         Log.error(self, 'ngxblocker stack is not installed')
                 elif pargs.ngxblocker == "off":
                     try:
-                        setupngxblocker(self, wo_domain, False)
+                        setupngxblocker(self, ccw_domain, False)
                     except SiteError as e:
                         Log.debug(self, str(e))
                         Log.info(self, "\nngxblocker not enabled.")
 
                 # Service Nginx Reload
-                if not WOService.reload_service(self, 'nginx'):
+                if not CCWService.reload_service(self, 'nginx'):
                     Log.error(self, "service nginx reload failed. "
                               "check issues with `nginx -t` command")
                 else:
@@ -251,16 +251,16 @@ class WOSiteUpdateController(CementBaseController):
 
             # letsencryot rebew
             if (pargs.letsencrypt == 'renew'):
-                if WOAcme.cert_check(self, wo_domain):
+                if CCWAcme.cert_check(self, ccw_domain):
                     if not pargs.force:
-                        if (SSL.getexpirationdays(self, wo_domain) > 30):
+                        if (SSL.getexpirationdays(self, ccw_domain) > 30):
                             Log.error(
                                 self, "Your cert will expire in more "
                                 "than 30 days ( " +
-                                str(SSL.getexpirationdays(self, wo_domain)) +
+                                str(SSL.getexpirationdays(self, ccw_domain)) +
                                 " days).\nAdd \'--force\' to force to renew")
                     Log.wait(self, "Renewing SSL certificate")
-                    if WOAcme.renew(self, wo_domain):
+                    if CCWAcme.renew(self, ccw_domain):
                         Log.valide(self, "Renewing SSL certificate")
                 else:
                     Log.error(self, "Certificate doesn't exist")
@@ -286,19 +286,19 @@ class WOSiteUpdateController(CementBaseController):
             return 1
 
         if stype == 'proxy':
-            data['site_name'] = wo_domain
-            data['www_domain'] = wo_www_domain
+            data['site_name'] = ccw_domain
+            data['www_domain'] = ccw_www_domain
             data['proxy'] = True
             data['host'] = host
             data['port'] = port
-            data['webroot'] = wo_site_webroot
+            data['webroot'] = ccw_site_webroot
             data['currsitetype'] = oldsitetype
             data['currcachetype'] = oldcachetype
 
         if stype == 'alias':
-            data['site_name'] = wo_domain
-            data['www_domain'] = wo_www_domain
-            data['webroot'] = wo_site_webroot
+            data['site_name'] = ccw_domain
+            data['www_domain'] = ccw_www_domain
+            data['webroot'] = ccw_site_webroot
             data['currsitetype'] = oldsitetype
             data['currcachetype'] = oldcachetype
             data['alias'] = True
@@ -318,8 +318,8 @@ class WOSiteUpdateController(CementBaseController):
                           .format(subsiteof_name))
 
             data = dict(
-                site_name=wo_domain, www_domain=wo_www_domain,
-                static=False, basic=False, multisite=False, webroot=wo_site_webroot)
+                site_name=ccw_domain, www_domain=ccw_www_domain,
+                static=False, basic=False, multisite=False, webroot=ccw_site_webroot)
 
             data["wp"] = parent_site_info.site_type == 'wp'
             data["wpfc"] = parent_site_info.cache_type == 'wpfc'
@@ -328,28 +328,28 @@ class WOSiteUpdateController(CementBaseController):
             data["wpce"] = parent_site_info.cache_type == 'wpce'
             data["wpredis"] = parent_site_info.cache_type == 'wpredis'
             data["wpsubdir"] = parent_site_info.site_type == 'wpsubdir'
-            data["wo_php"] = ("php" + parent_site_info.php_version).replace(".", "")
+            data["ccw_php"] = ("php" + parent_site_info.php_version).replace(".", "")
             data['subsite'] = True
             data['subsiteof_name'] = subsiteof_name
             data['subsiteof_webroot'] = parent_site_info.site_path
 
         if stype == 'php':
             data = dict(
-                site_name=wo_domain, www_domain=wo_www_domain,
+                site_name=ccw_domain, www_domain=ccw_www_domain,
                 static=False, basic=True, wp=False, wpfc=False,
                 php74=False, php80=False, php81=False, php82=False, php83=False,
                 php84=False, wpsc=False, wpredis=False, wprocket=False, wpce=False,
-                multisite=False, wpsubdir=False, webroot=wo_site_webroot,
+                multisite=False, wpsubdir=False, webroot=ccw_site_webroot,
                 currsitetype=oldsitetype, currcachetype=oldcachetype)
 
         elif stype in ['mysql', 'wp', 'wpsubdir', 'wpsubdomain']:
             data = dict(
-                site_name=wo_domain, www_domain=wo_www_domain,
+                site_name=ccw_domain, www_domain=ccw_www_domain,
                 static=False, basic=True, wp=False, wpfc=False,
                 wpsc=False, wpredis=False, wprocket=False, wpce=False,
-                multisite=False, wpsubdir=False, webroot=wo_site_webroot,
-                wo_db_name='', wo_db_user='', wo_db_pass='',
-                wo_db_host='',
+                multisite=False, wpsubdir=False, webroot=ccw_site_webroot,
+                ccw_db_name='', ccw_db_user='', ccw_db_pass='',
+                ccw_db_host='',
                 currsitetype=oldsitetype, currcachetype=oldcachetype)
 
         if stype in ['wp', 'wpsubdir', 'wpsubdomain']:
@@ -424,7 +424,7 @@ class WOSiteUpdateController(CementBaseController):
                 globals()[pargs_version] = True
                 break
 
-        for pargs_version, version in WOVar.wo_php_versions.items():
+        for pargs_version, version in CCWVar.ccw_php_versions.items():
             old_version_var = bool(check_php_version == version)
             Log.debug(self, f"old_version_var for {version} = {old_version_var}")
 
@@ -451,7 +451,7 @@ class WOSiteUpdateController(CementBaseController):
             if pargs.letsencrypt == 'on':
                 data['letsencrypt'] = True
                 letsencrypt = True
-                acme_subdomain = bool(wo_domain_type == 'subdomain')
+                acme_subdomain = bool(ccw_domain_type == 'subdomain')
                 acme_wildcard = False
             elif pargs.letsencrypt == 'subdomain':
                 data['letsencrypt'] = True
@@ -519,7 +519,7 @@ class WOSiteUpdateController(CementBaseController):
 
         # Vérification si rien n'a changé
         if all(globals()[version_key] is bool(check_php_version == version) for version_key,
-               version in WOVar.wo_php_versions.items()) and (stype == oldsitetype
+               version in CCWVar.ccw_php_versions.items()) and (stype == oldsitetype
                                                               and cache == oldcachetype
                                                               and stype != 'alias'
                                                               and stype != 'proxy'
@@ -528,23 +528,23 @@ class WOSiteUpdateController(CementBaseController):
             return 1
 
         # Mise à jour de la version PHP
-        for pargs_version, version in WOVar.wo_php_versions.items():
+        for pargs_version, version in CCWVar.ccw_php_versions.items():
             if globals()[pargs_version] is True:
-                data['wo_php'] = pargs_version
-                Log.debug(self, f"data wo_php set to {pargs_version}")
+                data['ccw_php'] = pargs_version
+                Log.debug(self, f"data ccw_php set to {pargs_version}")
                 check_php_version = version
                 Log.debug(self, f"check_php_versions set to {version}")
                 break
 
         if not data:
             Log.error(self, "Cannot update {0}, Invalid Options"
-                      .format(wo_domain))
+                      .format(ccw_domain))
 
-        wo_auth = site_package_check(self, stype)
-        data['wo_db_name'] = check_site.db_name
-        data['wo_db_user'] = check_site.db_user
-        data['wo_db_pass'] = check_site.db_password
-        data['wo_db_host'] = check_site.db_host
+        ccw_auth = site_package_check(self, stype)
+        data['ccw_db_name'] = check_site.db_name
+        data['ccw_db_user'] = check_site.db_user
+        data['ccw_db_pass'] = check_site.db_password
+        data['ccw_db_host'] = check_site.db_host
 
         if not (pargs.letsencrypt or pargs.hsts or pargs.ngxblocker):
             try:
@@ -565,28 +565,28 @@ class WOSiteUpdateController(CementBaseController):
                 Log.debug(self, str(e))
                 Log.info(self, Log.FAIL + "Update site failed."
                          "Check the log for details:"
-                         "`tail /var/log/wo/wordops.log` and please try again")
+                         "`tail /var/log/ccw/ccc-code.log` and please try again")
                 return 1
 
         if 'proxy' in data.keys() and data['proxy']:
-            updateSiteInfo(self, wo_domain, stype=stype, cache=cache,
+            updateSiteInfo(self, ccw_domain, stype=stype, cache=cache,
                            ssl=(bool(check_site.is_ssl)))
             Log.info(self, "Successfully updated site"
-                     " http://{0}".format(wo_domain))
+                     " http://{0}".format(ccw_domain))
             return 0
 
         if 'alias_name' in data.keys() and data['alias']:
-            updateSiteInfo(self, wo_domain, stype=stype, cache=cache,
+            updateSiteInfo(self, ccw_domain, stype=stype, cache=cache,
                            ssl=(bool(check_site.is_ssl)))
             Log.info(self, "Successfully updated site"
-                     " http://{0}".format(wo_domain))
+                     " http://{0}".format(ccw_domain))
             return 0
 
         if 'subsite' in data.keys() and data['subsite']:
-            updateSiteInfo(self, wo_domain, stype=stype, cache=cache,
+            updateSiteInfo(self, ccw_domain, stype=stype, cache=cache,
                            ssl=(bool(check_site.is_ssl)))
             Log.info(self, "Successfully updated site"
-                     " http://{0}".format(wo_domain))
+                     " http://{0}".format(ccw_domain))
             return 0
 
         if pargs.letsencrypt:
@@ -606,43 +606,43 @@ class WOSiteUpdateController(CementBaseController):
                 if acme_subdomain is True:
                     Log.info(self, "Certificate type : subdomain")
                     acme_domains = acme_domains + [
-                        '{0}'.format(wo_domain)]
+                        '{0}'.format(ccw_domain)]
                 elif acme_wildcard is True:
                     Log.info(self, "Certificate type : wildcard")
                     acme_domains = acme_domains + [
-                        '{0}'.format(wo_domain),
-                        '*.{0}'.format(wo_domain)]
+                        '{0}'.format(ccw_domain),
+                        '*.{0}'.format(ccw_domain)]
                 else:
                     Log.info(self, "Certificate type : domain")
                     acme_domains = acme_domains + [
-                        '{0}'.format(wo_domain),
-                        'www.{0}'.format(wo_domain)]
+                        '{0}'.format(ccw_domain),
+                        'www.{0}'.format(ccw_domain)]
 
-                if WOAcme.cert_check(self, wo_domain):
+                if CCWAcme.cert_check(self, ccw_domain):
                     if SSL.archivedcertificatehandle(
-                            self, wo_domain, acme_domains):
+                            self, ccw_domain, acme_domains):
                         letsencrypt = True
                 else:
                     if acme_subdomain:
                         Log.debug(self, "checkWildcardExist on *.{0}"
-                                  .format(wo_root_domain))
-                        if SSL.checkwildcardexist(self, wo_root_domain):
+                                  .format(ccw_root_domain))
+                        if SSL.checkwildcardexist(self, ccw_root_domain):
                             Log.info(
                                 self, "Using existing Wildcard SSL "
                                 "certificate from {0} to secure {1}"
-                                .format(wo_root_domain, wo_domain))
+                                .format(ccw_root_domain, ccw_domain))
                             Log.debug(
                                 self, "symlink wildcard "
                                 "cert between {0} & {1}"
-                                .format(wo_domain, wo_root_domain))
+                                .format(ccw_domain, ccw_root_domain))
                             # copy the cert from the root domain
-                            copyWildcardCert(self, wo_domain,
-                                             wo_root_domain)
+                            copyWildcardCert(self, ccw_domain,
+                                             ccw_root_domain)
                         else:
                             # check DNS records before issuing cert
                             if not acmedata['dns'] is True:
                                 if not pargs.force:
-                                    if not WOAcme.check_dns(self,
+                                    if not CCWAcme.check_dns(self,
                                                             acme_domains):
                                         Log.error(
                                             self,
@@ -650,10 +650,10 @@ class WOSiteUpdateController(CementBaseController):
                                             "issuance")
                             Log.debug(
                                 self, "Setup Cert with acme.sh for {0}"
-                                .format(wo_domain))
-                            if WOAcme.setupletsencrypt(
+                                .format(ccw_domain))
+                            if CCWAcme.setupletsencrypt(
                                     self, acme_domains, acmedata):
-                                WOAcme.deploycert(self, wo_domain)
+                                CCWAcme.deploycert(self, ccw_domain)
                             else:
                                 Log.error(
                                     self, "Unable to issue certificate")
@@ -661,31 +661,31 @@ class WOSiteUpdateController(CementBaseController):
                         # check DNS records before issuing cert
                         if not acmedata['dns'] is True:
                             if not pargs.force:
-                                if not WOAcme.check_dns(self,
+                                if not CCWAcme.check_dns(self,
                                                         acme_domains):
                                     Log.error(
                                         self,
                                         "Aborting SSL "
                                         "certificate issuance")
-                        if WOAcme.setupletsencrypt(
+                        if CCWAcme.setupletsencrypt(
                                 self, acme_domains, acmedata):
-                            WOAcme.deploycert(self, wo_domain)
+                            CCWAcme.deploycert(self, ccw_domain)
                         else:
                             Log.error(self, "Unable to issue certificate")
 
                     SSL.httpsredirect(
-                        self, wo_domain, acme_domains, redirect=True)
-                    SSL.siteurlhttps(self, wo_domain)
+                        self, ccw_domain, acme_domains, redirect=True)
+                    SSL.siteurlhttps(self, ccw_domain)
 
-                if not WOService.reload_service(self, 'nginx'):
+                if not CCWService.reload_service(self, 'nginx'):
                     Log.error(self, "service nginx reload failed. "
                               "check issues with `nginx -t` command")
                 Log.info(self, "Congratulations! Successfully "
-                         "Configured SSL on https://{0}".format(wo_domain))
+                         "Configured SSL on https://{0}".format(ccw_domain))
                 letsencrypt = True
-                if (SSL.getexpirationdays(self, wo_domain) > 0):
+                if (SSL.getexpirationdays(self, ccw_domain) > 0):
                     Log.info(self, "Your cert will expire within " +
-                             str(SSL.getexpirationdays(self, wo_domain)) +
+                             str(SSL.getexpirationdays(self, ccw_domain)) +
                              " days.")
                 else:
                     Log.warn(
@@ -734,9 +734,9 @@ class WOSiteUpdateController(CementBaseController):
                     Log.error(self, "service nginx reload failed. "
                               "check issues with `nginx -t` command")
                     # Log.info(self,"Removing Cron Job set for cert
-                    # auto-renewal") WOCron.remove_cron(self,'wo site
+                    # auto-renewal") CCWCron.remove_cron(self,'ccw site
                     # update {0} --le=renew --min_expiry_limit 30
-                    # 2> \/dev\/null'.format(wo_domain))
+                    # 2> \/dev\/null'.format(ccw_domain))
                 Log.info(self, "Successfully Disabled SSl for Site "
                          " http://{0}".format(ccw_domain))
                 letsencrypt = False
@@ -798,12 +798,12 @@ class WOSiteUpdateController(CementBaseController):
                                           'mysql', 'php73', 'php74', 'php80',
                                           'php81', 'php82', 'php83', 'php84']:
             try:
-                wo_wp_creds = setupwordpress(self, data)
+                ccw_wp_creds = setupwordpress(self, data)
             except SiteError as e:
                 Log.debug(self, str(e))
                 Log.info(self, Log.FAIL + "Update site failed."
                          "Check the log for details: "
-                         "`tail /var/log/wo/wordops.log` and please try again")
+                         "`tail /var/log/ccw/ccc-code.log` and please try again")
                 return 1
 
         # Uninstall unnecessary plugins
@@ -817,7 +817,7 @@ class WOSiteUpdateController(CementBaseController):
                     Log.debug(self, str(e))
                     Log.info(self, Log.FAIL + "Update site failed. "
                              "Check the log for details:"
-                             " `tail /var/log/wo/wordops.log` "
+                             " `tail /var/log/ccw/ccc-code.log` "
                              "and please try again")
                     return 1
 
@@ -858,7 +858,7 @@ class WOSiteUpdateController(CementBaseController):
                     Log.info(self, Log.FAIL + "Update nginx-helper "
                              "settings failed. "
                              "Check the log for details:"
-                             " `tail /var/log/wo/wordops.log` "
+                             " `tail /var/log/ccw/ccc-code.log` "
                              "and please try again")
                     return 1
 
@@ -900,7 +900,7 @@ class WOSiteUpdateController(CementBaseController):
                     Log.info(self, Log.FAIL + "Update nginx-helper "
                              "settings failed. "
                              "Check the log for details:"
-                             " `tail /var/log/wo/wordops.log` "
+                             " `tail /var/log/ccw/ccc-code.log` "
                              "and please try again")
                     return 1
             else:
@@ -938,7 +938,7 @@ class WOSiteUpdateController(CementBaseController):
                     Log.info(self, Log.FAIL + "Update nginx-helper "
                              "settings failed. "
                              "Check the log for details:"
-                             " `tail /var/log/wo/wordops.log` "
+                             " `tail /var/log/ccw/ccc-code.log` "
                              "and please try again")
                     return 1
 
@@ -970,7 +970,7 @@ class WOSiteUpdateController(CementBaseController):
                     Log.info(self, Log.FAIL + "Update cache-enabler "
                              "settings failed. "
                              "Check the log for details:"
-                             " `tail /var/log/wo/wordops.log` "
+                             " `tail /var/log/ccw/ccc-code.log` "
                              "and please try again")
                     return 1
 
@@ -981,7 +981,7 @@ class WOSiteUpdateController(CementBaseController):
                     Log.debug(self, str(e))
                     Log.info(self, Log.FAIL + "Update site failed."
                              "Check the log for details:"
-                             " `tail /var/log/wo/wordops.log` "
+                             " `tail /var/log/ccw/ccc-code.log` "
                              "and please try again")
                     return 1
 
@@ -992,7 +992,7 @@ class WOSiteUpdateController(CementBaseController):
                     Log.debug(self, str(e))
                     Log.info(self, Log.FAIL + "Update site failed."
                              "Check the log for details:"
-                             " `tail /var/log/wo/wordops.log` "
+                             " `tail /var/log/ccw/ccc-code.log` "
                              "and please try again")
                     return 1
 
@@ -1003,7 +1003,7 @@ class WOSiteUpdateController(CementBaseController):
                 Log.debug(self, str(e))
                 Log.info(self, Log.FAIL + "Update site failed."
                          "Check the log for details: "
-                         "`tail /var/log/wo/wordops.log` and please try again")
+                         "`tail /var/log/ccw/ccc-code.log` and please try again")
                 return 1
 
         if oldcachetype == 'wprocket' and not data['wprocket']:
@@ -1013,7 +1013,7 @@ class WOSiteUpdateController(CementBaseController):
                 Log.debug(self, str(e))
                 Log.info(self, Log.FAIL + "Update site failed."
                          "Check the log for details: "
-                         "`tail /var/log/wo/wordops.log` and please try again")
+                         "`tail /var/log/ccw/ccc-code.log` and please try again")
                 return 1
 
         if oldcachetype == 'wpce' and not data['wpce']:
@@ -1023,17 +1023,17 @@ class WOSiteUpdateController(CementBaseController):
                 Log.debug(self, str(e))
                 Log.info(self, Log.FAIL + "Update site failed."
                          "Check the log for details: "
-                         "`tail /var/log/wo/wordops.log` and please try again")
+                         "`tail /var/log/ccw/ccc-code.log` and please try again")
                 return 1
 
         # Service Nginx Reload
-        if not WOService.reload_service(self, 'nginx'):
+        if not CCWService.reload_service(self, 'nginx'):
             Log.error(self, "service nginx reload failed. "
                       "check issues with `nginx -t` command")
 
-        WOGit.add(self, ["/etc/nginx"],
+        CCWGit.add(self, ["/etc/nginx"],
                   msg="{0} updated with {1} {2}"
-                  .format(wo_www_domain, stype, cache))
+                  .format(ccw_www_domain, stype, cache))
         # Setup Permissions for webroot
         try:
             setwebrootpermissions(self, data['webroot'])
@@ -1041,31 +1041,33 @@ class WOSiteUpdateController(CementBaseController):
             Log.debug(self, str(e))
             Log.info(self, Log.FAIL + "Update site failed."
                      "Check the log for details: "
-                     "`tail /var/log/wo/wordops.log` and please try again")
+                     "`tail /var/log/ccw/ccc-code.log` and please try again")
             return 1
 
-        if wo_auth and len(wo_auth):
-            for msg in wo_auth:
+        if ccw_auth and len(ccw_auth):
+            for msg in ccw_auth:
                 Log.info(self, Log.ENDC + msg)
 
         display_cache_settings(self, data)
         if data['wp'] and oldsitetype in ['html', 'php', 'mysql']:
             Log.info(self, "\n\n" + Log.ENDC + "WordPress admin user :"
-                     " {0}".format(wo_wp_creds['wp_user']))
+                     " {0}".format(ccw_wp_creds['wp_user']))
             Log.info(self, Log.ENDC + "WordPress admin password : {0}"
-                     .format(wo_wp_creds['wp_pass']) + "\n\n")
+                     .format(ccw_wp_creds['wp_pass']) + "\n\n")
         if oldsitetype in ['html', 'php'] and stype != 'php':
-            updateSiteInfo(self, wo_domain, stype=stype, cache=cache,
-                           db_name=data['wo_db_name'],
-                           db_user=data['wo_db_user'],
-                           db_password=data['wo_db_pass'],
-                           db_host=data['wo_db_host'],
+            updateSiteInfo(self, ccw_domain, stype=stype, cache=cache,
+                           db_name=data['ccw_db_name'],
+                           db_user=data['ccw_db_user'],
+                           db_password=data['ccw_db_pass'],
+                           db_host=data['ccw_db_host'],
                            ssl=bool(check_site.is_ssl),
                            php_version=check_php_version)
         else:
-            updateSiteInfo(self, wo_domain, stype=stype, cache=cache,
+            updateSiteInfo(self, ccw_domain, stype=stype, cache=cache,
                            ssl=bool(check_site.is_ssl),
                            php_version=check_php_version)
         Log.info(self, "Successfully updated site"
-                 " http://{0}".format(wo_domain))
+                 " http://{0}".format(ccw_domain))
         return 0
+
+# Zuletzt bearbeitet: 2025-10-27
