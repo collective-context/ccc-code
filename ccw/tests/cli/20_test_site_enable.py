@@ -1,9 +1,11 @@
-from wo.utils import test
-from wo.cli.main import WOTestApp
+from ccw.utils import test
+from ccw.cli.main import CCWTestApp
 
 
-class CliTestCaseSiteEnable(test.WOTestCase):
+class CliTestCaseSiteEnable(test.CCWTestCase):
 
-    def test_wo_cli_site_enable(self):
-        with WOTestApp(argv=['site', 'enable', 'html.com']) as app:
+    def test_ccw_cli_site_enable(self):
+        with CCWTestApp(argv=['site', 'enable', 'html.com']) as app:
             app.run()
+
+# Zuletzt bearbeitet: 2025-10-27

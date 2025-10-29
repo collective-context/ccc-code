@@ -1,37 +1,39 @@
-from wo.utils import test
-from wo.cli.main import WOTestApp
+from ccw.utils import test
+from ccw.cli.main import CCWTestApp
 
 
-class CliTestCaseStackInstall(test.WOTestCase):
+class CliTestCaseStackInstall(test.CCWTestCase):
 
-    def test_wo_cli_stack_install_nginx(self):
-        with WOTestApp(argv=['stack', 'install', '--nginx']) as app:
+    def test_ccw_cli_stack_install_nginx(self):
+        with CCWTestApp(argv=['stack', 'install', '--nginx']) as app:
             app.run()
 
-    def test_wo_cli_stack_install_php(self):
-        with WOTestApp(argv=['stack', 'install', '--php']) as app:
+    def test_ccw_cli_stack_install_php(self):
+        with CCWTestApp(argv=['stack', 'install', '--php']) as app:
             app.run()
 
-    def test_wo_cli_stack_install_php73(self):
-        with WOTestApp(argv=['stack', 'install', '--php73']) as app:
+    def test_ccw_cli_stack_install_php73(self):
+        with CCWTestApp(argv=['stack', 'install', '--php73']) as app:
             app.run()
 
-    def test_wo_cli_stack_install_mysql(self):
-        with WOTestApp(argv=['stack', 'install', '--mysql']) as app:
+    def test_ccw_cli_stack_install_mysql(self):
+        with CCWTestApp(argv=['stack', 'install', '--mysql']) as app:
             app.run()
 
-    def test_wo_cli_stack_install_wpcli(self):
-        with WOTestApp(argv=['stack', 'install', '--wpcli']) as app:
+    def test_ccw_cli_stack_install_wpcli(self):
+        with CCWTestApp(argv=['stack', 'install', '--wpcli']) as app:
             app.run()
 
-    def test_wo_cli_stack_install_phpmyadmin(self):
-        with WOTestApp(argv=['stack', 'install', '--phpmyadmin']) as app:
+    def test_ccw_cli_stack_install_phpmyadmin(self):
+        with CCWTestApp(argv=['stack', 'install', '--phpmyadmin']) as app:
             app.run()
 
-    def test_wo_cli_stack_install_adminer(self):
-        with WOTestApp(argv=['stack', 'install', '--adminer']) as app:
+    def test_ccw_cli_stack_install_adminer(self):
+        with CCWTestApp(argv=['stack', 'install', '--adminer']) as app:
             app.run()
 
-    def test_wo_cli_stack_install_utils(self):
-        with WOTestApp(argv=['stack', 'install', '--utils']) as app:
+    def test_ccw_cli_stack_install_utils(self):
+        with CCWTestApp(argv=['stack', 'install', '--utils']) as app:
             app.run()
+
+# Zuletzt bearbeitet: 2025-10-27

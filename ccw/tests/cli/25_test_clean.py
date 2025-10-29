@@ -1,25 +1,27 @@
-from wo.utils import test
-from wo.cli.main import WOTestApp
+from ccw.utils import test
+from ccw.cli.main import CCWTestApp
 
 
-class CliTestCaseClean(test.WOTestCase):
+class CliTestCaseClean(test.CCWTestCase):
 
-    def test_wo_cli_clean(self):
-        with WOTestApp(argv=['clean']) as app:
+    def test_ccw_cli_clean(self):
+        with CCWTestApp(argv=['clean']) as app:
             app.run()
 
-    def test_wo_cli_clean_fastcgi(self):
-        with WOTestApp(argv=['clean', '--fastcgi']) as app:
+    def test_ccw_cli_clean_fastcgi(self):
+        with CCWTestApp(argv=['clean', '--fastcgi']) as app:
             app.run()
 
-    def test_wo_cli_clean_all(self):
-        with WOTestApp(argv=['clean', '--all']) as app:
+    def test_ccw_cli_clean_all(self):
+        with CCWTestApp(argv=['clean', '--all']) as app:
             app.run()
 
-    def test_wo_cli_clean_opcache(self):
-        with WOTestApp(argv=['clean', '--opcache']) as app:
+    def test_ccw_cli_clean_opcache(self):
+        with CCWTestApp(argv=['clean', '--opcache']) as app:
             app.run()
 
-    def test_wo_cli_clean_redis(self):
-        with WOTestApp(argv=['clean', '--redis']) as app:
+    def test_ccw_cli_clean_redis(self):
+        with CCWTestApp(argv=['clean', '--redis']) as app:
             app.run()
+
+# Zuletzt bearbeitet: 2025-10-27

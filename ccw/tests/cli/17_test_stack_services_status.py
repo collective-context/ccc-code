@@ -1,21 +1,23 @@
-from wo.utils import test
-from wo.cli.main import WOTestApp
+from ccw.utils import test
+from ccw.cli.main import CCWTestApp
 
 
-class CliTestCaseStackStatus(test.WOTestCase):
+class CliTestCaseStackStatus(test.CCWTestCase):
 
-    def test_wo_cli_stack_services_status_nginx(self):
-        with WOTestApp(argv=['stack', 'status', '--nginx']) as app:
+    def test_ccw_cli_stack_services_status_nginx(self):
+        with CCWTestApp(argv=['stack', 'status', '--nginx']) as app:
             app.run()
 
-    def test_wo_cli_stack_services_status_php_fpm(self):
-        with WOTestApp(argv=['stack', 'status', '--php']) as app:
+    def test_ccw_cli_stack_services_status_php_fpm(self):
+        with CCWTestApp(argv=['stack', 'status', '--php']) as app:
             app.run()
 
-    def test_wo_cli_stack_services_status_mysql(self):
-        with WOTestApp(argv=['stack', 'status', '--mysql']) as app:
+    def test_ccw_cli_stack_services_status_mysql(self):
+        with CCWTestApp(argv=['stack', 'status', '--mysql']) as app:
             app.run()
 
-    def test_wo_cli_stack_services_status_all(self):
-        with WOTestApp(argv=['stack', 'status']) as app:
+    def test_ccw_cli_stack_services_status_all(self):
+        with CCWTestApp(argv=['stack', 'status']) as app:
             app.run()
+
+# Zuletzt bearbeitet: 2025-10-27
