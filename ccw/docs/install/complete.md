@@ -1,4 +1,4 @@
-# WordOps Komplette Quellcode-Analyse
+# CCC CODE Komplette Quellcode-Analyse
 ## Technisches Installationshandbuch für Developer und AI-Agenten
 
 ---
@@ -23,9 +23,9 @@
 ### 1.1 System-Architektur
 
 ```
-WordOps/
+CCC CODE/
 ├── install                    # Bash-Installationsskript (Entry Point)
-├── wo/
+├── ccw/
 │   ├── cli/
 │   │   ├── main.py           # Cement App Haupteinstieg
 │   │   ├── plugins/          # CLI-Funktionalität
@@ -59,7 +59,7 @@ WordOps/
 ```bash
 #!/usr/bin/env bash
 # Version 3.22.0 - 2024-12-06
-# wget -qO wo wops.cc && sudo -E bash wo
+# wget -qO ccw ccc-code.cc && sudo -E bash ccw
 
 # CLI-Farbkonstanten
 CSI='\033['
@@ -85,21 +85,21 @@ export LC_ALL='C.UTF-8'
 while [ "$#" -gt 0 ]; do
     case "$1" in
     -b | --branch)
-        wo_branch="$2"
+        ccw_branch="$2"
         shift
         ;;
     --force)
-        wo_force_install="y"
+        ccw_force_install="y"
         ;;
     --travis)
-        wo_travis="y"
-        wo_force_install="y"
+        ccw_travis="y"
+        ccw_force_install="y"
         ;;
     --mainline | --beta)
-        wo_branch="mainline"
+        ccw_branch="mainline"
         ;;
     --purge | --uninstall)
-        wo_purge="y"
+        ccw_purge="y"
         ;;
     esac
     shift
@@ -116,7 +116,7 @@ done
 ```bash
 # Root-Rechte prüfen
 if [[ $EUID -ne 0 ]]; then
-    wo_lib_echo_fail "Sudo privilege required..."
+    ccw_lib_echo_fail "Sudo privilege required..."
     exit 100
 fi
 
@@ -133,23 +133,23 @@ command_exists() {
 ### 2.4 Distributions-Erkennung
 
 ```bash
-wo_check_distro() {
-    local wo_linux_distro=$(lsb_release -is)
-    local wo_distro_version=$(lsb_release -sc)
+ccw_check_distro() {
+    local ccw_linux_distro=$(lsb_release -is)
+    local ccw_distro_version=$(lsb_release -sc)
     
-    if [ -z "$wo_force_install" ]; then
-        if [ "$wo_linux_distro" != "Ubuntu" ] && 
-           [ "$wo_linux_distro" != "Debian" ] && 
-           [ "$wo_linux_distro" != "Raspbian" ]; then
-            wo_lib_echo_fail "WordOps only supports Ubuntu, Debian & Raspbian"
+    if [ -z "$ccw_force_install" ]; then
+        if [ "$ccw_linux_distro" != "Ubuntu" ] && 
+           [ "$ccw_linux_distro" != "Debian" ] && 
+           [ "$ccw_linux_distro" != "Raspbian" ]; then
+            ccw_lib_echo_fail "CCC CODE only supports Ubuntu, Debian & Raspbian"
             exit 100
         fi
         
         # Versionsprüfung
-        check_wo_linux_distro=$(lsb_release -sc | 
+        check_ccw_linux_distro=$(lsb_release -sc | 
             grep -E "buster|focal|jammy|bullseye|bookworm|noble")
-        if [ -z "$check_wo_linux_distro" ]; then
-            wo_lib_echo_fail "Unsupported distribution version"
+        if [ -z "$check_ccw_linux_distro" ]; then
+            ccw_lib_echo_fail "Unsupported distribution version"
             exit 100
         fi
     fi
@@ -164,10 +164,10 @@ wo_check_distro() {
 ### 2.5 Abhängigkeiten-Installation
 
 ```bash
-wo_install_dep() {
-    local wo_linux_distro=$(lsb_release -is)
+ccw_install_dep() {
+    local ccw_linux_distro=$(lsb_release -is)
     
-    if [ "$wo_linux_distro" == "Ubuntu" ]; then
+    if [ "$ccw_linux_distro" == "Ubuntu" ]; then
         # Ubuntu-spezifisch
         add-apt-repository ppa:git-core/ppa -y
         apt_packages="build-essential curl gzip python3-pip python3-apt 
@@ -202,41 +202,41 @@ wo_install_dep() {
 ### 2.6 Python Virtual Environment
 
 ```bash
-wo_install() {
+ccw_install() {
     local python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
     
     # Virtual Environment erstellen
-    if [ ! -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
-        python3 -m venv --system-site-packages /opt/wo
+    if [ ! -d /opt/ccw/lib/python3."$python_ver"/site-packages/apt ]; then
+        python3 -m venv --system-site-packages /opt/ccw
     fi
     
-    source /opt/wo/bin/activate
+    source /opt/ccw/bin/activate
     
     # setuptools pinning (wichtig!)
-    /opt/wo/bin/pip uninstall -yq setuptools
-    /opt/wo/bin/pip install setuptools==80.0.1
-    /opt/wo/bin/pip install -U pip wheel distro
+    /opt/ccw/bin/pip uninstall -yq setuptools
+    /opt/ccw/bin/pip install setuptools==80.0.1
+    /opt/ccw/bin/pip install -U pip wheel distro
     
     # Distro-spezifische python-apt Version
-    if [ "$wo_distro_codename" = "focal" ]; then
-        /opt/wo/bin/pip install \
+    if [ "$ccw_distro_codename" = "focal" ]; then
+        /opt/ccw/bin/pip install \
             git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
-    elif [ "$wo_distro_codename" = "jammy" ]; then
-        /opt/wo/bin/pip install \
+    elif [ "$ccw_distro_codename" = "jammy" ]; then
+        /opt/ccw/bin/pip install \
             git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
     # ... weitere Versionen
     fi
     
-    # WordOps installieren
-    if [ "$wo_branch" = "master" ]; then
-        /opt/wo/bin/pip install -U wordops --upgrade-strategy=eager
+    # CCC CODE installieren
+    if [ "$ccw_branch" = "master" ]; then
+        /opt/ccw/bin/pip install -U ccc-code --upgrade-strategy=eager
     else
-        /opt/wo/bin/pip install -I \
-            "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops"
+        /opt/ccw/bin/pip install -I \
+            "git+https://github.com/collective-context/ccc-code.git@$ccw_branch#egg=ccc-code"
     fi
     
     # Symlinks erstellen
-    ln -s /opt/wo/bin/wo /usr/local/bin/wo
+    ln -s /opt/ccw/bin/ccw /usr/local/bin/ccw
 }
 ```
 
@@ -249,19 +249,19 @@ wo_install() {
 ### 2.7 Migration von EasyEngine
 
 ```bash
-wo_upgrade_ee() {
+ccw_upgrade_ee() {
     # Backup erstellen
     tar -czf "$EE_BACKUP_FILE" /etc/ee /var/lib/ee
     
     # Datenbank migrieren
-    wo_sync_db
+    ccw_sync_db
     
     # Nginx-Konfiguration migrieren
     rsync -a --exclude="22222" /etc/nginx/ /etc/nginx.bak/
-    wo_upgrade_nginx
+    ccw_upgrade_nginx
 }
 
-wo_sync_db() {
+ccw_sync_db() {
     # SQLite-Schema erstellen
     echo "CREATE TABLE sites (
         id INTEGER PRIMARY KEY,
@@ -280,7 +280,7 @@ wo_sync_db() {
         db_host TEXT,
         is_hhvm INT DEFAULT '0',
         php_version TEXT
-    );" | sqlite3 /var/lib/wo/dbase.db
+    );" | sqlite3 /var/lib/ccw/dbase.db
     
     # EE-Datenbank importieren
     for site in $(mysql -e "SELECT sitename FROM ee.sites_list"); do
@@ -293,19 +293,19 @@ wo_sync_db() {
 
 ## 3. Python Core-Module
 
-### 3.1 wo/core/variables.py - Globale Konfiguration
+### 3.1 ccw/core/variables.py - Globale Konfiguration
 
 ```python
-class WOVar:
+class CCWVar:
     """Zentrale Konfigurationsvariablen"""
     
     # System-Erkennung
-    wo_distro = platform.linux_distribution()[0].lower()
-    wo_platform_version = platform.linux_distribution()[1]
-    wo_platform_codename = os.popen("lsb_release -sc").read().strip()
+    ccw_distro = platform.linux_distribution()[0].lower()
+    ccw_platform_version = platform.linux_distribution()[1]
+    ccw_platform_codename = os.popen("lsb_release -sc").read().strip()
     
     # PHP-Versionen-Management
-    wo_php_versions = {
+    ccw_php_versions = {
         'php74': '7.4',
         'php80': '8.0',
         'php81': '8.1',
@@ -315,9 +315,9 @@ class WOVar:
     }
     
     # APT-Pakete pro Stack
-    wo_nginx = ["nginx-custom", "nginx-wo"]
+    ccw_nginx = ["nginx-custom", "nginx-ccw"]
     
-    wo_php74 = [
+    ccw_php74 = [
         "php7.4-fpm", "php7.4-curl", "php7.4-gd", "php7.4-imap",
         "php7.4-readline", "php7.4-common", "php7.4-redis",
         "php7.4-mysql", "php7.4-cli", "php7.4-mbstring",
@@ -327,28 +327,28 @@ class WOVar:
     ]
     
     # MariaDB-Version basierend auf Distro
-    if wo_distro == 'raspbian':
+    if ccw_distro == 'raspbian':
         mariadb_ver = '10.3'
     else:
         mariadb_ver = '11.4'
         
-    wo_mysql = [
+    ccw_mysql = [
         "mariadb-server", "percona-toolkit",
         "mariadb-common", "python3-mysqldb",
         "mariadb-backup"  # nur für MariaDB 10.1+
     ]
     
     # SSL-Pfade
-    wo_ssl_live = "/etc/letsencrypt/live"
-    wo_ssl_archive = "/etc/letsencrypt/renewal"
-    wo_ssl_cert = "/cert.pem"
-    wo_ssl_key = "/privkey.pem"
+    ccw_ssl_live = "/etc/letsencrypt/live"
+    ccw_ssl_archive = "/etc/letsencrypt/renewal"
+    ccw_ssl_cert = "/cert.pem"
+    ccw_ssl_key = "/privkey.pem"
     
     # Repository URLs
-    wo_mysql_repo = (
+    ccw_mysql_repo = (
         "deb [signed-by=/etc/apt/keyrings/mariadb-keyring.pgp] "
-        f"http://deb.mariadb.org/{mariadb_ver}/{wo_distro} "
-        f"{wo_platform_codename} main"
+        f"http://deb.mariadb.org/{mariadb_ver}/{ccw_distro} "
+        f"{ccw_platform_codename} main"
     )
     
     @staticmethod
@@ -371,21 +371,21 @@ class WOVar:
         return [f"php{version}-{mod}" for mod in base_modules + additional]
 ```
 
-### 3.2 wo/core/aptget.py - Paketverwaltung
+### 3.2 ccw/core/aptget.py - Paketverwaltung
 
 ```python
 import subprocess
-from wo.core.logging import Log
-from wo.core.shellexec import WOShellExec
+from ccw.core.logging import Log
+from ccw.core.shellexec import CCWShellExec
 
-class WOAptGet:
+class CCWAptGet:
     """APT-Paketmanagement Wrapper"""
     
     @staticmethod
     def update(self):
         """APT-Cache aktualisieren"""
         try:
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self,
                 "DEBIAN_FRONTEND=noninteractive apt-get update -qq"
             )
@@ -406,9 +406,9 @@ class WOAptGet:
         
         try:
             for package in packages:
-                if not WOAptGet.is_installed(self, package):
+                if not CCWAptGet.is_installed(self, package):
                     Log.wait(self, f"Installing {package}")
-                    WOShellExec.cmd_exec(
+                    CCWShellExec.cmd_exec(
                         self, 
                         apt_cmd.format(package)
                     )
@@ -441,17 +441,17 @@ class WOAptGet:
         return shutil.which(command) is not None
 ```
 
-### 3.3 wo/core/mysql.py - Datenbank-Management
+### 3.3 ccw/core/mysql.py - Datenbank-Management
 
 ```python
 import pymysql
 import configparser
 import subprocess
-from wo.core.logging import Log
-from wo.core.shellexec import WOShellExec
-from wo.core.variables import WOVar
+from ccw.core.logging import Log
+from ccw.core.shellexec import CCWShellExec
+from ccw.core.variables import CCWVar
 
-class WOMysql:
+class CCWMysql:
     """MySQL/MariaDB Verwaltung"""
     
     @staticmethod
@@ -486,7 +486,7 @@ class WOMysql:
     @staticmethod
     def execute(self, statement, errormsg='', log=True):
         """SQL-Statement ausführen"""
-        connection = WOMysql.dbConnection(self)
+        connection = CCWMysql.dbConnection(self)
         
         try:
             with connection.cursor() as cursor:
@@ -510,10 +510,10 @@ class WOMysql:
         """Backup aller Datenbanken"""
         import subprocess
         
-        Log.info(self, "Backing up databases to /var/lib/wo-backup/mysql")
+        Log.info(self, "Backing up databases to /var/lib/ccw-backup/mysql")
         
-        if not os.path.exists('/var/lib/wo-backup/mysql'):
-            os.makedirs('/var/lib/wo-backup/mysql')
+        if not os.path.exists('/var/lib/ccw-backup/mysql'):
+            os.makedirs('/var/lib/ccw-backup/mysql')
             
         if not fulldump:
             # Einzelne Datenbanken
@@ -533,7 +533,7 @@ class WOMysql:
                         shell=True
                     )
                     p2 = subprocess.Popen(
-                        f"zstd -c > /var/lib/wo-backup/mysql/{db}{WOVar.wo_date}.sql.zst",
+                        f"zstd -c > /var/lib/ccw-backup/mysql/{db}{CCWVar.ccw_date}.sql.zst",
                         stdin=p1.stdout,
                         shell=True
                     )
@@ -550,7 +550,7 @@ class WOMysql:
                 shell=True
             )
             p2 = subprocess.Popen(
-                f"zstd -c > /var/lib/wo-backup/mysql/fulldump-{WOVar.wo_date}.sql.zst",
+                f"zstd -c > /var/lib/ccw-backup/mysql/fulldump-{CCWVar.ccw_date}.sql.zst",
                 stdin=p1.stdout,
                 shell=True
             )
@@ -561,17 +561,17 @@ class WOMysql:
         mariadb_admin = "/usr/bin/mariadb-admin" if os.path.exists("/usr/bin/mariadb-admin") \
                        else "/usr/bin/mysqladmin"
                        
-        return WOShellExec.cmd_exec(self, f"{mariadb_admin} ping")
+        return CCWShellExec.cmd_exec(self, f"{mariadb_admin} ping")
 ```
 
-### 3.4 wo/core/services.py - Systemd Service Management
+### 3.4 ccw/core/services.py - Systemd Service Management
 
 ```python
 import subprocess
-from wo.core.logging import Log
-from wo.core.git import WOGit
+from ccw.core.logging import Log
+from ccw.core.git import CCWGit
 
-class WOService:
+class CCWService:
     """Systemd Service Management mit Rollback"""
     
     @staticmethod
@@ -601,11 +601,11 @@ class WOService:
         """Service mit Config-Rollback neustarten"""
         try:
             # Config-Check für Nginx
-            if service in ['nginx', 'nginx-wo', 'nginx-custom']:
-                if not WOService.nginx_test(self):
+            if service in ['nginx', 'nginx-ccw', 'nginx-custom']:
+                if not CCWService.nginx_test(self):
                     if config_paths:
                         Log.info(self, "Nginx config test failed, rolling back")
-                        WOGit.rollback(self, config_paths)
+                        CCWGit.rollback(self, config_paths)
                     return False
                     
             Log.wait(self, f"Restarting {service}")
@@ -622,7 +622,7 @@ class WOService:
                 Log.failed(self, f"Restarting {service}")
                 # Rollback bei Fehler
                 if config_paths:
-                    WOGit.rollback(self, config_paths)
+                    CCWGit.rollback(self, config_paths)
                 return False
                 
         except Exception as e:
@@ -634,8 +634,8 @@ class WOService:
         """Service reload (graceful restart)"""
         try:
             # Spezialbehandlung für Nginx
-            if service in ['nginx', 'nginx-wo', 'nginx-custom']:
-                if not WOService.nginx_test(self):
+            if service in ['nginx', 'nginx-ccw', 'nginx-custom']:
+                if not CCWService.nginx_test(self):
                     return False
                     
             Log.wait(self, f"Reloading {service}")
@@ -691,25 +691,25 @@ class WOService:
 
 ## 4. Python CLI-Plugins
 
-### 4.1 wo/cli/main.py - Cement Application
+### 4.1 ccw/cli/main.py - Cement Application
 
 ```python
 from cement.core.foundation import CementApp
 from cement.core.controller import CementBaseController, expose
 from cement.ext.ext_colorlog import ColorLogHandler
-from wo.core.logging import Log
-from wo.core.variables import WOVar
+from ccw.core.logging import Log
+from ccw.core.variables import CCWVar
 
 # Konfiguration Defaults
 config_defaults = {
-    'wo': {
+    'ccw': {
         'debug': False,
-        'plugin_dir': '/var/lib/wo/plugins/',
-        'plugin_config_dir': '/etc/wo/plugins.d/',
-        'template_dir': '/var/lib/wo/templates/'
+        'plugin_dir': '/var/lib/ccw/plugins/',
+        'plugin_config_dir': '/etc/ccw/plugins.d/',
+        'template_dir': '/var/lib/ccw/templates/'
     },
     'log.colorlog': {
-        'file': '/var/log/wo/wordops.log',
+        'file': '/var/log/ccw/ccc-code.log',
         'level': 'debug',
         'to_console': False,
         'rotate': True,
@@ -720,19 +720,19 @@ config_defaults = {
     }
 }
 
-class WOBaseController(CementBaseController):
+class CCWBaseController(CementBaseController):
     class Meta:
         label = 'base'
-        description = 'WordOps - WordPress Operations Tool'
+        description = 'CCC CODE - WordPress Operations Tool'
         
     @expose(hide=True)
     def default(self):
         """Default action wenn kein Subcommand angegeben"""
         self.app.args.print_help()
 
-class WOApp(CementApp):
+class CCWApp(CementApp):
     class Meta:
-        label = 'wo'
+        label = 'ccw'
         base_controller = 'base'
         config_defaults = config_defaults
         log_handler = ColorLogHandler
@@ -741,56 +741,56 @@ class WOApp(CementApp):
             'mustache',
         ]
         hooks = [
-            ('post_setup', wo_post_setup_hook),
-            ('pre_close', wo_pre_close_hook),
+            ('post_setup', ccw_post_setup_hook),
+            ('pre_close', ccw_pre_close_hook),
         ]
         handlers = [
-            WOBaseController,
-            WOStackController,
-            WOSiteController,
-            WODebugController,
+            CCWBaseController,
+            CCWStackController,
+            CCWSiteController,
+            CCWDebugController,
             # ... weitere Controller
         ]
         exit_on_close = True
         
-def wo_post_setup_hook(app):
+def ccw_post_setup_hook(app):
     """Nach App-Setup ausführen"""
     # Git-Config prüfen
     if not os.path.exists(f"{os.environ['HOME']}/.gitconfig"):
         import getpass
         username = getpass.getuser()
-        WOShellExec.cmd_exec(
+        CCWShellExec.cmd_exec(
             app,
             f'git config --global user.name "{username}"'
         )
-        WOShellExec.cmd_exec(
+        CCWShellExec.cmd_exec(
             app,
             f'git config --global user.email "root@{os.uname()[1]}"'
         )
         
-def wo_pre_close_hook(app):
+def ccw_pre_close_hook(app):
     """Vor App-Beendigung ausführen"""
     # Cleanup Tasks
     pass
 
 def main():
-    with WOApp() as app:
+    with CCWApp() as app:
         app.run()
 
 if __name__ == '__main__':
     main()
 ```
 
-### 4.2 wo/cli/plugins/stack.py - Stack Management
+### 4.2 ccw/cli/plugins/stack.py - Stack Management
 
 ```python
 from cement.core.controller import CementBaseController, expose
-from wo.cli.plugins.stack_pref import pre_pref, post_pref
-from wo.core.aptget import WOAptGet
-from wo.core.logging import Log
-from wo.core.variables import WOVar
+from ccw.cli.plugins.stack_pref import pre_pref, post_pref
+from ccw.core.aptget import CCWAptGet
+from ccw.core.logging import Log
+from ccw.core.variables import CCWVar
 
-class WOStackController(CementBaseController):
+class CCWStackController(CementBaseController):
     class Meta:
         label = 'stack'
         stacked_on = 'base'
@@ -806,7 +806,7 @@ class WOStackController(CementBaseController):
         ] + [
             ([f'--{php_version}'], 
              dict(help=f'PHP {php_number} Stack', action='store_true'))
-            for php_version, php_number in WOVar.wo_php_versions.items()
+            for php_version, php_number in CCWVar.ccw_php_versions.items()
         ]
         
     @expose(help="Stack installieren")
@@ -824,22 +824,22 @@ class WOStackController(CementBaseController):
                 
             # Nginx Stack
             if pargs.nginx:
-                if not WOAptGet.is_exec(self, 'nginx'):
-                    apt_packages.extend(WOVar.wo_nginx)
+                if not CCWAptGet.is_exec(self, 'nginx'):
+                    apt_packages.extend(CCWVar.ccw_nginx)
                 else:
                     Log.info(self, "Nginx bereits installiert")
                     
             # MySQL Stack
             if pargs.mysql:
-                if not WOMysql.mariadb_ping(self):
-                    apt_packages.extend(WOVar.wo_mysql)
+                if not CCWMysql.mariadb_ping(self):
+                    apt_packages.extend(CCWVar.ccw_mysql)
                     
             # PHP Stacks
-            for php_version, php_number in WOVar.wo_php_versions.items():
+            for php_version, php_number in CCWVar.ccw_php_versions.items():
                 if getattr(pargs, php_version, False):
-                    if not WOAptGet.is_installed(self, f'php{php_number}-fpm'):
+                    if not CCWAptGet.is_installed(self, f'php{php_number}-fpm'):
                         apt_packages.extend(
-                            WOVar.generate_php_modules(php_number)
+                            CCWVar.generate_php_modules(php_number)
                         )
                         
             # Pre-Installation Tasks
@@ -849,7 +849,7 @@ class WOStackController(CementBaseController):
             # Installation
             if apt_packages:
                 Log.wait(self, "Installing packages")
-                WOAptGet.install(self, apt_packages)
+                CCWAptGet.install(self, apt_packages)
                 Log.valide(self, "Installing packages")
                 
             # Post-Installation Tasks
@@ -865,8 +865,8 @@ class WOStackController(CementBaseController):
         pargs = self.app.pargs
         
         # Backup vor Upgrade
-        if pargs.mysql and WOMysql.mariadb_ping(self):
-            WOMysql.backupAll(self, fulldump=True)
+        if pargs.mysql and CCWMysql.mariadb_ping(self):
+            CCWMysql.backupAll(self, fulldump=True)
             
         # Upgrade-Logik
         # ...
@@ -885,22 +885,22 @@ class WOStackController(CementBaseController):
         # ...
 ```
 
-### 4.3 wo/cli/plugins/stack_pref.py - Stack Konfiguration
+### 4.3 ccw/cli/plugins/stack_pref.py - Stack Konfiguration
 
 ```python
 import configparser
 import random
 import string
 import psutil
-from wo.core.template import WOTemplate
-from wo.core.git import WOGit
+from ccw.core.template import CCWTemplate
+from ccw.core.git import CCWGit
 
 def pre_pref(self, apt_packages):
     """Vor-Installation Konfiguration"""
     
     # MariaDB Repository Setup
     if "mariadb-server" in apt_packages:
-        if not WOVar.wo_distro == 'raspbian':
+        if not CCWVar.ccw_distro == 'raspbian':
             Log.info(self, "MariaDB Repository hinzufügen")
             
             # APT Pinning für MariaDB
@@ -913,8 +913,8 @@ def pre_pref(self, apt_packages):
                 f.write(mysql_pref)
                 
             # Repository hinzufügen
-            WORepo.add(self, 
-                      repo_url=WOVar.wo_mysql_repo,
+            CCWRepo.add(self, 
+                      repo_url=CCWVar.ccw_mysql_repo,
                       repo_name="mariadb")
                       
     # MySQL Root-Passwort generieren
@@ -933,13 +933,13 @@ def pre_pref(self, apt_packages):
             with open('/etc/mysql/conf.d/my.cnf.tmp', 'w') as f:
                 f.write(mysql_config)
                 
-            WOFileUtils.chmod(self, '/etc/mysql/conf.d/my.cnf.tmp', 0o600)
+            CCWFileUtils.chmod(self, '/etc/mysql/conf.d/my.cnf.tmp', 0o600)
 
 def post_pref(self, apt_packages, packages):
     """Nach-Installation Konfiguration"""
     
     # PHP-FPM Konfiguration
-    for php_version in WOVar.wo_php_versions.values():
+    for php_version in CCWVar.ccw_php_versions.values():
         if f"php{php_version}-fpm" in apt_packages:
             Log.wait(self, f"Konfiguriere PHP {php_version}")
             
@@ -955,7 +955,7 @@ def post_pref(self, apt_packages, packages):
             }
             
             # www.conf deployen
-            WOTemplate.deploy(
+            CCWTemplate.deploy(
                 self,
                 f'/etc/php/{php_version}/fpm/pool.d/www.conf',
                 'php-fpm-pool.mustache',
@@ -979,7 +979,7 @@ def post_pref(self, apt_packages, packages):
             }
             
             for key, value in php_ini_changes.items():
-                WOFileUtils.searchreplace(
+                CCWFileUtils.searchreplace(
                     self,
                     f'/etc/php/{php_version}/fpm/php.ini',
                     f';{key} =.*',
@@ -987,12 +987,12 @@ def post_pref(self, apt_packages, packages):
                 )
                 
             # Service neustarten mit Rollback
-            if not WOService.restart_service(self, f'php{php_version}-fpm',
+            if not CCWService.restart_service(self, f'php{php_version}-fpm',
                                             [f'/etc/php/{php_version}']):
-                WOGit.rollback(self, [f'/etc/php/{php_version}'])
+                CCWGit.rollback(self, [f'/etc/php/{php_version}'])
                 Log.error(self, f"PHP {php_version} Start fehlgeschlagen")
             else:
-                WOGit.add(self, [f'/etc/php/{php_version}'],
+                CCWGit.add(self, [f'/etc/php/{php_version}'],
                          msg=f"PHP {php_version} Konfiguration")
                 Log.valide(self, f"Konfiguriere PHP {php_version}")
                 
@@ -1001,26 +1001,26 @@ def post_pref(self, apt_packages, packages):
         Log.wait(self, "MariaDB Tuning")
         
         # RAM-basierte Konfiguration
-        wo_ram = psutil.virtual_memory().total / (1024 * 1024)
-        wo_ram_innodb = int(wo_ram * 0.3)  # 30% für InnoDB
-        wo_ram_log_buffer = int(wo_ram_innodb * 0.25)
+        ccw_ram = psutil.virtual_memory().total / (1024 * 1024)
+        ccw_ram_innodb = int(ccw_ram * 0.3)  # 30% für InnoDB
+        ccw_ram_log_buffer = int(ccw_ram_innodb * 0.25)
         
         mariadb_config = {
-            'innodb_buffer_pool_size': f'{wo_ram_innodb}M',
-            'innodb_log_buffer_size': f'{wo_ram_log_buffer}M',
-            'innodb_buffer_pool_instances': 1 if wo_ram < 2000 else 2,
-            'max_connections': 100 if wo_ram < 2000 else 200,
-            'key_buffer_size': '32M' if wo_ram < 2000 else '128M',
-            'tmp_table_size': '32M' if wo_ram < 2000 else '64M',
-            'max_heap_table_size': '32M' if wo_ram < 2000 else '64M',
-            'query_cache_size': '8M' if wo_ram < 2000 else '16M',
+            'innodb_buffer_pool_size': f'{ccw_ram_innodb}M',
+            'innodb_log_buffer_size': f'{ccw_ram_log_buffer}M',
+            'innodb_buffer_pool_instances': 1 if ccw_ram < 2000 else 2,
+            'max_connections': 100 if ccw_ram < 2000 else 200,
+            'key_buffer_size': '32M' if ccw_ram < 2000 else '128M',
+            'tmp_table_size': '32M' if ccw_ram < 2000 else '64M',
+            'max_heap_table_size': '32M' if ccw_ram < 2000 else '64M',
+            'query_cache_size': '8M' if ccw_ram < 2000 else '16M',
             'query_cache_limit': '1M',
             'query_cache_type': 1,
-            'performance_schema': 0 if wo_ram < 2000 else 1,
+            'performance_schema': 0 if ccw_ram < 2000 else 1,
         }
         
         # my.cnf Template deployen
-        WOTemplate.deploy(
+        CCWTemplate.deploy(
             self,
             '/etc/mysql/mariadb.conf.d/50-server.cnf',
             'mariadb-server.mustache',
@@ -1033,20 +1033,20 @@ def post_pref(self, apt_packages, packages):
             config.read('/etc/mysql/conf.d/my.cnf.tmp')
             root_pass = config['client']['password']
             
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self,
                 f'mysql -e "SET PASSWORD = PASSWORD(\'{root_pass}\'); '
                 'FLUSH PRIVILEGES;"',
                 log=False
             )
             
-            WOFileUtils.mvfile(
+            CCWFileUtils.mvfile(
                 self,
                 '/etc/mysql/conf.d/my.cnf.tmp',
                 '/etc/mysql/conf.d/my.cnf'
             )
             
-        WOService.restart_service(self, 'mariadb')
+        CCWService.restart_service(self, 'mariadb')
         Log.valide(self, "MariaDB Tuning")
         
 def calculate_workers(self):
@@ -1072,22 +1072,22 @@ def calculate_workers(self):
 ### 5.1 Stack-Komponenten Übersicht
 
 ```python
-# Stack-Definitionen in wo/core/variables.py
+# Stack-Definitionen in ccw/core/variables.py
 STACKS = {
     'nginx': {
-        'packages': ['nginx-custom', 'nginx-wo'],
+        'packages': ['nginx-custom', 'nginx-ccw'],
         'services': ['nginx'],
         'config_paths': ['/etc/nginx'],
         'log_paths': ['/var/log/nginx'],
     },
     'php74': {
-        'packages': WOVar.wo_php74,
+        'packages': CCWVar.ccw_php74,
         'services': ['php7.4-fpm'],
         'config_paths': ['/etc/php/7.4'],
         'log_paths': ['/var/log/php7.4-fpm.log'],
     },
     'mysql': {
-        'packages': WOVar.wo_mysql,
+        'packages': CCWVar.ccw_mysql,
         'services': ['mariadb', 'mysql'],
         'config_paths': ['/etc/mysql'],
         'log_paths': ['/var/log/mysql'],
@@ -1110,8 +1110,8 @@ STACKS = {
 ### 5.2 Stack Migration Controller
 
 ```python
-# wo/cli/plugins/stack_migrate.py
-class WOStackMigrateController(CementBaseController):
+# ccw/cli/plugins/stack_migrate.py
+class CCWStackMigrateController(CementBaseController):
     class Meta:
         label = 'migrate'
         stacked_on = 'stack'
@@ -1122,10 +1122,10 @@ class WOStackMigrateController(CementBaseController):
         """MariaDB Version Migration"""
         
         # Backup aller Datenbanken
-        WOMysql.backupAll(self, fulldump=True)
+        CCWMysql.backupAll(self, fulldump=True)
         
         # Aktuelle Version prüfen
-        current_version = WOShellExec.cmd_exec_stdout(
+        current_version = CCWShellExec.cmd_exec_stdout(
             self,
             "mysql --version | awk '{print $5}' | cut -d'-' -f1"
         )
@@ -1134,41 +1134,41 @@ class WOStackMigrateController(CementBaseController):
         if self.app.config.has_section('mariadb'):
             new_version = self.app.config.get('mariadb', 'release')
         else:
-            new_version = WOVar.mariadb_ver
+            new_version = CCWVar.mariadb_ver
             
         if current_version != new_version:
             Log.info(self, f"Migration von {current_version} zu {new_version}")
             
             # Service stoppen
-            WOService.stop_service(self, 'mariadb')
+            CCWService.stop_service(self, 'mariadb')
             
             # Repository ändern
-            WORepo.remove(self, repo_name="mariadb")
-            WORepo.add(self, 
-                      repo_url=WOVar.wo_mysql_repo.replace(
+            CCWRepo.remove(self, repo_name="mariadb")
+            CCWRepo.add(self, 
+                      repo_url=CCWVar.ccw_mysql_repo.replace(
                           current_version, new_version
                       ),
                       repo_name="mariadb")
             
             # Upgrade
-            WOAptGet.update(self)
-            WOAptGet.install(self, ['mariadb-server'])
+            CCWAptGet.update(self)
+            CCWAptGet.install(self, ['mariadb-server'])
             
             # mysql_upgrade ausführen
-            WOShellExec.cmd_exec(self, "mysql_upgrade")
+            CCWShellExec.cmd_exec(self, "mysql_upgrade")
             
             # Service starten
-            WOService.start_service(self, 'mariadb')
+            CCWService.start_service(self, 'mariadb')
             
     @expose(help="Nginx HTTP/3 Migration")  
     def migrate_nginx(self):
         """Nginx zu HTTP/3 QUIC Migration"""
         
         # Nginx Config Backup
-        WOFileUtils.copyfile(
+        CCWFileUtils.copyfile(
             self, 
             '/etc/nginx/nginx.conf',
-            f'/etc/nginx/nginx.conf.{WOVar.wo_date}'
+            f'/etc/nginx/nginx.conf.{CCWVar.ccw_date}'
         )
         
         # HTTP/3 Konfiguration
@@ -1187,7 +1187,7 @@ class WOStackMigrateController(CementBaseController):
             ssl_conf = f'/var/www/{site.sitename}/conf/nginx/ssl.conf'
             if os.path.exists(ssl_conf):
                 # Listen-Direktive für QUIC
-                WOFileUtils.searchreplace(
+                CCWFileUtils.searchreplace(
                     self,
                     ssl_conf,
                     'listen 443 ssl http2;',
@@ -1195,11 +1195,11 @@ class WOStackMigrateController(CementBaseController):
                 )
                 
         # Nginx neustarten
-        if not WOService.reload_service(self, 'nginx'):
+        if not CCWService.reload_service(self, 'nginx'):
             # Rollback bei Fehler
-            WOFileUtils.mvfile(
+            CCWFileUtils.mvfile(
                 self,
-                f'/etc/nginx/nginx.conf.{WOVar.wo_date}',
+                f'/etc/nginx/nginx.conf.{CCWVar.ccw_date}',
                 '/etc/nginx/nginx.conf'
             )
             Log.error(self, "HTTP/3 Migration fehlgeschlagen")
@@ -1212,8 +1212,8 @@ class WOStackMigrateController(CementBaseController):
 ### 6.1 Site Create Controller
 
 ```python
-# wo/cli/plugins/site_create.py
-class WOSiteCreateController(CementBaseController):
+# ccw/cli/plugins/site_create.py
+class CCWSiteCreateController(CementBaseController):
     class Meta:
         label = 'create'
         stacked_on = 'site'
@@ -1235,7 +1235,7 @@ class WOSiteCreateController(CementBaseController):
         pargs = self.app.pargs
         
         # Domain validieren
-        domain = WODomain.validate(self, pargs.site_name)
+        domain = CCWDomain.validate(self, pargs.site_name)
         
         # Prüfen ob Site existiert
         if check_domain_exists(self, domain):
@@ -1293,16 +1293,16 @@ class WOSiteCreateController(CementBaseController):
 ### 6.2 Site Functions
 
 ```python
-# wo/cli/plugins/site_functions.py
+# ccw/cli/plugins/site_functions.py
 
 def setupdomain(self, domain, site_type, cache_type, php_version):
     """Nginx vHost Setup"""
     
     # Webroot erstellen
     webroot = f"/var/www/{domain}"
-    WOFileUtils.mkdir(self, f"{webroot}/htdocs")
-    WOFileUtils.mkdir(self, f"{webroot}/conf/nginx")
-    WOFileUtils.mkdir(self, f"{webroot}/logs")
+    CCWFileUtils.mkdir(self, f"{webroot}/htdocs")
+    CCWFileUtils.mkdir(self, f"{webroot}/conf/nginx")
+    CCWFileUtils.mkdir(self, f"{webroot}/logs")
     
     # Nginx Template-Daten
     data = {
@@ -1317,7 +1317,7 @@ def setupdomain(self, domain, site_type, cache_type, php_version):
     }
     
     # Haupt-Nginx-Config
-    WOTemplate.deploy(
+    CCWTemplate.deploy(
         self,
         f'/etc/nginx/sites-available/{domain}',
         'nginx-site.mustache',
@@ -1325,7 +1325,7 @@ def setupdomain(self, domain, site_type, cache_type, php_version):
     )
     
     # Site aktivieren
-    WOFileUtils.create_symlink(
+    CCWFileUtils.create_symlink(
         self,
         f'/etc/nginx/sites-available/{domain}',
         f'/etc/nginx/sites-enabled/{domain}'
@@ -1333,7 +1333,7 @@ def setupdomain(self, domain, site_type, cache_type, php_version):
     
     # PHP-Config wenn benötigt
     if data['include_php']:
-        WOTemplate.deploy(
+        CCWTemplate.deploy(
             self,
             f'{webroot}/conf/nginx/php.conf',
             'nginx-php.mustache',
@@ -1354,7 +1354,7 @@ def setupdatabase(self, domain):
     
     # Datenbank erstellen
     try:
-        WOMysql.execute(
+        CCWMysql.execute(
             self,
             f"CREATE DATABASE IF NOT EXISTS `{db_name}` "
             "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
@@ -1366,20 +1366,20 @@ def setupdatabase(self, domain):
         else:
             grant_host = 'localhost'
             
-        WOMysql.execute(
+        CCWMysql.execute(
             self,
             f"CREATE USER '{db_user}'@'{grant_host}' "
             f"IDENTIFIED BY '{db_pass}'"
         )
         
         # Rechte vergeben
-        WOMysql.execute(
+        CCWMysql.execute(
             self,
             f"GRANT ALL PRIVILEGES ON `{db_name}`.* "
             f"TO '{db_user}'@'{grant_host}'"
         )
         
-        WOMysql.execute(self, "FLUSH PRIVILEGES")
+        CCWMysql.execute(self, "FLUSH PRIVILEGES")
         
     except Exception as e:
         Log.error(self, f"Datenbank-Setup fehlgeschlagen: {e}")
@@ -1396,13 +1396,13 @@ def setupwordpress(self, domain, db_name, db_user, db_pass, cache_type):
     wp_cli = "/usr/local/bin/wp --allow-root"
     
     # WordPress Download
-    WOShellExec.cmd_exec(
+    CCWShellExec.cmd_exec(
         self,
         f"{wp_cli} core download --path={webroot}"
     )
     
     # wp-config.php erstellen
-    WOShellExec.cmd_exec(
+    CCWShellExec.cmd_exec(
         self,
         f"{wp_cli} config create "
         f"--dbname='{db_name}' "
@@ -1413,7 +1413,7 @@ def setupwordpress(self, domain, db_name, db_user, db_pass, cache_type):
     )
     
     # Salts hinzufügen
-    WOShellExec.cmd_exec(
+    CCWShellExec.cmd_exec(
         self,
         f"{wp_cli} config shuffle-salts --path={webroot}"
     )
@@ -1428,7 +1428,7 @@ def setupwordpress(self, domain, db_name, db_user, db_pass, cache_type):
         wp_pass = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
         wp_email = f"admin@{domain}"
         
-    WOShellExec.cmd_exec(
+    CCWShellExec.cmd_exec(
         self,
         f"{wp_cli} core install "
         f"--url='https://{domain}' "
@@ -1460,11 +1460,11 @@ def setupwordpress(self, domain, db_name, db_user, db_pass, cache_type):
 ### 7.1 SSL/Acme Management
 
 ```python
-# wo/core/acme.py
-class WOAcme:
+# ccw/core/acme.py
+class CCWAcme:
     """Let's Encrypt Integration mit acme.sh"""
     
-    wo_acme_exec = (
+    ccw_acme_exec = (
         "/etc/letsencrypt/acme.sh "
         "--config-home '/etc/letsencrypt/config'"
     )
@@ -1474,17 +1474,17 @@ class WOAcme:
         """acme.sh Installation prüfen"""
         if not os.path.exists('/etc/letsencrypt/acme.sh'):
             # acme.sh installieren
-            WOGit.clone(
+            CCWGit.clone(
                 self,
                 'https://github.com/Neilpang/acme.sh.git',
                 '/opt/acme.sh'
             )
             
-            WOFileUtils.mkdir(self, '/etc/letsencrypt/config')
-            WOFileUtils.mkdir(self, '/etc/letsencrypt/renewal')
-            WOFileUtils.mkdir(self, '/etc/letsencrypt/live')
+            CCWFileUtils.mkdir(self, '/etc/letsencrypt/config')
+            CCWFileUtils.mkdir(self, '/etc/letsencrypt/renewal')
+            CCWFileUtils.mkdir(self, '/etc/letsencrypt/live')
             
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self,
                 'cd /opt/acme.sh && '
                 './acme.sh --install '
@@ -1496,10 +1496,10 @@ class WOAcme:
     @staticmethod
     def check_dns(self, domains):
         """DNS-Einträge prüfen"""
-        server_ip = WOFqdn.get_server_ip(self)
+        server_ip = CCWFqdn.get_server_ip(self)
         
         for domain in domains:
-            domain_ip = WOFqdn.get_domain_ip(self, domain)
+            domain_ip = CCWFqdn.get_domain_ip(self, domain)
             
             if domain_ip != server_ip:
                 Log.warn(
@@ -1514,10 +1514,10 @@ class WOAcme:
     def setupletsencrypt(self, domains, data):
         """SSL-Zertifikat ausstellen"""
         
-        WOAcme.check_acme(self)
+        CCWAcme.check_acme(self)
         
         # Acme-Befehl zusammenbauen
-        acme_cmd = f"{WOAcme.wo_acme_exec} --issue "
+        acme_cmd = f"{CCWAcme.ccw_acme_exec} --issue "
         
         # Domains hinzufügen
         for domain in domains:
@@ -1546,7 +1546,7 @@ class WOAcme:
             
         # Zertifikat ausstellen
         try:
-            WOShellExec.cmd_exec(self, acme_cmd)
+            CCWShellExec.cmd_exec(self, acme_cmd)
             return True
         except CommandExecutionError as e:
             Log.error(self, f"SSL-Zertifikat konnte nicht ausgestellt werden: {e}")
@@ -1572,7 +1572,7 @@ class WOAcme:
         
         for target, source in links.items():
             if os.path.exists(source):
-                WOFileUtils.create_symlink(
+                CCWFileUtils.create_symlink(
                     self,
                     source,
                     f"{live_path}/{target}"
@@ -1585,7 +1585,7 @@ class WOAcme:
             'quic': True
         }
         
-        WOTemplate.deploy(
+        CCWTemplate.deploy(
             self,
             f'/var/www/{domain}/conf/nginx/ssl.conf',
             'ssl.mustache',
@@ -1601,7 +1601,7 @@ class WOAcme:
 ### 7.2 SSL Utils
 
 ```python
-# wo/core/sslutils.py
+# ccw/core/sslutils.py
 class SSL:
     """SSL/TLS Hilfsfunktionen"""
     
@@ -1610,17 +1610,17 @@ class SSL:
         """Selbst-signiertes Zertifikat erstellen"""
         
         selfs_tmp = "/tmp/selfssl"
-        WOFileUtils.mkdir(self, selfs_tmp)
+        CCWFileUtils.mkdir(self, selfs_tmp)
         
         try:
             # Private Key generieren
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self,
                 f"openssl genrsa -out {selfs_tmp}/ssl.key 2048"
             )
             
             # CSR erstellen
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self,
                 f"openssl req -new -batch "
                 f"-subj /commonName=localhost/ "
@@ -1629,7 +1629,7 @@ class SSL:
             )
             
             # Selbst-signieren
-            WOShellExec.cmd_exec(
+            CCWShellExec.cmd_exec(
                 self,
                 f"openssl x509 -req -days 3652 "
                 f"-in {selfs_tmp}/ssl.csr "
@@ -1645,12 +1645,12 @@ class SSL:
             else:
                 return
                 
-            WOFileUtils.mkdir(self, target_path)
-            WOFileUtils.mvfile(self, f"{selfs_tmp}/ssl.key", f"{target_path}/")
-            WOFileUtils.mvfile(self, f"{selfs_tmp}/ssl.crt", f"{target_path}/")
+            CCWFileUtils.mkdir(self, target_path)
+            CCWFileUtils.mvfile(self, f"{selfs_tmp}/ssl.key", f"{target_path}/")
+            CCWFileUtils.mvfile(self, f"{selfs_tmp}/ssl.crt", f"{target_path}/")
             
         finally:
-            WOFileUtils.rm(self, selfs_tmp)
+            CCWFileUtils.rm(self, selfs_tmp)
             
     @staticmethod
     def httpsredirect(self, domain, enable=True):
@@ -1660,7 +1660,7 @@ class SSL:
         
         if enable:
             data = {'domain': domain}
-            WOTemplate.deploy(
+            CCWTemplate.deploy(
                 self,
                 force_ssl_conf,
                 'force-ssl.mustache',
@@ -1715,7 +1715,7 @@ class SSL:
 ### 8.1 SQLAlchemy Models
 
 ```python
-# wo/cli/plugins/models.py
+# ccw/cli/plugins/models.py
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -1767,14 +1767,14 @@ class MigrationsDB(Base):
 ### 8.2 Datenbank-Operationen
 
 ```python
-# wo/cli/plugins/sitedb.py
+# ccw/cli/plugins/sitedb.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from wo.cli.plugins.models import SiteDB, Base
-from wo.core.variables import WOVar
+from ccw.cli.plugins.models import SiteDB, Base
+from ccw.core.variables import CCWVar
 
 # Session Setup
-engine = create_engine(WOVar.wo_db_uri)
+engine = create_engine(CCWVar.ccw_db_uri)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
@@ -1789,7 +1789,7 @@ def addNewSite(self, domain, **kwargs):
             site_type=kwargs.get('site_type', 'html'),
             cache_type=kwargs.get('cache_type', 'none'),
             site_path=kwargs.get('site_path', f'/var/www/{domain}'),
-            php_version=kwargs.get('php_version', WOVar.wo_php),
+            php_version=kwargs.get('php_version', CCWVar.ccw_php),
             db_name=kwargs.get('db_name'),
             db_user=kwargs.get('db_user'),
             db_password=kwargs.get('db_password'),
@@ -1889,8 +1889,8 @@ def getAllsites(self, site_type=None):
 ### 9.1 Service Status Controller
 
 ```python
-# wo/cli/plugins/stack_services.py
-class WOStackStatusController(CementBaseController):
+# ccw/cli/plugins/stack_services.py
+class CCWStackStatusController(CementBaseController):
     class Meta:
         label = 'status'
         stacked_on = 'stack'
@@ -1903,20 +1903,20 @@ class WOStackStatusController(CementBaseController):
         services = []
         
         # Nginx
-        if WOAptGet.is_exec(self, 'nginx'):
+        if CCWAptGet.is_exec(self, 'nginx'):
             services.append(('Nginx', 'nginx'))
             
         # PHP Versionen
-        for php_version in WOVar.wo_php_versions.values():
-            if WOAptGet.is_installed(self, f'php{php_version}-fpm'):
+        for php_version in CCWVar.ccw_php_versions.values():
+            if CCWAptGet.is_installed(self, f'php{php_version}-fpm'):
                 services.append((f'PHP {php_version}', f'php{php_version}-fpm'))
                 
         # MySQL/MariaDB
-        if WOMysql.mariadb_ping(self):
+        if CCWMysql.mariadb_ping(self):
             services.append(('MariaDB', 'mariadb'))
             
         # Redis
-        if WOAptGet.is_installed(self, 'redis-server'):
+        if CCWAptGet.is_installed(self, 'redis-server'):
             services.append(('Redis', 'redis-server'))
             
         # Status-Tabelle
@@ -1955,9 +1955,9 @@ def get_service_port(service):
 
 ```python
 """
-Verwendete Design Patterns in WordOps:
+Verwendete Design Patterns in CCC CODE:
 
-1. SINGLETON PATTERN - WOVar Klasse
+1. SINGLETON PATTERN - CCWVar Klasse
    - Globale Konfiguration
    - Einmalige Initialisierung
 
@@ -1986,7 +1986,7 @@ Verwendete Design Patterns in WordOps:
 ### 10.2 Error Handling
 
 ```python
-class WOErrorHandling:
+class CCWErrorHandling:
     """Best Practices für Fehlerbehandlung"""
     
     @staticmethod
@@ -2049,7 +2049,7 @@ class PerformanceOptimizations:
         
     # 4. Connection Pooling
     engine = create_engine(
-        WOVar.wo_db_uri,
+        CCWVar.ccw_db_uri,
         pool_size=10,
         max_overflow=20,
         pool_pre_ping=True
@@ -2059,7 +2059,7 @@ class PerformanceOptimizations:
 ### 10.4 Sicherheits-Checkliste
 
 ```yaml
-# WordOps Sicherheits-Best-Practices
+# CCC CODE Sicherheits-Best-Practices
 
 System-Level:
   - EUID Root-Check
@@ -2095,7 +2095,7 @@ Logging:
 ### 10.5 Deployment Pipeline
 
 ```bash
-# WordOps CI/CD Pipeline
+# CCC CODE CI/CD Pipeline
 
 # 1. Pre-Flight Checks
 check_system_requirements() {
@@ -2106,7 +2106,7 @@ check_system_requirements() {
 }
 
 # 2. Installation
-install_wordops() {
+install_ccc_code() {
     setup_python_venv
     install_dependencies
     configure_system
@@ -2133,7 +2133,7 @@ setup_monitoring() {
 
 ## Zusammenfassung
 
-Diese umfassende Analyse zeigt die komplexe aber gut strukturierte Architektur von WordOps:
+Diese umfassende Analyse zeigt die komplexe aber gut strukturierte Architektur von CCC CODE:
 
 ### Stärken:
 1. **Modularer Aufbau**: Klare Trennung von Concerns
@@ -2160,4 +2160,6 @@ Diese umfassende Analyse zeigt die komplexe aber gut strukturierte Architektur v
 - Strukturierte Datenmodelle
 - Konsistente Naming-Conventions
 
-Diese Analyse bietet eine solide Grundlage für die Weiterentwicklung und Wartung des WordOps-Systems.
+Diese Analyse bietet eine solide Grundlage für die Weiterentwicklung und Wartung des CCC CODE-Systems.
+
+<!-- Zuletzt bearbeitet: 2025-10-30 -->
