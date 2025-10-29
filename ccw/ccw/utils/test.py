@@ -1,15 +1,17 @@
-"""Testing utilities for WordOps"""
+"""Testing utilities for CCC CODE"""
 from cement.utils import test
-from wo.cli.main import WOTestApp
+from ccw.cli.main import CCWTestApp
 
 
-class WOTestCase(test.CementTestCase):
-    app_class = WOTestApp
+class CCWTestCase(test.CementTestCase):
+    app_class = CCWTestApp
 
     def setUp(self):
         """Override setup actions (for every test)."""
-        super(WOTestCase, self).setUp()
+        super(CCWTestCase, self).setUp()
 
     def tearDown(self):
         """Override teardown actions (for every test)."""
-        super(WOTestCase, self).tearDown()
+        super(CCWTestCase, self).tearDown()
+
+# Zuletzt bearbeitet: 2025-10-27
