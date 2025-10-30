@@ -2,3 +2,5 @@ recursive-include *.py
 include setup.cfg
 include README.md CHANGELOG.md LICENSE
 include *.txt
+
+# Zuletzt bearbeitet: 2025-10-30
