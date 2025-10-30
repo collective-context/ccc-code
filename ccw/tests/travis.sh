@@ -295,14 +295,14 @@ for site in $wp_site_types; do
 done
 if [ -z "$1" ]; then
     echo -e "${CGREEN}#############################################${CEND}"
-    echo -e '       wo stack upgrade              '
+    echo -e '       ccw stack upgrade              '
     echo -e "${CGREEN}#############################################${CEND}"
     stack_upgrade='nginx php php74 php80 php81 php82 php84 mysql redis netdata dashboard phpmyadmin adminer fail2ban composer ngxblocker mysqltuner'
     for stack in $stack_upgrade; do
         echo -ne "      Upgrading $stack               [..]\r"
         if {
-            wo stack upgrade --${stack} --force
-        } >>/var/log/wo/test.log; then
+            ccw stack upgrade --${stack} --force
+        } >>/var/log/ccw/test.log; then
             echo -ne "       Upgrading $stack               [${CGREEN}OK${CEND}]\\r"
             echo -ne '\n'
         else
@@ -425,14 +425,14 @@ cat /etc/apt/sources.list.d/redis.list
 # done
 
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo stack purge              '
+echo -e '       ccw stack purge              '
 echo -e "${CGREEN}#############################################${CEND}"
 stack_purge='nginx php php74 php80 php81 php82 php83 php84 mysql redis fail2ban clamav proftpd netdata phpmyadmin composer dashboard extplorer adminer redis ufw ngxblocker cheat nanorc'
 for stack in $stack_purge; do
     echo -ne "       purging $stack              [..]\r"
     if {
-        wo stack purge --${stack} --force
-    } >>/var/log/wo/test.log; then
+        ccw stack purge --${stack} --force
+    } >>/var/log/ccw/test.log; then
         echo -ne "       purging $stack               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -442,3 +442,5 @@ for stack in $stack_purge; do
 
     fi
 done
+
+# Zuletzt bearbeitet: 2025-10-30
