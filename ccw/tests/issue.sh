@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # -------------------------------------------------------------------------
-# WordOps support script
+# CCC CODE support script
 # -------------------------------------------------------------------------
 # Website:       https://wordops.net
 # GitHub:        https://github.com/WordOps/WordOps
@@ -12,12 +12,14 @@
 # Version 3.21.0 - 2024-05-29
 # -------------------------------------------------------------------------
 
-if [ -f /var/log/wo/wordops.log ]; then
-    cd /var/log/wo/ || exit 1
-    sed -E 's/([a-zA-Z0-9.-]+\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/domain.anonymized/g' /var/log/wo/wordops.log >/var/log/wo/wordops-issue.log
-    wo_link=$(curl -sL --upload-file wordops-issue.log https://transfer.vtbox.net/wordops.txt)
+if [ -f /var/log/ccw/ccc-code.log ]; then
+    cd /var/log/ccw/ || exit 1
+    sed -E 's/([a-zA-Z0-9.-]+\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/domain.anonymized/g' /var/log/ccw/ccc-code.log >/var/log/ccw/ccc-code-issue.log
+    ccw_link=$(curl -sL --upload-file ccc-code-issue.log https://transfer.vtbox.net/ccc-code.txt)
     echo
-    echo "Here the link to provide in your github issue : $wo_link"
+    echo "Here the link to provide in your github issue : $ccw_link"
     echo
     cd || exit 1
 fi
+
+# Zuletzt bearbeitet: 2025-10-30

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# WordOps travis testing script
+# CCC CODE travis testing script
 #
 #
 # Colors
@@ -105,24 +105,24 @@ echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
 echo
-wo site info php.net
+ccw site info php.net
 echo
 echo
-wo site info php74.net
+ccw site info php74.net
 echo
 echo
-wo site list
+ccw site list
 echo
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site update --php74              '
+echo -e '       ccw site update --php74              '
 echo -e "${CGREEN}#############################################${CEND}"
 other_site_types='mysql php81 php82 php83 php84 wp wpfc wpsc wpredis wpce wprocket wpsubdomain wpsubdir'
 for site in $other_site_types; do
     echo -ne "       Updating site to $site php74              [..]\r"
     if {
-        wo site update ${site}.net --php74
-    } >>/var/log/wo/test.log; then
+        ccw site update ${site}.net --php74
+    } >>/var/log/ccw/test.log; then
         echo -ne "       Updating site to $site php74               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -135,25 +135,25 @@ done
 echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
-wo site info wp.net
+ccw site info wp.net
 echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
-wo site info wp.net
+ccw site info wp.net
 echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
-wo site info wp.net
+ccw site info wp.net
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site update --php80             '
+echo -e '       ccw site update --php80             '
 echo -e "${CGREEN}#############################################${CEND}"
 other_site_types='mysql php81 php82 php84 wp wpfc wpsc wpredis wpce wprocket wpsubdomain wpsubdir'
 for site in $other_site_types; do
     echo -ne "       Updating site to $site php80              [..]\r"
     if {
-        wo site update ${site}.net --php80
-    } >>/var/log/wo/test.log; then
+        ccw site update ${site}.net --php80
+    } >>/var/log/ccw/test.log; then
         echo -ne "       Updating site to $site php80               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -166,17 +166,17 @@ done
 echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
-wo site info wp.net
+ccw site info wp.net
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site update --php81              '
+echo -e '       ccw site update --php81              '
 echo -e "${CGREEN}#############################################${CEND}"
 other_site_types='mysql php82 wp wpfc wpsc wpredis wpce wprocket wpsubdomain wpsubdir'
 for site in $other_site_types; do
     echo -ne "       Updating site to $site php81              [..]\r"
     if {
-        wo site update ${site}.net --php81
-    } >>/var/log/wo/test.log; then
+        ccw site update ${site}.net --php81
+    } >>/var/log/ccw/test.log; then
         echo -ne "       Updating site to $site php81               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -190,14 +190,14 @@ echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site update --php82              '
+echo -e '       ccw site update --php82              '
 echo -e "${CGREEN}#############################################${CEND}"
 other_site_types='mysql wp wpfc wpsc wpredis wpce wprocket wpsubdomain wpsubdir'
 for site in $other_site_types; do
     echo -ne "       Updating site to $site php82              [..]\r"
     if {
-        wo site update ${site}.net --php82
-    } >>/var/log/wo/test.log; then
+        ccw site update ${site}.net --php82
+    } >>/var/log/ccw/test.log; then
         echo -ne "       Updating site to $site php82               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -211,18 +211,18 @@ echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site update --php84              '
+echo -e '       ccw site update --php84              '
 echo -e "${CGREEN}#############################################${CEND}"
 other_site_types='mysql wp wpfc wpsc wpredis wpce wprocket wpsubdomain wpsubdir'
 for site in $other_site_types; do
     echo -ne "       Updating site to $site php84              [..]\r"
     if {
-        wo site update ${site}.net --php84
-    } >>/var/log/wo/test.log; then
-        echo -ne "       Updating site to $site php82               [${CGREEN}OK${CEND}]\\r"
+        ccw site update ${site}.net --php84
+    } >>/var/log/ccw/test.log; then
+        echo -ne "       Updating site to $site php84               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
-        echo -e "        Updating site to $site php82              [${CRED}FAIL${CEND}]"
+        echo -e "        Updating site to $site php84              [${CRED}FAIL${CEND}]"
         echo -ne '\n'
         exit_script
 
@@ -231,19 +231,19 @@ done
 echo
 echo -e "${CGREEN}#############################################${CEND}"
 echo
-wo site info wp.net
+ccw site info wp.net
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site update WP              '
+echo -e '       ccw site update WP              '
 echo -e "${CGREEN}#############################################${CEND}"
 
 wp_site_types='wpfc wpsc wpce wprocket wpredis'
-wo site create wp.io --wp >>/dev/null 2>&1
+ccw site create wp.io --wp >>/dev/null 2>&1
 for site in $wp_site_types; do
     echo -ne "        Updating WP to $site              [..]\r"
     if {
-        wo site update wp.io --${site}
-    } >>/var/log/wo/test.log; then
+        ccw site update wp.io --${site}
+    } >>/var/log/ccw/test.log; then
         echo -ne "       Updating WP to $site               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -255,15 +255,15 @@ for site in $wp_site_types; do
 done
 
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site create wpsubdir              '
+echo -e '       ccw site create wpsubdir              '
 echo -e "${CGREEN}#############################################${CEND}"
 
 wp_site_types='wpfc wpsc wpce wprocket wpredis'
 for site in $wp_site_types; do
     echo -ne "        Creating wpsubdir $site              [..]\r"
     if {
-        wo site create wpsubdir"$site".io --wpsubdir --${site}
-    } >>/var/log/wo/test.log; then
+        ccw site create wpsubdir"$site".io --wpsubdir --${site}
+    } >>/var/log/ccw/test.log; then
         echo -ne "       Creating wpsubdir $site               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -275,15 +275,15 @@ for site in $wp_site_types; do
 done
 
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site create wpsubdomain              '
+echo -e '       ccw site create wpsubdomain              '
 echo -e "${CGREEN}#############################################${CEND}"
 
 wp_site_types='wpfc wpsc wpce wprocket wpredis'
 for site in $wp_site_types; do
     echo -ne "        Creating wpsubdomain $site              [..]\r"
     if {
-        wo site create wpsubdomain"$site".io --wpsubdomain --${site}
-    } >>/var/log/wo/test.log; then
+        ccw site create wpsubdomain"$site".io --wpsubdomain --${site}
+    } >>/var/log/ccw/test.log; then
         echo -ne "       Creating wpsubdomain $site               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -320,8 +320,8 @@ echo -e "${CGREEN}#############################################${CEND}"
 
 echo -ne "      Upgrading mariadb               [..]\r"
 if {
-    wo stack migrate --mariadb --force --ci
-} >>/var/log/wo/test.log; then
+    ccw stack migrate --mariadb --force --ci
+} >>/var/log/ccw/test.log; then
     echo -ne "       Upgrading mariadb               [${CGREEN}OK${CEND}]\\r"
     echo -ne '\n'
 else
@@ -338,8 +338,8 @@ stack_clean='fastcgi redis opcache all'
 for stack in $stack_clean; do
     echo -ne "       cleaning $stack cache              [..]\r"
     if {
-        wo clean --${stack}
-    } >>/var/log/wo/test.log; then
+        ccw clean --${stack}
+    } >>/var/log/ccw/test.log; then
         echo -ne "       cleaning $stack cache               [${CGREEN}OK${CEND}]\\r"
         echo -ne '\n'
     else
@@ -353,27 +353,27 @@ done
 echo -e "${CGREEN}#############################################${CEND}"
 echo -e '       wo secure              '
 echo -e "${CGREEN}#############################################${CEND}"
-echo -ne "       wo secure --auth                   [..]\r"
+echo -ne "       ccw secure --auth                   [..]\r"
 if {
-    wo secure --auth wordops mypassword
-} >>/var/log/wo/test.log; then
-    echo -ne "       wo secure --auth                   [${CGREEN}OK${CEND}]\\r"
+    ccw secure --auth ccc-code mypassword
+} >>/var/log/ccw/test.log; then
+    echo -ne "       ccw secure --auth                   [${CGREEN}OK${CEND}]\\r"
     echo -ne '\n'
 else
-    echo -e "       wo secure --auth                   [${CRED}FAIL${CEND}]"
+    echo -e "       ccw secure --auth                   [${CRED}FAIL${CEND}]"
     echo -ne '\n'
     exit_script
 
 fi
 
-echo -ne "       wo secure --port                   [..]\r"
+echo -ne "       ccw secure --port                   [..]\r"
 if {
-    wo secure --port 22223
-} >>/var/log/wo/test.log; then
-    echo -ne "       wo secure --port                   [${CGREEN}OK${CEND}]\\r"
+    ccw secure --port 22223
+} >>/var/log/ccw/test.log; then
+    echo -ne "       ccw secure --port                   [${CGREEN}OK${CEND}]\\r"
     echo -ne '\n'
 else
-    echo -e "       wo secure --port                   [${CRED}FAIL${CEND}]"
+    echo -e "       ccw secure --port                   [${CRED}FAIL${CEND}]"
     echo -ne '\n'
     exit_script
 
@@ -386,16 +386,16 @@ wp --allow-root --info
 
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo site info             '
+echo -e '       ccw site info             '
 echo -e "${CGREEN}#############################################${CEND}"
 
-wo site info wpfc.net
+ccw site info wpfc.net
 
 echo
 echo -e "${CGREEN}#############################################${CEND}"
-echo -e '       wo info             '
+echo -e '       ccw info             '
 echo -e "${CGREEN}#############################################${CEND}"
-wo info
+ccw info
 
 echo
 echo -e "${CGREEN}#############################################${CEND}"
@@ -406,14 +406,14 @@ cat /etc/apt/sources.list.d/mariadb.list
 cat /etc/apt/sources.list.d/redis.list
 
 # echo -e "${CGREEN}#############################################${CEND}"
-# echo -e '       wo site delete              '
+# echo -e '       ccw site delete              '
 # echo -e "${CGREEN}#############################################${CEND}"
-# sites=$(wo site list 2>&1)
+# sites=$(ccw site list 2>&1)
 # for site in $sites; do
 #     echo -ne "       deleting $site              [..]\r"
 #     if {
-#         wo site delete "$site" --force
-#     } >>/var/log/wo/test.log; then
+#         ccw site delete "$site" --force
+#     } >>/var/log/ccw/test.log; then
 #         echo -ne "       deleting $site              [${CGREEN}OK${CEND}]\\r"
 #         echo -ne '\n'
 #     else
